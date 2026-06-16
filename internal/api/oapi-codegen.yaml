@@ -1,0 +1,11 @@
+# Configuration for oapi-codegen (https://github.com/oapi-codegen/oapi-codegen).
+# Generates Go models for the Devin v3 API request/response schemas from
+# openapi.json, a build intermediate exported from the upstream API spec.
+# Regenerate with `go generate ./internal/api/...` after exporting the spec.
+package: api
+output: models.gen.go
+generate:
+  models: true
+output-options:
+  name-normalizer: ToCamelCaseWithInitialisms
+  nullable-type: true

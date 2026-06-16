@@ -1,0 +1,6 @@
+terraform-provider-devin
+*.tfstate
+*.tfstate.backup
+.terraform/
+internal/api/openapi.json
+dist/
