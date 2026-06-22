@@ -2,8 +2,10 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -76,6 +78,67 @@ func int64FromNullable(value nullable.Nullable[int]) types.Int64 {
 		return types.Int64Null()
 	}
 	return types.Int64Value(int64(value.MustGet()))
+}
+
+// optionalJSONObjectFrom parses a JSON-encoded object string into the map type
+// the API expects, leaving the field unspecified (omitted) when the value is
+// null or unknown. Parse errors are reported through diags.
+func optionalJSONObjectFrom(value jsontypes.Normalized, attribute string, diags *diag.Diagnostics) nullable.Nullable[map[string]interface{}] {
+	var result nullable.Nullable[map[string]interface{}]
+	if value.IsNull() || value.IsUnknown() {
+		return result
+	}
+	obj, ok := parseJSONObject(value.ValueString(), attribute, diags)
+	if !ok {
+		return result
+	}
+	result.Set(obj)
+	return result
+}
+
+// nullableJSONObjectFrom behaves like optionalJSONObjectFrom but sends an
+// explicit JSON null when the value is null or unknown, for update requests
+// where omitting the field leaves the existing value unchanged.
+func nullableJSONObjectFrom(value jsontypes.Normalized, attribute string, diags *diag.Diagnostics) nullable.Nullable[map[string]interface{}] {
+	if value.IsNull() || value.IsUnknown() {
+		return nullable.NewNullNullable[map[string]interface{}]()
+	}
+	obj, ok := parseJSONObject(value.ValueString(), attribute, diags)
+	if !ok {
+		return nullable.NewNullNullable[map[string]interface{}]()
+	}
+	return nullable.NewNullableWithValue(obj)
+}
+
+func parseJSONObject(raw string, attribute string, diags *diag.Diagnostics) (map[string]interface{}, bool) {
+	var obj map[string]interface{}
+	if err := json.Unmarshal([]byte(raw), &obj); err != nil {
+		diags.AddError("Invalid "+attribute, "Value must be a JSON object: "+err.Error())
+		return nil, false
+	}
+	// json.Unmarshal decodes the literal `null` into a nil map without error;
+	// reject it so jsonencode(null) is a config error rather than silently
+	// clearing the field.
+	if obj == nil {
+		diags.AddError("Invalid "+attribute, "Value must be a JSON object, not null.")
+		return nil, false
+	}
+	return obj, true
+}
+
+// jsonObjectFromNullable serializes the map returned by the API back into a
+// normalized JSON string. Semantic (whitespace/key-order insensitive) equality
+// on jsontypes.Normalized keeps it from producing spurious diffs.
+func jsonObjectFromNullable(value nullable.Nullable[map[string]interface{}], attribute string, diags *diag.Diagnostics) jsontypes.Normalized {
+	if !value.IsSpecified() || value.IsNull() {
+		return jsontypes.NewNormalizedNull()
+	}
+	encoded, err := json.Marshal(value.MustGet())
+	if err != nil {
+		diags.AddError("Invalid "+attribute, "API returned a value that could not be encoded as JSON: "+err.Error())
+		return jsontypes.NewNormalizedNull()
+	}
+	return jsontypes.NewNormalizedValue(string(encoded))
 }
 
 func rfc3339FromNullable(value nullable.Nullable[time.Time]) timetypes.RFC3339 {

@@ -16,8 +16,8 @@ terraform {
 }
 
 provider "devin" {
-  # token   = "cog_..."              # or set DEVIN_TOKEN env var
-  # api_url = "https://api.devin.ai" # or set DEVIN_API_URL env var
+  # Token is read from the DEVIN_TOKEN environment variable by default.
+  # See "Authentication" below.
 }
 
 data "devin_roles" "all" {}
@@ -122,9 +122,56 @@ list "devin_playbook" "all" {
 }
 ```
 
+## Advanced examples
+
+### Loading every playbook in a folder
+
+Keep playbook bodies as Markdown files in your repository and let Terraform
+manage one `devin_playbook` per file. `fileset` discovers the files and
+`for_each` creates a resource for each, so adding or removing a `.md` file is
+the only change needed to add or remove a playbook.
+
+```hcl
+locals {
+  playbook_dir = "${path.module}/playbooks"
+}
+
+resource "devin_playbook" "from_folder" {
+  for_each = fileset(local.playbook_dir, "*.md")
+
+  org_id = devin_organization.team.org_id
+  title  = trimsuffix(each.value, ".md")
+  body   = file("${local.playbook_dir}/${each.value}")
+}
+```
+
+Each resource is keyed by its filename (e.g. `devin_playbook.from_folder["coding-standards.md"]`), so renaming a file replaces only that playbook.
+
 ## Authentication
 
-Set `DEVIN_TOKEN` to a service user credential (`cog_` prefix). Service users are provisioned via the Devin settings UI or the v3 API.
+The provider authenticates with a service user credential (`cog_` prefix),
+provisioned via the Devin settings UI or the v3 API (see the
+[authentication docs](https://docs.devin.ai/api-reference/authentication)).
+Provide it through the `DEVIN_TOKEN` environment variable:
+
+```bash
+export DEVIN_TOKEN=cog_...
+# Optional; defaults to https://api.devin.ai
+export DEVIN_API_URL=https://api.devin.ai
+```
+
+Or pass it as a `sensitive` variable:
+
+```hcl
+variable "devin_token" {
+  type      = string
+  sensitive = true
+}
+
+provider "devin" {
+  token = var.devin_token
+}
+```
 
 For enterprise operations (creating orgs, managing git permissions across orgs, listing git connections and roles), the service user needs enterprise-level permissions. For org-scoped operations (playbooks, knowledge, secrets, schedules), org-level permissions suffice.
 
@@ -155,8 +202,8 @@ The Terraform Registry documentation under `docs/` is generated with [tfplugindo
 Acceptance tests (`internal/provider/*_acc_test.go`) run real Terraform plans and applies against a live Devin API and are gated behind `TF_ACC=1`:
 
 ```bash
-export DEVIN_API_URL=...   # must point at a local instance (localhost)
-export DEVIN_TOKEN=cog_... # enterprise service user token
+export DEVIN_API_URL=...    # must point at a local instance (localhost)
+export DEVIN_TOKEN=cog_...  # enterprise service user token
 # Optional, enables the org-scoped token tests:
 export DEVIN_ORG_TOKEN=cog_...
 export DEVIN_ORG_TOKEN_ORG_ID=org-...

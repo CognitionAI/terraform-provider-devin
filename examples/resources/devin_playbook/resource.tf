@@ -11,3 +11,24 @@ resource "devin_playbook" "onboarding" {
   body   = file("${path.module}/playbooks/onboarding.md")
   macro  = "!onboard"
 }
+
+# Playbooks can require sessions to produce structured output matching a
+# JSON Schema (Draft 7), supplied as a JSON-encoded string.
+resource "devin_playbook" "triage" {
+  org_id = devin_organization.frontend.org_id
+  title  = "Bug Triage"
+  body   = file("${path.module}/playbooks/triage.md")
+  structured_output_schema = jsonencode({
+    type = "object"
+    properties = {
+      severity = {
+        type = "string"
+        enum = ["low", "medium", "high"]
+      }
+      summary = {
+        type = "string"
+      }
+    }
+    required = ["severity", "summary"]
+  })
+}

@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/cognitionai/terraform-provider-devin/internal/api"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	listschema "github.com/hashicorp/terraform-plugin-framework/list/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -48,11 +49,14 @@ type orgScopedListConfig struct {
 }
 
 // pushListResult assembles a ListResult from an identity and optional
-// resource model and pushes it onto the stream. It returns false when the
-// consumer stopped the iteration.
-func pushListResult(ctx context.Context, req list.ListRequest, push func(list.ListResult) bool, displayName string, identity any, resourceModel any) bool {
+// resource model and pushes it onto the stream. Any rowDiags accumulated while
+// mapping the row are attached to the result so a single problematic row
+// surfaces a diagnostic without aborting the enumeration. It returns false when
+// the consumer stopped the iteration.
+func pushListResult(ctx context.Context, req list.ListRequest, push func(list.ListResult) bool, displayName string, identity any, resourceModel any, rowDiags diag.Diagnostics) bool {
 	result := req.NewListResult(ctx)
 	result.DisplayName = displayName
+	result.Diagnostics.Append(rowDiags...)
 	result.Diagnostics.Append(result.Identity.Set(ctx, identity)...)
 	if req.IncludeResource {
 		result.Diagnostics.Append(result.Resource.Set(ctx, resourceModel)...)
@@ -126,7 +130,7 @@ func (l *organizationListResource) List(ctx context.Context, req list.ListReques
 				var model organizationModel
 				mapOrgResponseToModel(&page.Items[i], &model)
 				if !pushListResult(ctx, req, push, page.Items[i].Name,
-					organizationIdentityModel{OrgID: model.OrgID}, model) {
+					organizationIdentityModel{OrgID: model.OrgID}, model, nil) {
 					return
 				}
 				if count++; req.Limit > 0 && count >= req.Limit {
@@ -179,9 +183,10 @@ func (l *playbookListResource) List(ctx context.Context, req list.ListRequest, s
 			}
 			for i := range page.Items {
 				model := playbookModel{OrgID: config.OrgID}
-				mapPlaybookResponseToModel(&page.Items[i], &model)
+				var diags diag.Diagnostics
+				mapPlaybookResponseToModel(&page.Items[i], &model, &diags)
 				if !pushListResult(ctx, req, push, page.Items[i].Title,
-					playbookIdentityModel{OrgID: model.OrgID, PlaybookID: model.PlaybookID}, model) {
+					playbookIdentityModel{OrgID: model.OrgID, PlaybookID: model.PlaybookID}, model, diags) {
 					return
 				}
 				if count++; req.Limit > 0 && count >= req.Limit {
@@ -233,9 +238,10 @@ func (l *enterprisePlaybookListResource) List(ctx context.Context, req list.List
 					continue
 				}
 				var model enterprisePlaybookModel
-				mapEnterprisePlaybookResponseToModel(&page.Items[i], &model)
+				var diags diag.Diagnostics
+				mapEnterprisePlaybookResponseToModel(&page.Items[i], &model, &diags)
 				if !pushListResult(ctx, req, push, page.Items[i].Title,
-					enterprisePlaybookIdentityModel{PlaybookID: model.PlaybookID}, model) {
+					enterprisePlaybookIdentityModel{PlaybookID: model.PlaybookID}, model, diags) {
 					return
 				}
 				if count++; req.Limit > 0 && count >= req.Limit {
@@ -290,7 +296,7 @@ func (l *knowledgeNoteListResource) List(ctx context.Context, req list.ListReque
 				model := knowledgeNoteModel{OrgID: config.OrgID}
 				mapKnowledgeNoteResponseToModel(&page.Items[i], &model)
 				if !pushListResult(ctx, req, push, page.Items[i].Name,
-					knowledgeNoteIdentityModel{OrgID: model.OrgID, NoteID: model.NoteID}, model) {
+					knowledgeNoteIdentityModel{OrgID: model.OrgID, NoteID: model.NoteID}, model, nil) {
 					return
 				}
 				if count++; req.Limit > 0 && count >= req.Limit {
@@ -344,7 +350,7 @@ func (l *enterpriseKnowledgeNoteListResource) List(ctx context.Context, req list
 				var model enterpriseKnowledgeNoteModel
 				mapEnterpriseKnowledgeNoteResponseToModel(&page.Items[i], &model)
 				if !pushListResult(ctx, req, push, page.Items[i].Name,
-					enterpriseKnowledgeNoteIdentityModel{NoteID: model.NoteID}, model) {
+					enterpriseKnowledgeNoteIdentityModel{NoteID: model.NoteID}, model, nil) {
 					return
 				}
 				if count++; req.Limit > 0 && count >= req.Limit {
@@ -403,7 +409,7 @@ func (l *secretListResource) List(ctx context.Context, req list.ListRequest, str
 					displayName = model.SecretID.ValueString()
 				}
 				if !pushListResult(ctx, req, push, displayName,
-					secretIdentityModel{OrgID: model.OrgID, SecretID: model.SecretID}, model) {
+					secretIdentityModel{OrgID: model.OrgID, SecretID: model.SecretID}, model, nil) {
 					return
 				}
 				if count++; req.Limit > 0 && count >= req.Limit {
@@ -520,7 +526,7 @@ func (l *idpGroupListResource) List(ctx context.Context, req list.ListRequest, s
 			for _, item := range page.Items {
 				name := types.StringValue(item.IdpGroupName)
 				if !pushListResult(ctx, req, push, item.IdpGroupName,
-					idpGroupIdentityModel{Name: name}, idpGroupModel{Name: name}) {
+					idpGroupIdentityModel{Name: name}, idpGroupModel{Name: name}, nil) {
 					return
 				}
 				if count++; req.Limit > 0 && count >= req.Limit {
@@ -585,7 +591,7 @@ func (l *gitPermissionListResource) List(ctx context.Context, req list.ListReque
 					displayName = model.GitPermissionID.ValueString()
 				}
 				if !pushListResult(ctx, req, push, displayName,
-					gitPermissionIdentityModel{OrgID: model.OrgID, GitPermissionID: model.GitPermissionID}, model) {
+					gitPermissionIdentityModel{OrgID: model.OrgID, GitPermissionID: model.GitPermissionID}, model, nil) {
 					return
 				}
 				if count++; req.Limit > 0 && count >= req.Limit {

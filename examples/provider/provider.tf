@@ -7,6 +7,6 @@ terraform {
 }
 
 provider "devin" {
-  # api_url = "https://api.devin.ai"   # or set DEVIN_API_URL
-  # token   = "cog_..."                 # or set DEVIN_TOKEN
+  # Token is read from the DEVIN_TOKEN environment variable by default.
+  # See the Authentication section below for other options.
 }

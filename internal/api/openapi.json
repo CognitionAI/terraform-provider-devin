@@ -1,0 +1,6210 @@
+{
+  "components": {
+    "schemas": {
+      "ACULimitResponse": {
+        "properties": {
+          "cycle_acu_limit": {
+            "title": "Cycle Acu Limit",
+            "type": "integer"
+          },
+          "org_id": {
+            "nullable": true,
+            "title": "Org Id",
+            "type": "string"
+          },
+          "scope": {
+            "enum": [
+              "enterprise",
+              "org",
+              "user"
+            ],
+            "title": "Scope",
+            "type": "string"
+          },
+          "user_id": {
+            "nullable": true,
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cycle_acu_limit",
+          "scope"
+        ],
+        "title": "ACULimitResponse",
+        "type": "object"
+      },
+      "DefaultTagRequest": {
+        "properties": {
+          "tag": {
+            "title": "Tag",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tag"
+        ],
+        "title": "DefaultTagRequest",
+        "type": "object"
+      },
+      "DefaultTagResponse": {
+        "properties": {
+          "default_tag": {
+            "nullable": true,
+            "title": "Default Tag",
+            "type": "string"
+          }
+        },
+        "required": [
+          "default_tag"
+        ],
+        "title": "DefaultTagResponse",
+        "type": "object"
+      },
+      "FolderSummary": {
+        "description": "One folder in the knowledge folder tree.",
+        "properties": {
+          "folder_id": {
+            "title": "Folder Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "note_count": {
+            "title": "Note Count",
+            "type": "integer"
+          },
+          "parent_folder_id": {
+            "nullable": true,
+            "title": "Parent Folder Id",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "folder_id",
+          "name",
+          "path",
+          "note_count"
+        ],
+        "title": "FolderSummary",
+        "type": "object"
+      },
+      "FolderTreeResponse": {
+        "description": "Response for the folder-structure endpoint.",
+        "properties": {
+          "folders": {
+            "items": {
+              "$ref": "#/components/schemas/FolderSummary"
+            },
+            "title": "Folders",
+            "type": "array"
+          },
+          "root_note_count": {
+            "title": "Root Note Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "folders",
+          "root_note_count"
+        ],
+        "title": "FolderTreeResponse",
+        "type": "object"
+      },
+      "GitConnectionRepositoryResponse": {
+        "properties": {
+          "git_connection_host": {
+            "title": "Git Connection Host",
+            "type": "string"
+          },
+          "git_connection_id": {
+            "title": "Git Connection Id",
+            "type": "string"
+          },
+          "last_updated_at": {
+            "nullable": true,
+            "title": "Last Updated At",
+            "type": "integer"
+          },
+          "provider_repository_id": {
+            "title": "Provider Repository Id",
+            "type": "string"
+          },
+          "repo_description": {
+            "nullable": true,
+            "title": "Repo Description",
+            "type": "string"
+          },
+          "repo_language": {
+            "nullable": true,
+            "title": "Repo Language",
+            "type": "string"
+          },
+          "repo_name": {
+            "title": "Repo Name",
+            "type": "string"
+          },
+          "repo_path": {
+            "title": "Repo Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider_repository_id",
+          "git_connection_id",
+          "git_connection_host",
+          "repo_name",
+          "repo_path",
+          "repo_description",
+          "last_updated_at",
+          "repo_language"
+        ],
+        "title": "GitConnectionRepositoryResponse",
+        "type": "object"
+      },
+      "GitConnectionResponse": {
+        "properties": {
+          "created_at": {
+            "title": "Created At",
+            "type": "integer"
+          },
+          "git_connection_id": {
+            "title": "Git Connection Id",
+            "type": "string"
+          },
+          "git_provider_type": {
+            "enum": [
+              "github_token",
+              "github_individual_token",
+              "github_app",
+              "gitlab_token",
+              "gitlab_oauth",
+              "azure_devops_oauth",
+              "bitbucket_oauth",
+              "bitbucket_token"
+            ],
+            "title": "Git Provider Type",
+            "type": "string"
+          },
+          "host": {
+            "title": "Host",
+            "type": "string"
+          },
+          "name": {
+            "nullable": true,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "git_connection_id",
+          "git_provider_type",
+          "name",
+          "host",
+          "created_at"
+        ],
+        "title": "GitConnectionResponse",
+        "type": "object"
+      },
+      "GitPermissionBulkCreateRequest": {
+        "properties": {
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/GitPermissionCreateRequest"
+            },
+            "maxItems": 200,
+            "title": "Permissions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "permissions"
+        ],
+        "title": "GitPermissionBulkCreateRequest",
+        "type": "object"
+      },
+      "GitPermissionCreateRequest": {
+        "properties": {
+          "git_connection_id": {
+            "title": "Git Connection Id",
+            "type": "string"
+          },
+          "group_prefix": {
+            "nullable": true,
+            "title": "Group Prefix",
+            "type": "string"
+          },
+          "prefix_path": {
+            "nullable": true,
+            "title": "Prefix Path",
+            "type": "string"
+          },
+          "read_only": {
+            "default": false,
+            "title": "Read Only",
+            "type": "boolean"
+          },
+          "repo_path": {
+            "nullable": true,
+            "title": "Repo Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "git_connection_id"
+        ],
+        "title": "GitPermissionCreateRequest",
+        "type": "object"
+      },
+      "GitPermissionResponse": {
+        "properties": {
+          "created_at": {
+            "nullable": true,
+            "title": "Created At",
+            "type": "integer"
+          },
+          "git_connection_id": {
+            "title": "Git Connection Id",
+            "type": "string"
+          },
+          "git_permission_id": {
+            "title": "Git Permission Id",
+            "type": "string"
+          },
+          "group_prefix": {
+            "nullable": true,
+            "title": "Group Prefix",
+            "type": "string"
+          },
+          "prefix_path": {
+            "nullable": true,
+            "title": "Prefix Path",
+            "type": "string"
+          },
+          "read_only": {
+            "default": false,
+            "title": "Read Only",
+            "type": "boolean"
+          },
+          "repo_path": {
+            "nullable": true,
+            "title": "Repo Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "git_permission_id",
+          "git_connection_id"
+        ],
+        "title": "GitPermissionResponse",
+        "type": "object"
+      },
+      "GitPermissionUpdateRequest": {
+        "properties": {
+          "read_only": {
+            "nullable": true,
+            "title": "Read Only",
+            "type": "boolean"
+          }
+        },
+        "title": "GitPermissionUpdateRequest",
+        "type": "object"
+      },
+      "IdpGroup": {
+        "properties": {
+          "idp_group_name": {
+            "title": "Idp Group Name",
+            "type": "string"
+          },
+          "role_assignments": {
+            "items": {
+              "$ref": "#/components/schemas/RoleAssignment"
+            },
+            "title": "Role Assignments",
+            "type": "array"
+          }
+        },
+        "required": [
+          "idp_group_name",
+          "role_assignments"
+        ],
+        "title": "IdpGroup",
+        "type": "object"
+      },
+      "IdpGroupResponse": {
+        "properties": {
+          "idp_group_name": {
+            "title": "Idp Group Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "idp_group_name"
+        ],
+        "title": "IdpGroupResponse",
+        "type": "object"
+      },
+      "IdpGroupUpdateRoleRequest": {
+        "properties": {
+          "role_id": {
+            "title": "Role Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role_id"
+        ],
+        "title": "IdpGroupUpdateRoleRequest",
+        "type": "object"
+      },
+      "IdpGroupUser": {
+        "description": "A user whose membership is derived from IDP group assignments.",
+        "properties": {
+          "email": {
+            "nullable": true,
+            "title": "Email",
+            "type": "string"
+          },
+          "idp_role_assignments": {
+            "items": {
+              "$ref": "#/components/schemas/IdpRoleAssignment"
+            },
+            "title": "Idp Role Assignments",
+            "type": "array"
+          },
+          "name": {
+            "nullable": true,
+            "title": "Name",
+            "type": "string"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "email",
+          "name",
+          "idp_role_assignments"
+        ],
+        "title": "IdpGroupUser",
+        "type": "object"
+      },
+      "IdpGroupsBulkCreateRequest": {
+        "properties": {
+          "idp_group_names": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Idp Group Names",
+            "type": "array"
+          }
+        },
+        "required": [
+          "idp_group_names"
+        ],
+        "title": "IdpGroupsBulkCreateRequest",
+        "type": "object"
+      },
+      "IdpRoleAssignment": {
+        "description": "A role assignment inherited via IDP group membership.",
+        "properties": {
+          "idp_group_name": {
+            "title": "Idp Group Name",
+            "type": "string"
+          },
+          "org_id": {
+            "nullable": true,
+            "title": "Org Id",
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          }
+        },
+        "required": [
+          "role",
+          "idp_group_name"
+        ],
+        "title": "IdpRoleAssignment",
+        "type": "object"
+      },
+      "IpAccessListAddRequest": {
+        "properties": {
+          "ip_ranges": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ip Ranges",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ip_ranges"
+        ],
+        "title": "IpAccessListAddRequest",
+        "type": "object"
+      },
+      "IpAccessListReplaceRequest": {
+        "properties": {
+          "ip_ranges": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ip Ranges",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ip_ranges"
+        ],
+        "title": "IpAccessListReplaceRequest",
+        "type": "object"
+      },
+      "IpAccessListResponse": {
+        "properties": {
+          "ip_ranges": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ip Ranges",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ip_ranges"
+        ],
+        "title": "IpAccessListResponse",
+        "type": "object"
+      },
+      "KnowledgeNoteCreateRequest": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "folder_id": {
+            "nullable": true,
+            "title": "Folder Id",
+            "type": "string"
+          },
+          "is_enabled": {
+            "nullable": true,
+            "title": "Is Enabled",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "pinned_repo": {
+            "nullable": true,
+            "title": "Pinned Repo",
+            "type": "string"
+          },
+          "trigger": {
+            "title": "Trigger",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "body",
+          "trigger"
+        ],
+        "title": "KnowledgeNoteCreateRequest",
+        "type": "object"
+      },
+      "KnowledgeNoteResponse": {
+        "properties": {
+          "access_type": {
+            "enum": [
+              "enterprise",
+              "org"
+            ],
+            "title": "Access Type",
+            "type": "string"
+          },
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "integer"
+          },
+          "folder_id": {
+            "nullable": true,
+            "title": "Folder Id",
+            "type": "string"
+          },
+          "folder_path": {
+            "title": "Folder Path",
+            "type": "string"
+          },
+          "is_enabled": {
+            "title": "Is Enabled",
+            "type": "boolean"
+          },
+          "macro": {
+            "nullable": true,
+            "title": "Macro",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "note_id": {
+            "title": "Note Id",
+            "type": "string"
+          },
+          "org_id": {
+            "nullable": true,
+            "title": "Org Id",
+            "type": "string"
+          },
+          "pinned_repo": {
+            "nullable": true,
+            "title": "Pinned Repo",
+            "type": "string"
+          },
+          "trigger": {
+            "title": "Trigger",
+            "type": "string"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "note_id",
+          "folder_id",
+          "folder_path",
+          "name",
+          "body",
+          "trigger",
+          "is_enabled",
+          "created_at",
+          "updated_at",
+          "access_type",
+          "org_id",
+          "macro",
+          "pinned_repo"
+        ],
+        "title": "KnowledgeNoteResponse",
+        "type": "object"
+      },
+      "OrgGroupConfig": {
+        "properties": {
+          "max_cycle_acus": {
+            "nullable": true,
+            "title": "Max Cycle Acus",
+            "type": "integer"
+          },
+          "org_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Org Ids",
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "org_ids"
+        ],
+        "title": "OrgGroupConfig",
+        "type": "object"
+      },
+      "OrgGroupsConfig": {
+        "description": "Configuration mapping group names to their settings.",
+        "properties": {
+          "groups": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/OrgGroupConfig"
+            },
+            "title": "Groups",
+            "type": "object"
+          }
+        },
+        "required": [
+          "groups"
+        ],
+        "title": "OrgGroupsConfig",
+        "type": "object"
+      },
+      "OrganizationCreateRequest": {
+        "properties": {
+          "max_cycle_acu_limit": {
+            "nullable": true,
+            "title": "Max Cycle Acu Limit",
+            "type": "integer"
+          },
+          "max_session_acu_limit": {
+            "nullable": true,
+            "title": "Max Session Acu Limit",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "OrganizationCreateRequest",
+        "type": "object"
+      },
+      "OrganizationResponse": {
+        "properties": {
+          "created_at": {
+            "title": "Created At",
+            "type": "integer"
+          },
+          "max_cycle_acu_limit": {
+            "nullable": true,
+            "title": "Max Cycle Acu Limit",
+            "type": "integer"
+          },
+          "max_session_acu_limit": {
+            "nullable": true,
+            "title": "Max Session Acu Limit",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "org_id": {
+            "title": "Org Id",
+            "type": "string"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "org_id",
+          "name",
+          "created_at",
+          "updated_at",
+          "max_session_acu_limit",
+          "max_cycle_acu_limit"
+        ],
+        "title": "OrganizationResponse",
+        "type": "object"
+      },
+      "OrganizationUpdateRequest": {
+        "properties": {
+          "max_cycle_acu_limit": {
+            "nullable": true,
+            "title": "Max Cycle Acu Limit",
+            "type": "integer"
+          },
+          "max_session_acu_limit": {
+            "nullable": true,
+            "title": "Max Session Acu Limit",
+            "type": "integer"
+          },
+          "name": {
+            "nullable": true,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "title": "OrganizationUpdateRequest",
+        "type": "object"
+      },
+      "PaginatedResponse_ACULimitResponse_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ACULimitResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[ACULimitResponse]",
+        "type": "object"
+      },
+      "PaginatedResponse_GitConnectionRepositoryResponse_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/GitConnectionRepositoryResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[GitConnectionRepositoryResponse]",
+        "type": "object"
+      },
+      "PaginatedResponse_GitConnectionResponse_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/GitConnectionResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[GitConnectionResponse]",
+        "type": "object"
+      },
+      "PaginatedResponse_GitPermissionResponse_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/GitPermissionResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[GitPermissionResponse]",
+        "type": "object"
+      },
+      "PaginatedResponse_IdpGroupResponse_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/IdpGroupResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[IdpGroupResponse]",
+        "type": "object"
+      },
+      "PaginatedResponse_IdpGroupUser_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/IdpGroupUser"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[IdpGroupUser]",
+        "type": "object"
+      },
+      "PaginatedResponse_IdpGroup_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/IdpGroup"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[IdpGroup]",
+        "type": "object"
+      },
+      "PaginatedResponse_KnowledgeNoteResponse_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeNoteResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[KnowledgeNoteResponse]",
+        "type": "object"
+      },
+      "PaginatedResponse_OrganizationResponse_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrganizationResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[OrganizationResponse]",
+        "type": "object"
+      },
+      "PaginatedResponse_PlaybookResponse_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PlaybookResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[PlaybookResponse]",
+        "type": "object"
+      },
+      "PaginatedResponse_Role_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Role"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[Role]",
+        "type": "object"
+      },
+      "PaginatedResponse_ScheduleResponse_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ScheduleResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[ScheduleResponse]",
+        "type": "object"
+      },
+      "PaginatedResponse_SecretResponse_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SecretResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[SecretResponse]",
+        "type": "object"
+      },
+      "PaginatedResponse_ServiceUser_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ServiceUser"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[ServiceUser]",
+        "type": "object"
+      },
+      "PaginatedResponse_User_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/User"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[User]",
+        "type": "object"
+      },
+      "PlaybookCreateRequest": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "macro": {
+            "description": "Playbook macro identifier. Must start with '!' followed by one or more letters, digits, underscores, or hyphens. Example: '!my_macro' or '!my-macro'",
+            "nullable": true,
+            "title": "Macro",
+            "type": "string"
+          },
+          "structured_output_schema": {
+            "additionalProperties": true,
+            "description": "JSON Schema (Draft 7) that sessions using this playbook will produce as structured output. Max 64KB. Must be self-contained (no external $ref).",
+            "nullable": true,
+            "title": "Structured Output Schema",
+            "type": "object"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "body"
+        ],
+        "title": "PlaybookCreateRequest",
+        "type": "object"
+      },
+      "PlaybookInfo": {
+        "properties": {
+          "playbook_id": {
+            "title": "Playbook Id",
+            "type": "string"
+          },
+          "title": {
+            "nullable": true,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "playbook_id",
+          "title"
+        ],
+        "title": "PlaybookInfo",
+        "type": "object"
+      },
+      "PlaybookResponse": {
+        "properties": {
+          "access_type": {
+            "enum": [
+              "enterprise",
+              "org"
+            ],
+            "title": "Access Type",
+            "type": "string"
+          },
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "integer"
+          },
+          "created_by": {
+            "title": "Created By",
+            "type": "string"
+          },
+          "macro": {
+            "nullable": true,
+            "title": "Macro",
+            "type": "string"
+          },
+          "org_id": {
+            "nullable": true,
+            "title": "Org Id",
+            "type": "string"
+          },
+          "playbook_id": {
+            "title": "Playbook Id",
+            "type": "string"
+          },
+          "structured_output_schema": {
+            "additionalProperties": true,
+            "nullable": true,
+            "title": "Structured Output Schema",
+            "type": "object"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "integer"
+          },
+          "updated_by": {
+            "title": "Updated By",
+            "type": "string"
+          }
+        },
+        "required": [
+          "playbook_id",
+          "title",
+          "body",
+          "macro",
+          "created_by",
+          "updated_by",
+          "created_at",
+          "updated_at",
+          "access_type",
+          "org_id"
+        ],
+        "title": "PlaybookResponse",
+        "type": "object"
+      },
+      "Role": {
+        "properties": {
+          "role_id": {
+            "title": "Role Id",
+            "type": "string"
+          },
+          "role_name": {
+            "title": "Role Name",
+            "type": "string"
+          },
+          "role_type": {
+            "enum": [
+              "enterprise",
+              "org"
+            ],
+            "title": "Role Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role_name",
+          "role_id",
+          "role_type"
+        ],
+        "title": "Role",
+        "type": "object"
+      },
+      "RoleAssignment": {
+        "properties": {
+          "org_id": {
+            "nullable": true,
+            "title": "Org Id",
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "title": "RoleAssignment",
+        "type": "object"
+      },
+      "ScheduleCreateRequest": {
+        "properties": {
+          "agent": {
+            "default": "devin",
+            "enum": [
+              "devin",
+              "data_analyst"
+            ],
+            "title": "Agent",
+            "type": "string"
+          },
+          "bypass_approval": {
+            "default": false,
+            "title": "Bypass Approval",
+            "type": "boolean"
+          },
+          "create_as_user_id": {
+            "nullable": true,
+            "title": "Create As User Id",
+            "type": "string"
+          },
+          "frequency": {
+            "nullable": true,
+            "title": "Frequency",
+            "type": "string"
+          },
+          "interval_count": {
+            "default": 1,
+            "title": "Interval Count",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "notify_on": {
+            "default": "failure",
+            "enum": [
+              "always",
+              "failure",
+              "never"
+            ],
+            "title": "Notify On",
+            "type": "string"
+          },
+          "platform": {
+            "description": "VM platform for sessions spawned by this schedule (e.g. 'windows'). When omitted, sessions fall back to the org's default platform at trigger time. Value must match a platform configured for the organization (case-insensitive); unknown values are rejected with a 400 that lists the available platform labels.",
+            "nullable": true,
+            "title": "Platform",
+            "type": "string"
+          },
+          "playbook_id": {
+            "nullable": true,
+            "title": "Playbook Id",
+            "type": "string"
+          },
+          "prompt": {
+            "title": "Prompt",
+            "type": "string"
+          },
+          "schedule_type": {
+            "default": "recurring",
+            "enum": [
+              "recurring",
+              "one_time"
+            ],
+            "title": "Schedule Type",
+            "type": "string"
+          },
+          "scheduled_at": {
+            "format": "date-time",
+            "nullable": true,
+            "title": "Scheduled At",
+            "type": "string"
+          },
+          "slack_channel_id": {
+            "nullable": true,
+            "title": "Slack Channel Id",
+            "type": "string"
+          },
+          "slack_team_id": {
+            "nullable": true,
+            "title": "Slack Team Id",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "title": "Tags",
+            "type": "array"
+          },
+          "target_devin_id": {
+            "nullable": true,
+            "title": "Target Devin Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "prompt"
+        ],
+        "title": "ScheduleCreateRequest",
+        "type": "object"
+      },
+      "ScheduleResponse": {
+        "properties": {
+          "agent": {
+            "enum": [
+              "devin",
+              "data_analyst"
+            ],
+            "title": "Agent",
+            "type": "string"
+          },
+          "bypass_approval": {
+            "default": false,
+            "title": "Bypass Approval",
+            "type": "boolean"
+          },
+          "consecutive_failures": {
+            "title": "Consecutive Failures",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by": {
+            "nullable": true,
+            "title": "Created By",
+            "type": "string"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "frequency": {
+            "nullable": true,
+            "title": "Frequency",
+            "type": "string"
+          },
+          "interval_count": {
+            "default": 1,
+            "title": "Interval Count",
+            "type": "integer"
+          },
+          "last_edited_by": {
+            "nullable": true,
+            "title": "Last Edited By",
+            "type": "string"
+          },
+          "last_error_at": {
+            "format": "date-time",
+            "nullable": true,
+            "title": "Last Error At",
+            "type": "string"
+          },
+          "last_error_message": {
+            "nullable": true,
+            "title": "Last Error Message",
+            "type": "string"
+          },
+          "last_executed_at": {
+            "format": "date-time",
+            "nullable": true,
+            "title": "Last Executed At",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "notify_on": {
+            "enum": [
+              "always",
+              "failure",
+              "never"
+            ],
+            "title": "Notify On",
+            "type": "string"
+          },
+          "org_id": {
+            "title": "Org Id",
+            "type": "string"
+          },
+          "platform": {
+            "nullable": true,
+            "title": "Platform",
+            "type": "string"
+          },
+          "playbook": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlaybookInfo"
+              }
+            ],
+            "nullable": true
+          },
+          "prompt": {
+            "title": "Prompt",
+            "type": "string"
+          },
+          "schedule_type": {
+            "default": "recurring",
+            "enum": [
+              "recurring",
+              "one_time"
+            ],
+            "title": "Schedule Type",
+            "type": "string"
+          },
+          "scheduled_at": {
+            "format": "date-time",
+            "nullable": true,
+            "title": "Scheduled At",
+            "type": "string"
+          },
+          "scheduled_session_id": {
+            "title": "Scheduled Session Id",
+            "type": "string"
+          },
+          "slack_channel_id": {
+            "nullable": true,
+            "title": "Slack Channel Id",
+            "type": "string"
+          },
+          "slack_team_id": {
+            "nullable": true,
+            "title": "Slack Team Id",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "title": "Tags",
+            "type": "array"
+          },
+          "target_devin_id": {
+            "nullable": true,
+            "title": "Target Devin Id",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scheduled_session_id",
+          "org_id",
+          "created_by",
+          "name",
+          "prompt",
+          "playbook",
+          "frequency",
+          "enabled",
+          "last_executed_at",
+          "created_at",
+          "updated_at",
+          "last_error_at",
+          "last_error_message",
+          "consecutive_failures",
+          "notify_on",
+          "agent"
+        ],
+        "title": "ScheduleResponse",
+        "type": "object"
+      },
+      "ScheduleUpdateRequest": {
+        "properties": {
+          "agent": {
+            "enum": [
+              "devin",
+              "data_analyst"
+            ],
+            "nullable": true,
+            "title": "Agent",
+            "type": "string"
+          },
+          "bypass_approval": {
+            "nullable": true,
+            "title": "Bypass Approval",
+            "type": "boolean"
+          },
+          "enabled": {
+            "nullable": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "frequency": {
+            "nullable": true,
+            "title": "Frequency",
+            "type": "string"
+          },
+          "interval_count": {
+            "nullable": true,
+            "title": "Interval Count",
+            "type": "integer"
+          },
+          "name": {
+            "nullable": true,
+            "title": "Name",
+            "type": "string"
+          },
+          "notify_on": {
+            "enum": [
+              "always",
+              "failure",
+              "never"
+            ],
+            "nullable": true,
+            "title": "Notify On",
+            "type": "string"
+          },
+          "platform": {
+            "description": "VM platform for sessions spawned by this schedule (e.g. 'windows'). When omitted, the platform is left unchanged. Value must match a platform configured for the organization (case-insensitive); unknown values are rejected with a 400 that lists the available platform labels.",
+            "nullable": true,
+            "title": "Platform",
+            "type": "string"
+          },
+          "playbook_id": {
+            "nullable": true,
+            "title": "Playbook Id",
+            "type": "string"
+          },
+          "prompt": {
+            "nullable": true,
+            "title": "Prompt",
+            "type": "string"
+          },
+          "run_as_user_id": {
+            "description": "Set the user ID that this schedule will run as. Requires ImpersonateOrgSessions permission. Setting to null reverts to the default bot user. Omitting the field leaves the current identity unchanged.",
+            "nullable": true,
+            "title": "Run As User Id",
+            "type": "string"
+          },
+          "schedule_type": {
+            "enum": [
+              "recurring",
+              "one_time"
+            ],
+            "nullable": true,
+            "title": "Schedule Type",
+            "type": "string"
+          },
+          "scheduled_at": {
+            "format": "date-time",
+            "nullable": true,
+            "title": "Scheduled At",
+            "type": "string"
+          },
+          "slack_channel_id": {
+            "nullable": true,
+            "title": "Slack Channel Id",
+            "type": "string"
+          },
+          "slack_team_id": {
+            "nullable": true,
+            "title": "Slack Team Id",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "title": "Tags",
+            "type": "array"
+          },
+          "target_devin_id": {
+            "nullable": true,
+            "title": "Target Devin Id",
+            "type": "string"
+          }
+        },
+        "title": "ScheduleUpdateRequest",
+        "type": "object"
+      },
+      "SecretCreateRequest": {
+        "properties": {
+          "is_sensitive": {
+            "default": true,
+            "title": "Is Sensitive",
+            "type": "boolean"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "note": {
+            "nullable": true,
+            "title": "Note",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "cookie",
+              "key-value",
+              "totp"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "key",
+          "value"
+        ],
+        "title": "SecretCreateRequest",
+        "type": "object"
+      },
+      "SecretResponse": {
+        "properties": {
+          "access_type": {
+            "enum": [
+              "org",
+              "personal"
+            ],
+            "title": "Access Type",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "integer"
+          },
+          "created_by": {
+            "title": "Created By",
+            "type": "string"
+          },
+          "is_sensitive": {
+            "title": "Is Sensitive",
+            "type": "boolean"
+          },
+          "key": {
+            "nullable": true,
+            "title": "Key",
+            "type": "string"
+          },
+          "note": {
+            "nullable": true,
+            "title": "Note",
+            "type": "string"
+          },
+          "secret_id": {
+            "title": "Secret Id",
+            "type": "string"
+          },
+          "secret_type": {
+            "enum": [
+              "cookie",
+              "key-value",
+              "totp"
+            ],
+            "title": "Secret Type",
+            "type": "string"
+          },
+          "updated_at": {
+            "nullable": true,
+            "title": "Updated At",
+            "type": "integer"
+          },
+          "updated_by": {
+            "nullable": true,
+            "title": "Updated By",
+            "type": "string"
+          }
+        },
+        "required": [
+          "secret_id",
+          "key",
+          "note",
+          "is_sensitive",
+          "created_by",
+          "created_at",
+          "secret_type",
+          "access_type"
+        ],
+        "title": "SecretResponse",
+        "type": "object"
+      },
+      "ServiceUser": {
+        "properties": {
+          "deleted_at": {
+            "nullable": true,
+            "title": "Deleted At",
+            "type": "integer"
+          },
+          "expires_at": {
+            "nullable": true,
+            "title": "Expires At",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "role_assignments": {
+            "items": {
+              "$ref": "#/components/schemas/RoleAssignment"
+            },
+            "title": "Role Assignments",
+            "type": "array"
+          },
+          "service_user_id": {
+            "title": "Service User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "service_user_id",
+          "name",
+          "expires_at",
+          "deleted_at",
+          "role_assignments"
+        ],
+        "title": "ServiceUser",
+        "type": "object"
+      },
+      "ServiceUserUpdateRoleRequest": {
+        "properties": {
+          "role_id": {
+            "title": "Role Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role_id"
+        ],
+        "title": "ServiceUserUpdateRoleRequest",
+        "type": "object"
+      },
+      "TagsCreateRequest": {
+        "properties": {
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          }
+        },
+        "required": [
+          "tags"
+        ],
+        "title": "TagsCreateRequest",
+        "type": "object"
+      },
+      "TagsResponse": {
+        "properties": {
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          }
+        },
+        "required": [
+          "tags"
+        ],
+        "title": "TagsResponse",
+        "type": "object"
+      },
+      "UpdateACULimitRequest": {
+        "properties": {
+          "cycle_acu_limit": {
+            "minimum": 0.0,
+            "title": "Cycle Acu Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "cycle_acu_limit"
+        ],
+        "title": "UpdateACULimitRequest",
+        "type": "object"
+      },
+      "User": {
+        "properties": {
+          "email": {
+            "nullable": true,
+            "title": "Email",
+            "type": "string"
+          },
+          "name": {
+            "nullable": true,
+            "title": "Name",
+            "type": "string"
+          },
+          "role_assignments": {
+            "items": {
+              "$ref": "#/components/schemas/RoleAssignment"
+            },
+            "title": "Role Assignments",
+            "type": "array"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "email",
+          "name",
+          "role_assignments"
+        ],
+        "title": "User",
+        "type": "object"
+      },
+      "UserBulkCreateRequest": {
+        "properties": {
+          "emails": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Emails",
+            "type": "array"
+          },
+          "enterprise_role_id": {
+            "title": "Enterprise Role Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "emails",
+          "enterprise_role_id"
+        ],
+        "title": "UserBulkCreateRequest",
+        "type": "object"
+      },
+      "UserUpdateRoleRequest": {
+        "properties": {
+          "role_id": {
+            "title": "Role Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role_id"
+        ],
+        "title": "UserUpdateRoleRequest",
+        "type": "object"
+      },
+      "UserWithIdpRoles": {
+        "description": "User with both direct and IDP-group-derived role assignments.",
+        "properties": {
+          "email": {
+            "nullable": true,
+            "title": "Email",
+            "type": "string"
+          },
+          "idp_role_assignments": {
+            "items": {
+              "$ref": "#/components/schemas/IdpRoleAssignment"
+            },
+            "title": "Idp Role Assignments",
+            "type": "array"
+          },
+          "name": {
+            "nullable": true,
+            "title": "Name",
+            "type": "string"
+          },
+          "role_assignments": {
+            "items": {
+              "$ref": "#/components/schemas/RoleAssignment"
+            },
+            "title": "Role Assignments",
+            "type": "array"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "email",
+          "name",
+          "role_assignments"
+        ],
+        "title": "UserWithIdpRoles",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "description": "Service User credential (prefix: cog_)",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "Devin v3 API with Service User authentication and RBAC",
+    "title": "Devin API v3",
+    "version": "3.0.0"
+  },
+  "openapi": "3.0.3",
+  "paths": {
+    "/v3/enterprise/consumption/acu-limits/devin": {
+      "get": {
+        "description": "Get all org-level Devin ACU limits for this enterprise.",
+        "operationId": "handle_get_devin_acu_limits_v3_enterprise_consumption_acu_limits_devin_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_ACULimitResponse_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Devin ACU limits",
+        "tags": [
+          "acu-limits"
+        ]
+      }
+    },
+    "/v3/enterprise/consumption/acu-limits/devin/organizations/{org_id}": {
+      "delete": {
+        "description": "Delete an org-level Devin ACU limit.",
+        "operationId": "handle_delete_org_devin_acu_limit_v3_enterprise_consumption_acu_limits_devin_organizations__org_id__delete",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Delete org-level Devin ACU limit",
+        "tags": [
+          "acu-limits"
+        ]
+      },
+      "put": {
+        "description": "Create or update an org-level Devin ACU limit.",
+        "operationId": "handle_set_org_devin_acu_limit_v3_enterprise_consumption_acu_limits_devin_organizations__org_id__put",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateACULimitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Set org-level Devin ACU limit",
+        "tags": [
+          "acu-limits"
+        ]
+      }
+    },
+    "/v3/enterprise/git-providers/connections": {
+      "get": {
+        "operationId": "handle_get_git_connections_v3_enterprise_git_providers_connections_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_GitConnectionResponse_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Git Connections",
+        "tags": [
+          "git_connections"
+        ]
+      }
+    },
+    "/v3/enterprise/git-providers/connections/{connection_id}/repositories": {
+      "get": {
+        "operationId": "handle_list_git_connection_repositories_v3_enterprise_git_providers_connections__connection_id__repositories_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "title": "Connection Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "filter_name",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "Filter Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_GitConnectionRepositoryResponse_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List repositories for a git connection",
+        "tags": [
+          "git_connections"
+        ]
+      }
+    },
+    "/v3/enterprise/idp-groups": {
+      "get": {
+        "description": "List IDP groups registered with this enterprise.",
+        "operationId": "handle_list_account_idp_groups_v3_enterprise_idp_groups_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_IdpGroupResponse_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Account IDP Groups",
+        "tags": [
+          "idp_groups"
+        ]
+      },
+      "post": {
+        "description": "Bulk create IDP groups for this enterprise. Existing groups are ignored.",
+        "operationId": "handle_bulk_register_account_idp_groups_v3_enterprise_idp_groups_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdpGroupsBulkCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/IdpGroupResponse"
+                  },
+                  "title": "Response Handle Bulk Register Account Idp Groups V3 Enterprise Idp Groups Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Register Account IDP Groups",
+        "tags": [
+          "idp_groups"
+        ]
+      }
+    },
+    "/v3/enterprise/idp-groups/{idp_group_name}": {
+      "delete": {
+        "description": "Remove a registered IDP group from this enterprise.",
+        "operationId": "handle_delete_account_idp_group_v3_enterprise_idp_groups__idp_group_name__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "idp_group_name",
+            "required": true,
+            "schema": {
+              "title": "Idp Group Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdpGroupResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Delete Account IDP Group",
+        "tags": [
+          "idp_groups"
+        ]
+      }
+    },
+    "/v3/enterprise/ip-access-list": {
+      "delete": {
+        "operationId": "handle_clear_ip_access_list_v3_enterprise_ip_access_list_delete",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IpAccessListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Clear IP Access List",
+        "tags": [
+          "ip-access-list"
+        ]
+      },
+      "get": {
+        "operationId": "handle_get_ip_access_list_v3_enterprise_ip_access_list_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IpAccessListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get IP Access List",
+        "tags": [
+          "ip-access-list"
+        ]
+      },
+      "post": {
+        "operationId": "handle_add_ip_access_list_v3_enterprise_ip_access_list_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IpAccessListAddRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IpAccessListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Add IPs to IP Access List",
+        "tags": [
+          "ip-access-list"
+        ]
+      },
+      "put": {
+        "operationId": "handle_replace_ip_access_list_v3_enterprise_ip_access_list_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IpAccessListReplaceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IpAccessListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Replace IP Access List",
+        "tags": [
+          "ip-access-list"
+        ]
+      }
+    },
+    "/v3/enterprise/knowledge/folders": {
+      "get": {
+        "description": "Return the full folder tree with per-folder note counts.",
+        "operationId": "handle_list_folders_v3_enterprise_knowledge_folders_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderTreeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get knowledge folder structure with note counts.",
+        "tags": [
+          "notes"
+        ]
+      }
+    },
+    "/v3/enterprise/knowledge/notes": {
+      "get": {
+        "operationId": "handle_list_notes_v3_enterprise_knowledge_notes_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "access_type",
+            "required": false,
+            "schema": {
+              "enum": [
+                "org",
+                "enterprise"
+              ],
+              "nullable": true,
+              "title": "Access Type",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "Search",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "folder_path",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "Folder Path",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pinned_repo",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "Pinned Repo",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_KnowledgeNoteResponse_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List all notes.",
+        "tags": [
+          "notes"
+        ]
+      },
+      "post": {
+        "operationId": "handle_create_note_v3_enterprise_knowledge_notes_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KnowledgeNoteCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeNoteResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Create an enterprise-level note",
+        "tags": [
+          "notes"
+        ]
+      }
+    },
+    "/v3/enterprise/knowledge/notes/{note_id}": {
+      "delete": {
+        "operationId": "handle_delete_note_v3_enterprise_knowledge_notes__note_id__delete",
+        "parameters": [
+          {
+            "description": "Knowledge note ID (prefix: note-)",
+            "in": "path",
+            "name": "note_id",
+            "required": true,
+            "schema": {
+              "example": "note-abc123def456",
+              "title": "Note Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeNoteResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Delete a note",
+        "tags": [
+          "notes"
+        ]
+      },
+      "get": {
+        "description": "Get a note by ID.",
+        "operationId": "handle_get_note_v3_enterprise_knowledge_notes__note_id__get",
+        "parameters": [
+          {
+            "description": "Knowledge note ID (prefix: note-)",
+            "in": "path",
+            "name": "note_id",
+            "required": true,
+            "schema": {
+              "example": "note-abc123def456",
+              "title": "Note Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeNoteResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get a note by ID",
+        "tags": [
+          "notes"
+        ]
+      },
+      "put": {
+        "operationId": "handle_update_note_v3_enterprise_knowledge_notes__note_id__put",
+        "parameters": [
+          {
+            "description": "Knowledge note ID (prefix: note-)",
+            "in": "path",
+            "name": "note_id",
+            "required": true,
+            "schema": {
+              "example": "note-abc123def456",
+              "title": "Note Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KnowledgeNoteCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeNoteResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Update a note",
+        "tags": [
+          "notes"
+        ]
+      }
+    },
+    "/v3/enterprise/members/idp-groups": {
+      "get": {
+        "operationId": "handle_list_enterprise_idp_groups_v3_enterprise_members_idp_groups_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_IdpGroup_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List IDP Groups",
+        "tags": [
+          "idp_groups"
+        ]
+      }
+    },
+    "/v3/enterprise/members/idp-groups/{idp_group_name}": {
+      "delete": {
+        "operationId": "handle_remove_enterprise_idp_group_v3_enterprise_members_idp_groups__idp_group_name__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "idp_group_name",
+            "required": true,
+            "schema": {
+              "title": "Idp Group Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdpGroup"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Delete IDP Group",
+        "tags": [
+          "idp_groups"
+        ]
+      },
+      "get": {
+        "operationId": "handle_get_enterprise_idp_group_v3_enterprise_members_idp_groups__idp_group_name__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "idp_group_name",
+            "required": true,
+            "schema": {
+              "title": "Idp Group Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdpGroup"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get IDP Group",
+        "tags": [
+          "idp_groups"
+        ]
+      },
+      "patch": {
+        "operationId": "handle_update_enterprise_idp_group_role_v3_enterprise_members_idp_groups__idp_group_name__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "idp_group_name",
+            "required": true,
+            "schema": {
+              "title": "Idp Group Name",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdpGroupUpdateRoleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdpGroup"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Update IDP Group",
+        "tags": [
+          "idp_groups"
+        ]
+      },
+      "post": {
+        "operationId": "handle_assign_enterprise_idp_group_role_v3_enterprise_members_idp_groups__idp_group_name__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "idp_group_name",
+            "required": true,
+            "schema": {
+              "title": "Idp Group Name",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdpGroupUpdateRoleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdpGroup"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Assign IDP Group",
+        "tags": [
+          "idp_groups"
+        ]
+      }
+    },
+    "/v3/enterprise/members/idp-users": {
+      "get": {
+        "description": "List users whose enterprise membership is derived from IDP group assignments.",
+        "operationId": "handle_list_enterprise_idp_users_v3_enterprise_members_idp_users_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filter by exact email address",
+            "in": "query",
+            "name": "email",
+            "required": false,
+            "schema": {
+              "description": "Filter by exact email address",
+              "nullable": true,
+              "title": "Email",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_IdpGroupUser_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List IDP Group Users",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/v3/enterprise/members/service-users": {
+      "get": {
+        "description": "List service users in the enterprise.",
+        "operationId": "handle_list_enterprise_service_users_v3_enterprise_members_service_users_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Include inactive service users (expired or removed).",
+            "in": "query",
+            "name": "include_inactive",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "Include inactive service users (expired or removed).",
+              "title": "Include Inactive",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_ServiceUser_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Service Users",
+        "tags": [
+          "service_users"
+        ]
+      }
+    },
+    "/v3/enterprise/members/service-users/{service_user_id}": {
+      "delete": {
+        "operationId": "handle_remove_enterprise_service_user_v3_enterprise_members_service_users__service_user_id__delete",
+        "parameters": [
+          {
+            "description": "Service user ID (prefix: service-user-)",
+            "in": "path",
+            "name": "service_user_id",
+            "required": true,
+            "schema": {
+              "example": "service-user-abc123def456",
+              "title": "Service User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceUser"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Delete Service User",
+        "tags": [
+          "service_users"
+        ]
+      },
+      "get": {
+        "description": "Get a service user by ID.",
+        "operationId": "handle_get_enterprise_service_user_v3_enterprise_members_service_users__service_user_id__get",
+        "parameters": [
+          {
+            "description": "Service user ID (prefix: service-user-)",
+            "in": "path",
+            "name": "service_user_id",
+            "required": true,
+            "schema": {
+              "example": "service-user-abc123def456",
+              "title": "Service User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceUser"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Service User",
+        "tags": [
+          "service_users"
+        ]
+      },
+      "patch": {
+        "description": "Update enterprise role for service user.",
+        "operationId": "handle_update_enterprise_service_user_role_v3_enterprise_members_service_users__service_user_id__patch",
+        "parameters": [
+          {
+            "description": "Service user ID (prefix: service-user-)",
+            "in": "path",
+            "name": "service_user_id",
+            "required": true,
+            "schema": {
+              "example": "service-user-abc123def456",
+              "title": "Service User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceUserUpdateRoleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceUser"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Update Service User",
+        "tags": [
+          "service_users"
+        ]
+      },
+      "post": {
+        "description": "Assign enterprise role to service user.",
+        "operationId": "handle_assign_enterprise_service_user_role_v3_enterprise_members_service_users__service_user_id__post",
+        "parameters": [
+          {
+            "description": "Service user ID (prefix: service-user-)",
+            "in": "path",
+            "name": "service_user_id",
+            "required": true,
+            "schema": {
+              "example": "service-user-abc123def456",
+              "title": "Service User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceUserUpdateRoleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceUser"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Assign Service User",
+        "tags": [
+          "service_users"
+        ]
+      }
+    },
+    "/v3/enterprise/members/users": {
+      "get": {
+        "operationId": "handle_list_enterprise_users_v3_enterprise_members_users_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filter by exact email address",
+            "in": "query",
+            "name": "email",
+            "required": false,
+            "schema": {
+              "description": "Filter by exact email address",
+              "nullable": true,
+              "title": "Email",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_User_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Users",
+        "tags": [
+          "users"
+        ]
+      },
+      "post": {
+        "operationId": "handle_bulk_invite_enterprise_users_v3_enterprise_members_users_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserBulkCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  },
+                  "title": "Response Handle Bulk Invite Enterprise Users V3 Enterprise Members Users Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Invite Users",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/v3/enterprise/members/users/{user_id}": {
+      "delete": {
+        "operationId": "handle_remove_enterprise_user_v3_enterprise_members_users__user_id__delete",
+        "parameters": [
+          {
+            "description": "User ID",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Delete User",
+        "tags": [
+          "users"
+        ]
+      },
+      "get": {
+        "description": "Get a user by ID. Returns both direct and IDP-group-derived role assignments.",
+        "operationId": "handle_get_enterprise_user_v3_enterprise_members_users__user_id__get",
+        "parameters": [
+          {
+            "description": "User ID",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserWithIdpRoles"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get User",
+        "tags": [
+          "users"
+        ]
+      },
+      "patch": {
+        "operationId": "handle_update_enterprise_user_role_v3_enterprise_members_users__user_id__patch",
+        "parameters": [
+          {
+            "description": "User ID",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateRoleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Update User",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/v3/enterprise/org-group-limits": {
+      "get": {
+        "description": "Get the current organization groups configuration.",
+        "operationId": "get_org_groups_config_v3_enterprise_org_group_limits_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrgGroupsConfig"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Org Groups Config",
+        "tags": [
+          "org-groups"
+        ]
+      },
+      "put": {
+        "description": "Update the organization groups configuration.\n\nThis endpoint replaces the entire org groups configuration with the provided config.\n- Groups not in the request will be deleted\n- Groups in the request will be created or updated to match the config",
+        "operationId": "update_org_groups_config_v3_enterprise_org_group_limits_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrgGroupsConfig"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrgGroupsConfig"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Update Org Groups Config",
+        "tags": [
+          "org-groups"
+        ]
+      }
+    },
+    "/v3/enterprise/organizations": {
+      "get": {
+        "description": "List organizations in the enterprise.",
+        "operationId": "handle_get_organizations_v3_enterprise_organizations_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_OrganizationResponse_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Organizations",
+        "tags": [
+          "organizations"
+        ]
+      },
+      "post": {
+        "description": "Create a new organization in this enterprise",
+        "operationId": "handle_create_organization_v3_enterprise_organizations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrganizationCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Create Organization",
+        "tags": [
+          "organizations"
+        ]
+      }
+    },
+    "/v3/enterprise/organizations/{org_id}": {
+      "delete": {
+        "description": "Delete an organization from this enterprise",
+        "operationId": "handle_delete_organization_v3_enterprise_organizations__org_id__delete",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Delete Organization",
+        "tags": [
+          "organizations"
+        ]
+      },
+      "get": {
+        "description": "Get details for a specific organization in the enterprise.",
+        "operationId": "handle_get_organization_v3_enterprise_organizations__org_id__get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Organization",
+        "tags": [
+          "organizations"
+        ]
+      },
+      "patch": {
+        "description": "Update an organization's name and/or ACU limits",
+        "operationId": "handle_update_organization_v3_enterprise_organizations__org_id__patch",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrganizationUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Update Organization",
+        "tags": [
+          "organizations"
+        ]
+      }
+    },
+    "/v3/enterprise/organizations/{org_id}/git-providers/permissions": {
+      "delete": {
+        "operationId": "handle_clear_organization_git_permissions_v3_enterprise_organizations__org_id__git_providers_permissions_delete",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GitPermissionResponse"
+                  },
+                  "title": "Response Handle Clear Organization Git Permissions V3 Enterprise Organizations  Org Id  Git Providers Permissions Delete",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Clear Git Permissions",
+        "tags": [
+          "git_permissions"
+        ]
+      },
+      "get": {
+        "description": "List git permissions for the organization.",
+        "operationId": "handle_get_organization_git_permissions_v3_enterprise_organizations__org_id__git_providers_permissions_get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_GitPermissionResponse_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Git Permissions",
+        "tags": [
+          "git_permissions"
+        ]
+      },
+      "post": {
+        "operationId": "handle_bulk_create_organization_git_permissions_v3_enterprise_organizations__org_id__git_providers_permissions_post",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GitPermissionBulkCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GitPermissionResponse"
+                  },
+                  "title": "Response Handle Bulk Create Organization Git Permissions V3 Enterprise Organizations  Org Id  Git Providers Permissions Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Create Git Permissions",
+        "tags": [
+          "git_permissions"
+        ]
+      },
+      "put": {
+        "operationId": "handle_replace_organization_git_permissions_v3_enterprise_organizations__org_id__git_providers_permissions_put",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GitPermissionBulkCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GitPermissionResponse"
+                  },
+                  "title": "Response Handle Replace Organization Git Permissions V3 Enterprise Organizations  Org Id  Git Providers Permissions Put",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Replace Git Permissions",
+        "tags": [
+          "git_permissions"
+        ]
+      }
+    },
+    "/v3/enterprise/organizations/{org_id}/git-providers/permissions/{git_permission_id}": {
+      "delete": {
+        "operationId": "handle_delete_organization_git_permission_v3_enterprise_organizations__org_id__git_providers_permissions__git_permission_id__delete",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Git permission ID (prefix: git-permission-)",
+            "in": "path",
+            "name": "git_permission_id",
+            "required": true,
+            "schema": {
+              "example": "git-permission-abc123def456",
+              "title": "Git Permission Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitPermissionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Delete Git Permission",
+        "tags": [
+          "git_permissions"
+        ]
+      },
+      "patch": {
+        "operationId": "handle_update_organization_git_permission_v3_enterprise_organizations__org_id__git_providers_permissions__git_permission_id__patch",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Git permission ID (prefix: git-permission-)",
+            "in": "path",
+            "name": "git_permission_id",
+            "required": true,
+            "schema": {
+              "example": "git-permission-abc123def456",
+              "title": "Git Permission Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GitPermissionUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitPermissionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Update Git Permission",
+        "tags": [
+          "git_permissions"
+        ]
+      }
+    },
+    "/v3/enterprise/organizations/{org_id}/members/idp-groups": {
+      "get": {
+        "operationId": "handle_list_organization_idp_groups_v3_enterprise_organizations__org_id__members_idp_groups_get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_IdpGroup_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Organization IDP Groups",
+        "tags": [
+          "idp_groups"
+        ]
+      }
+    },
+    "/v3/enterprise/organizations/{org_id}/members/idp-groups/{idp_group_name}": {
+      "delete": {
+        "description": "Remove idp_group from the organization.",
+        "operationId": "handle_remove_organization_idp_group_v3_enterprise_organizations__org_id__members_idp_groups__idp_group_name__delete",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "idp_group_name",
+            "required": true,
+            "schema": {
+              "title": "Idp Group Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdpGroup"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Delete Organization IDP Group",
+        "tags": [
+          "idp_groups"
+        ]
+      },
+      "get": {
+        "operationId": "handle_get_organization_idp_group_v3_enterprise_organizations__org_id__members_idp_groups__idp_group_name__get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "idp_group_name",
+            "required": true,
+            "schema": {
+              "title": "Idp Group Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdpGroup"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Organization IDP Group",
+        "tags": [
+          "idp_groups"
+        ]
+      },
+      "patch": {
+        "operationId": "handle_update_organization_idp_group_role_v3_enterprise_organizations__org_id__members_idp_groups__idp_group_name__patch",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "idp_group_name",
+            "required": true,
+            "schema": {
+              "title": "Idp Group Name",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdpGroupUpdateRoleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdpGroup"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Update Organization IDP Group",
+        "tags": [
+          "idp_groups"
+        ]
+      },
+      "post": {
+        "operationId": "handle_assign_organization_idp_group_role_v3_enterprise_organizations__org_id__members_idp_groups__idp_group_name__post",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "idp_group_name",
+            "required": true,
+            "schema": {
+              "title": "Idp Group Name",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdpGroupUpdateRoleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdpGroup"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Assign Organization IDP Group",
+        "tags": [
+          "idp_groups"
+        ]
+      }
+    },
+    "/v3/enterprise/organizations/{org_id}/members/idp-users": {
+      "get": {
+        "description": "List users whose organization membership is derived from IDP group assignments.",
+        "operationId": "handle_list_organization_idp_users_v3_enterprise_organizations__org_id__members_idp_users_get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filter by exact email address",
+            "in": "query",
+            "name": "email",
+            "required": false,
+            "schema": {
+              "description": "Filter by exact email address",
+              "nullable": true,
+              "title": "Email",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_IdpGroupUser_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Organization IDP Group Users",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/v3/enterprise/organizations/{org_id}/members/service-users": {
+      "get": {
+        "description": "List service users in the organization.",
+        "operationId": "handle_list_organization_service_users_v3_enterprise_organizations__org_id__members_service_users_get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Include inactive service users (expired or removed).",
+            "in": "query",
+            "name": "include_inactive",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "Include inactive service users (expired or removed).",
+              "title": "Include Inactive",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_ServiceUser_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Organization Service Users",
+        "tags": [
+          "service_users"
+        ]
+      }
+    },
+    "/v3/enterprise/organizations/{org_id}/members/service-users/{service_user_id}": {
+      "delete": {
+        "description": "Remove service user from the organization.",
+        "operationId": "handle_remove_organization_service_user_v3_enterprise_organizations__org_id__members_service_users__service_user_id__delete",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Service user ID (prefix: service-user-)",
+            "in": "path",
+            "name": "service_user_id",
+            "required": true,
+            "schema": {
+              "example": "service-user-abc123def456",
+              "title": "Service User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceUser"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Delete Organization Service User",
+        "tags": [
+          "service_users"
+        ]
+      },
+      "patch": {
+        "description": "Update organization role for service user.",
+        "operationId": "handle_update_organization_service_user_role_v3_enterprise_organizations__org_id__members_service_users__service_user_id__patch",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Service user ID (prefix: service-user-)",
+            "in": "path",
+            "name": "service_user_id",
+            "required": true,
+            "schema": {
+              "example": "service-user-abc123def456",
+              "title": "Service User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceUserUpdateRoleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceUser"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Update Organization Service User",
+        "tags": [
+          "service_users"
+        ]
+      },
+      "post": {
+        "description": "Assign organization role to service user.",
+        "operationId": "handle_assign_organization_service_user_role_v3_enterprise_organizations__org_id__members_service_users__service_user_id__post",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Service user ID (prefix: service-user-)",
+            "in": "path",
+            "name": "service_user_id",
+            "required": true,
+            "schema": {
+              "example": "service-user-abc123def456",
+              "title": "Service User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceUserUpdateRoleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceUser"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Assign Organization Service User",
+        "tags": [
+          "service_users"
+        ]
+      }
+    },
+    "/v3/enterprise/organizations/{org_id}/members/users": {
+      "get": {
+        "operationId": "handle_list_organization_users_v3_enterprise_organizations__org_id__members_users_get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filter by exact email address",
+            "in": "query",
+            "name": "email",
+            "required": false,
+            "schema": {
+              "description": "Filter by exact email address",
+              "nullable": true,
+              "title": "Email",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_User_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Organization Users",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/v3/enterprise/organizations/{org_id}/members/users/{user_id}": {
+      "delete": {
+        "operationId": "handle_remove_organization_user_v3_enterprise_organizations__org_id__members_users__user_id__delete",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "User ID",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Delete Organization User",
+        "tags": [
+          "users"
+        ]
+      },
+      "patch": {
+        "operationId": "handle_update_organization_user_role_v3_enterprise_organizations__org_id__members_users__user_id__patch",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "User ID",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateRoleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Update Organization User",
+        "tags": [
+          "users"
+        ]
+      },
+      "post": {
+        "operationId": "handle_assign_organization_user_role_v3_enterprise_organizations__org_id__members_users__user_id__post",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "User ID",
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateRoleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Assign Organization User",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/v3/enterprise/organizations/{org_id}/tags": {
+      "delete": {
+        "description": "Clear all allowed session tags for an organization.",
+        "operationId": "clear_organization_allowed_tags_v3_enterprise_organizations__org_id__tags_delete",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Clear Organization Tags",
+        "tags": [
+          "organization-tags"
+        ]
+      },
+      "get": {
+        "description": "Get the allowed session tags for an organization.",
+        "operationId": "handle_get_organization_allowed_tags_v3_enterprise_organizations__org_id__tags_get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Organization Allowed Tags",
+        "tags": [
+          "organization-tags"
+        ]
+      },
+      "post": {
+        "description": "Append tags to the allowed session tags for an organization.",
+        "operationId": "handle_append_organization_allowed_tags_v3_enterprise_organizations__org_id__tags_post",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagsCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Append Organization Tags",
+        "tags": [
+          "organization-tags"
+        ]
+      },
+      "put": {
+        "description": "Replace the full set of allowed session tags for an organization.",
+        "operationId": "handle_replace_organization_allowed_tags_v3_enterprise_organizations__org_id__tags_put",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagsCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Replace Organization Allowed Tags",
+        "tags": [
+          "organization-tags"
+        ]
+      }
+    },
+    "/v3/enterprise/organizations/{org_id}/tags/default": {
+      "delete": {
+        "description": "Clear the default tag for an organization.",
+        "operationId": "clear_organization_default_tag_v3_enterprise_organizations__org_id__tags_default_delete",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultTagResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Clear Organization Default Tag",
+        "tags": [
+          "organization-tags"
+        ]
+      },
+      "get": {
+        "description": "Get the current default tag for an organization.",
+        "operationId": "get_organization_default_tag_v3_enterprise_organizations__org_id__tags_default_get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultTagResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Organization Default Tag",
+        "tags": [
+          "organization-tags"
+        ]
+      },
+      "put": {
+        "description": "Set the default tag for an organization. The tag must exist in the allowed tags list.",
+        "operationId": "set_organization_default_tag_v3_enterprise_organizations__org_id__tags_default_put",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DefaultTagRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultTagResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Set Organization Default Tag",
+        "tags": [
+          "organization-tags"
+        ]
+      }
+    },
+    "/v3/enterprise/organizations/{org_id}/tags/{tag}": {
+      "delete": {
+        "description": "Remove a single tag from the allowed session tags for an organization.",
+        "operationId": "remove_organization_allowed_tag_v3_enterprise_organizations__org_id__tags__tag__delete",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "tag",
+            "required": true,
+            "schema": {
+              "title": "Tag",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Remove Organization Tag",
+        "tags": [
+          "organization-tags"
+        ]
+      }
+    },
+    "/v3/enterprise/playbooks": {
+      "get": {
+        "operationId": "handle_list_playbooks_v3_enterprise_playbooks_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_PlaybookResponse_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List all playbooks.",
+        "tags": [
+          "playbooks"
+        ]
+      },
+      "post": {
+        "operationId": "handle_create_playbook_v3_enterprise_playbooks_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaybookCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaybookResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Create an enterprise-level playbook",
+        "tags": [
+          "playbooks"
+        ]
+      }
+    },
+    "/v3/enterprise/playbooks/{playbook_id}": {
+      "delete": {
+        "operationId": "handle_delete_playbook_v3_enterprise_playbooks__playbook_id__delete",
+        "parameters": [
+          {
+            "description": "Playbook ID (prefix: playbook-)",
+            "in": "path",
+            "name": "playbook_id",
+            "required": true,
+            "schema": {
+              "example": "playbook-abc123def456",
+              "title": "Playbook Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaybookResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Delete a playbook",
+        "tags": [
+          "playbooks"
+        ]
+      },
+      "get": {
+        "description": "Get a specific playbook by ID.",
+        "operationId": "handle_get_playbook_v3_enterprise_playbooks__playbook_id__get",
+        "parameters": [
+          {
+            "description": "Playbook ID (prefix: playbook-)",
+            "in": "path",
+            "name": "playbook_id",
+            "required": true,
+            "schema": {
+              "example": "playbook-abc123def456",
+              "title": "Playbook Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaybookResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get a playbook by ID.",
+        "tags": [
+          "playbooks"
+        ]
+      },
+      "put": {
+        "operationId": "handle_update_playbook_v3_enterprise_playbooks__playbook_id__put",
+        "parameters": [
+          {
+            "description": "Playbook ID (prefix: playbook-)",
+            "in": "path",
+            "name": "playbook_id",
+            "required": true,
+            "schema": {
+              "example": "playbook-abc123def456",
+              "title": "Playbook Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaybookCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaybookResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Update a playbook",
+        "tags": [
+          "playbooks"
+        ]
+      }
+    },
+    "/v3/enterprise/roles": {
+      "get": {
+        "description": "Get roles for this enterprise",
+        "operationId": "handle_get_roles_v3_enterprise_roles_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_Role_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Roles",
+        "tags": [
+          "roles"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/knowledge/folders": {
+      "get": {
+        "description": "Return the full folder tree with per-folder note counts.",
+        "operationId": "handle_list_folders_v3_organizations__org_id__knowledge_folders_get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderTreeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get knowledge folder structure with note counts.",
+        "tags": [
+          "notes"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/knowledge/notes": {
+      "get": {
+        "description": "List notes for an organization.",
+        "operationId": "handle_list_notes_v3_organizations__org_id__knowledge_notes_get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "Search",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "folder_path",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "Folder Path",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pinned_repo",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "Pinned Repo",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_KnowledgeNoteResponse_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List org-level notes",
+        "tags": [
+          "notes"
+        ]
+      },
+      "post": {
+        "description": "Create a note for an organization.",
+        "operationId": "handle_create_note_v3_organizations__org_id__knowledge_notes_post",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KnowledgeNoteCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeNoteResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Create an org-level note",
+        "tags": [
+          "notes"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/knowledge/notes/{note_id}": {
+      "delete": {
+        "description": "Delete a note for an organization.",
+        "operationId": "handle_delete_note_v3_organizations__org_id__knowledge_notes__note_id__delete",
+        "parameters": [
+          {
+            "description": "Knowledge note ID (prefix: note-)",
+            "in": "path",
+            "name": "note_id",
+            "required": true,
+            "schema": {
+              "example": "note-abc123def456",
+              "title": "Note Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeNoteResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Delete an org-level note",
+        "tags": [
+          "notes"
+        ]
+      },
+      "get": {
+        "description": "Get a note by ID for an organization.",
+        "operationId": "handle_get_note_v3_organizations__org_id__knowledge_notes__note_id__get",
+        "parameters": [
+          {
+            "description": "Knowledge note ID (prefix: note-)",
+            "in": "path",
+            "name": "note_id",
+            "required": true,
+            "schema": {
+              "example": "note-abc123def456",
+              "title": "Note Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeNoteResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get an org-level note",
+        "tags": [
+          "notes"
+        ]
+      },
+      "put": {
+        "description": "Update a note for an organization.",
+        "operationId": "handle_update_note_v3_organizations__org_id__knowledge_notes__note_id__put",
+        "parameters": [
+          {
+            "description": "Knowledge note ID (prefix: note-)",
+            "in": "path",
+            "name": "note_id",
+            "required": true,
+            "schema": {
+              "example": "note-abc123def456",
+              "title": "Note Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KnowledgeNoteCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeNoteResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Update an org-level note",
+        "tags": [
+          "notes"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/playbooks": {
+      "get": {
+        "description": "List playbooks for an organization.",
+        "operationId": "handle_list_playbooks_v3_organizations__org_id__playbooks_get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_PlaybookResponse_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List org-level playbooks",
+        "tags": [
+          "playbooks"
+        ]
+      },
+      "post": {
+        "description": "Create a playbook for an organization.",
+        "operationId": "handle_create_playbook_v3_organizations__org_id__playbooks_post",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaybookCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaybookResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Create an org-level playbook",
+        "tags": [
+          "playbooks"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/playbooks/{playbook_id}": {
+      "delete": {
+        "description": "Delete a playbook for an organization.",
+        "operationId": "handle_delete_playbook_v3_organizations__org_id__playbooks__playbook_id__delete",
+        "parameters": [
+          {
+            "description": "Playbook ID (prefix: playbook-)",
+            "in": "path",
+            "name": "playbook_id",
+            "required": true,
+            "schema": {
+              "example": "playbook-abc123def456",
+              "title": "Playbook Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaybookResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Delete an org-level playbook",
+        "tags": [
+          "playbooks"
+        ]
+      },
+      "get": {
+        "description": "Get a specific playbook by ID for an organization.",
+        "operationId": "handle_get_playbook_v3_organizations__org_id__playbooks__playbook_id__get",
+        "parameters": [
+          {
+            "description": "Playbook ID (prefix: playbook-)",
+            "in": "path",
+            "name": "playbook_id",
+            "required": true,
+            "schema": {
+              "example": "playbook-abc123def456",
+              "title": "Playbook Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaybookResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get an org-level playbook by ID",
+        "tags": [
+          "playbooks"
+        ]
+      },
+      "put": {
+        "description": "Update a playbook for an organization.",
+        "operationId": "handle_update_playbook_v3_organizations__org_id__playbooks__playbook_id__put",
+        "parameters": [
+          {
+            "description": "Playbook ID (prefix: playbook-)",
+            "in": "path",
+            "name": "playbook_id",
+            "required": true,
+            "schema": {
+              "example": "playbook-abc123def456",
+              "title": "Playbook Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaybookCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaybookResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Update an org-level playbook",
+        "tags": [
+          "playbooks"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/schedules": {
+      "get": {
+        "description": "List all schedules for the organization.",
+        "operationId": "handle_list_schedules_v3_organizations__org_id__schedules_get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 200,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_ScheduleResponse_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List schedules",
+        "tags": [
+          "schedules"
+        ]
+      },
+      "post": {
+        "description": "Create a new scheduled session.",
+        "operationId": "handle_create_schedule_v3_organizations__org_id__schedules_post",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Create schedule",
+        "tags": [
+          "schedules"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/schedules/{schedule_id}": {
+      "delete": {
+        "description": "Soft delete a schedule.",
+        "operationId": "handle_delete_schedule_v3_organizations__org_id__schedules__schedule_id__delete",
+        "parameters": [
+          {
+            "description": "Schedule ID (prefix: sched-)",
+            "in": "path",
+            "name": "schedule_id",
+            "required": true,
+            "schema": {
+              "example": "sched-abc123def456",
+              "title": "Schedule Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Delete schedule",
+        "tags": [
+          "schedules"
+        ]
+      },
+      "get": {
+        "description": "Get a specific schedule by ID.",
+        "operationId": "handle_get_schedule_v3_organizations__org_id__schedules__schedule_id__get",
+        "parameters": [
+          {
+            "description": "Schedule ID (prefix: sched-)",
+            "in": "path",
+            "name": "schedule_id",
+            "required": true,
+            "schema": {
+              "example": "sched-abc123def456",
+              "title": "Schedule Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get schedule",
+        "tags": [
+          "schedules"
+        ]
+      },
+      "patch": {
+        "description": "Update an existing schedule.",
+        "operationId": "handle_update_schedule_v3_organizations__org_id__schedules__schedule_id__patch",
+        "parameters": [
+          {
+            "description": "Schedule ID (prefix: sched-)",
+            "in": "path",
+            "name": "schedule_id",
+            "required": true,
+            "schema": {
+              "example": "sched-abc123def456",
+              "title": "Schedule Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Update schedule",
+        "tags": [
+          "schedules"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/secrets": {
+      "get": {
+        "description": "List secrets for an organization.",
+        "operationId": "handle_list_secrets_v3_organizations__org_id__secrets_get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_SecretResponse_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List org-level secrets",
+        "tags": [
+          "secrets"
+        ]
+      },
+      "post": {
+        "description": "Create a secret for an organization.",
+        "operationId": "handle_create_secret_v3_organizations__org_id__secrets_post",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SecretCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecretResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Create an org-level secret",
+        "tags": [
+          "secrets"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/secrets/{secret_id}": {
+      "delete": {
+        "description": "Delete a secret for an organization.",
+        "operationId": "handle_delete_secret_v3_organizations__org_id__secrets__secret_id__delete",
+        "parameters": [
+          {
+            "description": "Secret ID (prefix: secret-)",
+            "in": "path",
+            "name": "secret_id",
+            "required": true,
+            "schema": {
+              "example": "secret-abc123def456",
+              "title": "Secret Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecretResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Delete an org-level secret",
+        "tags": [
+          "secrets"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}

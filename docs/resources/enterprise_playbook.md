@@ -32,6 +32,7 @@ resource "devin_enterprise_playbook" "incident_response" {
 ### Optional
 
 - `macro` (String) Playbook macro identifier (e.g., '!my_macro'). Must start with '!' followed by letters, digits, underscores, or hyphens.
+- `structured_output_schema` (String) JSON Schema (Draft 7) that sessions using this playbook will produce as structured output, supplied as a JSON-encoded string (e.g. via jsonencode(...)). Max 64KB. Must be self-contained (no external $ref).
 
 ### Read-Only
 
@@ -43,5 +44,5 @@ Import is supported using the following syntax:
 
 ```shell
 # Enterprise playbooks are imported with the playbook ID.
-terraform import devin_enterprise_playbook.incident_response playbook-abc123
+terraform import devin_enterprise_playbook.incident_response playbook-1ac9e75f31084c3d9b2960ebe2a40a48
 ```

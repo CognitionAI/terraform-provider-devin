@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"github.com/cognitionai/terraform-provider-devin/internal/api"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -21,11 +23,12 @@ type playbookResource struct {
 }
 
 type playbookModel struct {
-	PlaybookID types.String `tfsdk:"playbook_id"`
-	OrgID      types.String `tfsdk:"org_id"`
-	Title      types.String `tfsdk:"title"`
-	Body       types.String `tfsdk:"body"`
-	Macro      types.String `tfsdk:"macro"`
+	PlaybookID             types.String         `tfsdk:"playbook_id"`
+	OrgID                  types.String         `tfsdk:"org_id"`
+	Title                  types.String         `tfsdk:"title"`
+	Body                   types.String         `tfsdk:"body"`
+	Macro                  types.String         `tfsdk:"macro"`
+	StructuredOutputSchema jsontypes.Normalized `tfsdk:"structured_output_schema"`
 }
 
 func NewPlaybookResource() resource.Resource {
@@ -66,6 +69,11 @@ func (r *playbookResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Description: "Playbook macro identifier (e.g., '!my_macro'). Must start with '!' followed by letters, digits, underscores, or hyphens.",
 				Optional:    true,
 			},
+			"structured_output_schema": schema.StringAttribute{
+				CustomType:  jsontypes.NormalizedType{},
+				Description: "JSON Schema (Draft 7) that sessions using this playbook will produce as structured output, supplied as a JSON-encoded string (e.g. via jsonencode(...)). Max 64KB. Must be self-contained (no external $ref).",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -89,9 +97,13 @@ func (r *playbookResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	body := api.PlaybookCreateRequest{
-		Title: plan.Title.ValueString(),
-		Body:  plan.Body.ValueString(),
-		Macro: optionalStringFrom(plan.Macro),
+		Title:                  plan.Title.ValueString(),
+		Body:                   plan.Body.ValueString(),
+		Macro:                  optionalStringFrom(plan.Macro),
+		StructuredOutputSchema: optionalJSONObjectFrom(plan.StructuredOutputSchema, "structured_output_schema", &resp.Diagnostics),
+	}
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	var result api.PlaybookResponse
@@ -101,7 +113,7 @@ func (r *playbookResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	mapPlaybookResponseToModel(&result, &plan)
+	mapPlaybookResponseToModel(&result, &plan, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	setIdentity(ctx, resp.Identity, playbookIdentityModel{OrgID: plan.OrgID, PlaybookID: plan.PlaybookID}, &resp.Diagnostics)
 }
@@ -125,7 +137,7 @@ func (r *playbookResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	mapPlaybookResponseToModel(&result, &state)
+	mapPlaybookResponseToModel(&result, &state, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	setIdentity(ctx, resp.Identity, playbookIdentityModel{OrgID: state.OrgID, PlaybookID: state.PlaybookID}, &resp.Diagnostics)
 }
@@ -137,12 +149,16 @@ func (r *playbookResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	// The API only clears the macro when the field is explicitly null; omitting
-	// it leaves the existing macro unchanged.
+	// The API only clears nullable fields when they are explicitly null;
+	// omitting them leaves the existing values unchanged.
 	body := api.PlaybookCreateRequest{
-		Title: plan.Title.ValueString(),
-		Body:  plan.Body.ValueString(),
-		Macro: nullableStringFrom(plan.Macro),
+		Title:                  plan.Title.ValueString(),
+		Body:                   plan.Body.ValueString(),
+		Macro:                  nullableStringFrom(plan.Macro),
+		StructuredOutputSchema: nullableJSONObjectFrom(plan.StructuredOutputSchema, "structured_output_schema", &resp.Diagnostics),
+	}
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	var result api.PlaybookResponse
@@ -152,7 +168,7 @@ func (r *playbookResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	mapPlaybookResponseToModel(&result, &plan)
+	mapPlaybookResponseToModel(&result, &plan, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	setIdentity(ctx, resp.Identity, playbookIdentityModel{OrgID: plan.OrgID, PlaybookID: plan.PlaybookID}, &resp.Diagnostics)
 }
@@ -174,11 +190,12 @@ func (r *playbookResource) ImportState(ctx context.Context, req resource.ImportS
 	importComposite(ctx, req, resp, "org_id", "playbook_id")
 }
 
-func mapPlaybookResponseToModel(resp *api.PlaybookResponse, model *playbookModel) {
+func mapPlaybookResponseToModel(resp *api.PlaybookResponse, model *playbookModel, diags *diag.Diagnostics) {
 	model.PlaybookID = types.StringValue(resp.PlaybookID)
 	model.Title = types.StringValue(resp.Title)
 	model.Body = types.StringValue(resp.Body)
 	model.Macro = stringFromNullable(resp.Macro)
+	model.StructuredOutputSchema = jsonObjectFromNullable(resp.StructuredOutputSchema, "structured_output_schema", diags)
 	if orgID := stringFromNullable(resp.OrgID); !orgID.IsNull() {
 		model.OrgID = orgID
 	}
