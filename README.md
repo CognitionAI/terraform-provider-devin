@@ -95,6 +95,8 @@ resource "devin_org_idp_group_role" "engineering_member" {
 | `devin_enterprise_service_user_role` | Enterprise role for an existing service user                 |
 | `devin_org_service_user_role`        | Org role for an existing service user                        |
 | `devin_org_user_role`                | Org role for an existing enterprise user                     |
+| `devin_blueprint`                    | Org- or repo-tier environment blueprint (snapshot-setup API) |
+| `devin_snapshot_build`               | Trigger and track a snapshot build after blueprint changes   |
 
 ## Data sources
 

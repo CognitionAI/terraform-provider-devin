@@ -119,6 +119,8 @@ func (p *DevinProvider) Resources(_ context.Context) []func() resource.Resource 
 		NewEnterpriseServiceUserRoleResource,
 		NewOrgServiceUserRoleResource,
 		NewOrgUserRoleResource,
+		NewBlueprintResource,
+		NewSnapshotBuildResource,
 	}
 }
 
