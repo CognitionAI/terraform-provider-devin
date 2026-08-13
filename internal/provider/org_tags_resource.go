@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/cognitionai/terraform-provider-devin/internal/api"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -13,6 +14,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+// Tag names reserved by the platform (e.g. for security code-scan sessions);
+// the API rejects them (case-insensitively) in allowed-tag lists.
+var reservedSessionTags = map[string]bool{
+	"security-code-scan": true,
+}
 
 var _ resource.Resource = &orgTagsResource{}
 var _ resource.ResourceWithImportState = &orgTagsResource{}
@@ -50,7 +57,8 @@ func (r *orgTagsResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				},
 			},
 			"tags": schema.SetAttribute{
-				Description: "The full set of allowed session tags for the organization.",
+				Description: "The full set of allowed session tags for the organization. Reserved tag names " +
+					"(e.g. `security-code-scan`) are managed by the platform and cannot be included.",
 				ElementType: types.StringType,
 				Required:    true,
 			},
@@ -76,7 +84,7 @@ func (r *orgTagsResource) ValidateConfig(ctx context.Context, req resource.Valid
 		return
 	}
 
-	if config.DefaultTag.IsNull() || config.DefaultTag.IsUnknown() || config.Tags.IsUnknown() {
+	if config.Tags.IsNull() || config.Tags.IsUnknown() {
 		return
 	}
 	for _, element := range config.Tags.Elements() {
@@ -87,6 +95,20 @@ func (r *orgTagsResource) ValidateConfig(ctx context.Context, req resource.Valid
 
 	tags := setToStrings(ctx, config.Tags, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	for _, t := range tags {
+		if reservedSessionTags[strings.ToLower(t)] {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("tags"),
+				"tags contains a reserved tag name",
+				fmt.Sprintf("%q is reserved by the platform and cannot be included in the allowed tags list", t),
+			)
+		}
+	}
+
+	if config.DefaultTag.IsNull() || config.DefaultTag.IsUnknown() {
 		return
 	}
 

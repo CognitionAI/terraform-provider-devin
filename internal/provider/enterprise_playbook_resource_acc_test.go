@@ -20,8 +20,35 @@ resource "devin_enterprise_playbook" "test" {
 `, providerConfig, title, body, extra)
 }
 
+func enterprisePlaybookSchemaConfig(title, body, extra string) string {
+	return fmt.Sprintf(`%s
+resource "devin_enterprise_playbook" "test" {
+  title = %q
+  body  = %q
+%s}
+`, providerConfig, title, body, extra)
+}
+
+const enterprisePlaybookSchemaExtraA = `  structured_output_schema = jsonencode({
+    type = "object"
+    properties = {
+      name = { type = "string" }
+    }
+    required = ["name"]
+  })
+`
+
+const enterprisePlaybookSchemaExtraB = `  structured_output_schema = jsonencode({
+    type = "object"
+    properties = {
+      score = { type = "number" }
+    }
+  })
+`
+
 // Create, validate against the API, import by playbook ID, update in place,
-// then clear the macro by removing it from config.
+// clear the macro, then exercise the structured_output_schema lifecycle (set,
+// update, clear) verifying each change round-trips to the API as a JSON object.
 func TestAccEnterprisePlaybookResource_basic(t *testing.T) {
 	macro := "!" + randomName("tf-acc-ent-pb")
 	var playbookID string
@@ -57,6 +84,34 @@ func TestAccEnterprisePlaybookResource_basic(t *testing.T) {
 					resource.TestCheckNoResourceAttr("devin_enterprise_playbook.test", "macro"),
 					resource.TestCheckResourceAttrPtr("devin_enterprise_playbook.test", "playbook_id", &playbookID),
 					checkAPIFieldMatchesState("devin_enterprise_playbook.test", "/v3/enterprise/playbooks/{playbook_id}", "title", "title"),
+				),
+			},
+			{
+				Config: enterprisePlaybookSchemaConfig("Updated title", "Updated body", enterprisePlaybookSchemaExtraA),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("devin_enterprise_playbook.test", "structured_output_schema"),
+					checkAPIJSONFieldMatchesState("devin_enterprise_playbook.test", "/v3/enterprise/playbooks/{playbook_id}", "structured_output_schema", "structured_output_schema"),
+				),
+			},
+			{
+				ResourceName:                         "devin_enterprise_playbook.test",
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "playbook_id",
+				ImportStateIdFunc:                    importStateIDFromAttrs("devin_enterprise_playbook.test", "playbook_id"),
+			},
+			{
+				Config: enterprisePlaybookSchemaConfig("Updated title", "Updated body", enterprisePlaybookSchemaExtraB),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("devin_enterprise_playbook.test", "structured_output_schema"),
+					checkAPIJSONFieldMatchesState("devin_enterprise_playbook.test", "/v3/enterprise/playbooks/{playbook_id}", "structured_output_schema", "structured_output_schema"),
+				),
+			},
+			{
+				Config: enterprisePlaybookConfig("Updated title", "Updated body", ""),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("devin_enterprise_playbook.test", "structured_output_schema"),
+					checkAPIJSONFieldMatchesState("devin_enterprise_playbook.test", "/v3/enterprise/playbooks/{playbook_id}", "structured_output_schema", "structured_output_schema"),
 				),
 			},
 		},

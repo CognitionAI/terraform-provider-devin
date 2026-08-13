@@ -3,12 +3,12 @@
 page_title: "devin_git_permission Resource - devin"
 subcategory: ""
 description: |-
-  Manages a git permission for a Devin organization. Exactly one of repo_path, group_prefix, or prefix_path must be set.
+  Manages a git permission for a Devin organization. Exactly one of repo_path, group_prefix, prefix_path, or depot_path must be set.
 ---
 
 # devin_git_permission (Resource)
 
-Manages a git permission for a Devin organization. Exactly one of repo_path, group_prefix, or prefix_path must be set.
+Manages a git permission for a Devin organization. Exactly one of repo_path, group_prefix, prefix_path, or depot_path must be set.
 
 ## Example Usage
 
@@ -49,6 +49,7 @@ resource "devin_git_permission" "shared_lib" {
 
 ### Optional
 
+- `depot_path` (String) Perforce depot path. Mutually exclusive with repo_path, group_prefix, and prefix_path.
 - `group_prefix` (String) Repository group/org prefix (e.g., 'myorg'). Grants access to all repos under this prefix. Must not end with a slash. Mutually exclusive with repo_path and prefix_path.
 - `prefix_path` (String) Path prefix for matching repositories. Mutually exclusive with repo_path and group_prefix.
 - `read_only` (Boolean) Whether the permission grants read-only access.

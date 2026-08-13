@@ -98,6 +98,20 @@ func playbookIdentitySchema() identityschema.Schema {
 	}
 }
 
+type automationIdentityModel struct {
+	OrgID        types.String `tfsdk:"org_id"`
+	AutomationID types.String `tfsdk:"automation_id"`
+}
+
+func automationIdentitySchema() identityschema.Schema {
+	return identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"org_id":        identityAttribute("Organization ID that owns the automation."),
+			"automation_id": identityAttribute("Automation ID."),
+		},
+	}
+}
+
 type enterprisePlaybookIdentityModel struct {
 	PlaybookID types.String `tfsdk:"playbook_id"`
 }

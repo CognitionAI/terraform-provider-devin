@@ -43,6 +43,7 @@ output "alice_user_id" {
 Read-Only:
 
 - `email` (String) Email address of the user.
+- `enterprise_joined_at` (Number) When the user was added to this enterprise.
 - `name` (String) Display name of the user.
 - `role_assignments` (Attributes List) Direct role assignments. org_id is null for enterprise (account-level) roles. (see [below for nested schema](#nestedatt--users--role_assignments))
 - `user_id` (String) User ID.

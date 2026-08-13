@@ -51,6 +51,14 @@ func orgSchedulePath(orgID, scheduleID string) string {
 	return orgSchedulesPath(orgID) + "/" + url.PathEscape(scheduleID)
 }
 
+func orgAutomationsPath(orgID string) string {
+	return organizationsPath + "/" + url.PathEscape(orgID) + "/automations"
+}
+
+func orgAutomationPath(orgID, automationID string) string {
+	return orgAutomationsPath(orgID) + "/" + url.PathEscape(automationID)
+}
+
 const (
 	enterpriseGitConnectionsPath     = "/v3/enterprise/git-providers/connections"
 	enterpriseRolesPath              = "/v3/enterprise/roles"

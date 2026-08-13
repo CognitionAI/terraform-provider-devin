@@ -105,6 +105,7 @@ func (p *DevinProvider) Resources(_ context.Context) []func() resource.Resource 
 		NewOrganizationResource,
 		NewGitPermissionResource,
 		NewPlaybookResource,
+		NewAutomationResource,
 		NewKnowledgeNoteResource,
 		NewSecretResource,
 		NewScheduleResource,

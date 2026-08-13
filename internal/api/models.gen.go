@@ -4,9 +4,11 @@
 package api
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/oapi-codegen/nullable"
+	"github.com/oapi-codegen/runtime"
 )
 
 const (
@@ -20,6 +22,290 @@ const (
 	ACULimitResponseScopeUser       ACULimitResponseScope = "user"
 )
 
+// Defines values for ActorResponseType.
+const (
+	ActorResponseTypeServiceUser ActorResponseType = "service_user"
+	ActorResponseTypeUser        ActorResponseType = "user"
+)
+
+// Defines values for AutomationComparisonConditionOperator.
+const (
+	Eq  AutomationComparisonConditionOperator = "eq"
+	Neq AutomationComparisonConditionOperator = "neq"
+)
+
+// Defines values for AutomationEmailNotificationWhen.
+const (
+	AutomationEmailNotificationWhenAlways            AutomationEmailNotificationWhen = "always"
+	AutomationEmailNotificationWhenDispatchFailed    AutomationEmailNotificationWhen = "dispatch_failed"
+	AutomationEmailNotificationWhenDispatchSucceeded AutomationEmailNotificationWhen = "dispatch_succeeded"
+)
+
+// Defines values for AutomationEmptyConditionOperator.
+const (
+	IsEmpty    AutomationEmptyConditionOperator = "is_empty"
+	IsNotEmpty AutomationEmptyConditionOperator = "is_not_empty"
+)
+
+// Defines values for AutomationGlobConditionOperator.
+const (
+	Globs    AutomationGlobConditionOperator = "globs"
+	NotGlobs AutomationGlobConditionOperator = "not_globs"
+)
+
+// Defines values for AutomationListConditionOperator.
+const (
+	In    AutomationListConditionOperator = "in"
+	NotIn AutomationListConditionOperator = "not_in"
+)
+
+// Defines values for AutomationMatchConditionOperator.
+const (
+	Matches    AutomationMatchConditionOperator = "matches"
+	NotMatches AutomationMatchConditionOperator = "not_matches"
+)
+
+// Defines values for AutomationMessageSessionActionType.
+const (
+	AutomationMessageSessionActionTypeMessageSession AutomationMessageSessionActionType = "message_session"
+)
+
+// Defines values for AutomationMessageSessionActionUpdateType.
+const (
+	AutomationMessageSessionActionUpdateTypeMessageSession AutomationMessageSessionActionUpdateType = "message_session"
+)
+
+// Defines values for AutomationMonitorSessionActionType.
+const (
+	AutomationMonitorSessionActionTypeMonitorSession AutomationMonitorSessionActionType = "monitor_session"
+)
+
+// Defines values for AutomationMonitorSessionActionUpdateType.
+const (
+	AutomationMonitorSessionActionUpdateTypeMonitorSession AutomationMonitorSessionActionUpdateType = "monitor_session"
+)
+
+// Defines values for AutomationNumericConditionOperator.
+const (
+	Gt  AutomationNumericConditionOperator = "gt"
+	Gte AutomationNumericConditionOperator = "gte"
+	Lt  AutomationNumericConditionOperator = "lt"
+	Lte AutomationNumericConditionOperator = "lte"
+)
+
+// Defines values for AutomationRangeConditionOperator.
+const (
+	Between AutomationRangeConditionOperator = "between"
+)
+
+// Defines values for AutomationRecurrenceConditionOperator.
+const (
+	Recurrence AutomationRecurrenceConditionOperator = "recurrence"
+)
+
+// Defines values for AutomationReplyType.
+const (
+	AutomationReplyTypeAttachThread AutomationReplyType = "attach_thread"
+	AutomationReplyTypeNotifyThread AutomationReplyType = "notify_thread"
+	AutomationReplyTypePostResponse AutomationReplyType = "post_response"
+)
+
+// Defines values for AutomationRunAsCreatorType.
+const (
+	Creator AutomationRunAsCreatorType = "creator"
+)
+
+// Defines values for AutomationRunAsOrganizationType.
+const (
+	Organization AutomationRunAsOrganizationType = "organization"
+)
+
+// Defines values for AutomationSchemaFieldDefGranularity.
+const (
+	AutomationSchemaFieldDefGranularityDate     AutomationSchemaFieldDefGranularity = "date"
+	AutomationSchemaFieldDefGranularityDatetime AutomationSchemaFieldDefGranularity = "datetime"
+)
+
+// Defines values for AutomationSchemaFieldDefType.
+const (
+	AutomationSchemaFieldDefTypeBoolean                AutomationSchemaFieldDefType = "boolean"
+	AutomationSchemaFieldDefTypeDate                   AutomationSchemaFieldDefType = "date"
+	AutomationSchemaFieldDefTypeFilePaths              AutomationSchemaFieldDefType = "file_paths"
+	AutomationSchemaFieldDefTypeGithubRepo             AutomationSchemaFieldDefType = "github_repo"
+	AutomationSchemaFieldDefTypeGitlabRepo             AutomationSchemaFieldDefType = "gitlab_repo"
+	AutomationSchemaFieldDefTypeIncidentIoIncidentType AutomationSchemaFieldDefType = "incident_io_incident_type"
+	AutomationSchemaFieldDefTypeIncidentIoSeverity     AutomationSchemaFieldDefType = "incident_io_severity"
+	AutomationSchemaFieldDefTypeIncidentIoStatus       AutomationSchemaFieldDefType = "incident_io_status"
+	AutomationSchemaFieldDefTypeIncidentIoTeam         AutomationSchemaFieldDefType = "incident_io_team"
+	AutomationSchemaFieldDefTypeJiraAssignee           AutomationSchemaFieldDefType = "jira_assignee"
+	AutomationSchemaFieldDefTypeJiraEpic               AutomationSchemaFieldDefType = "jira_epic"
+	AutomationSchemaFieldDefTypeJiraLabel              AutomationSchemaFieldDefType = "jira_label"
+	AutomationSchemaFieldDefTypeJiraProject            AutomationSchemaFieldDefType = "jira_project"
+	AutomationSchemaFieldDefTypeJiraStatus             AutomationSchemaFieldDefType = "jira_status"
+	AutomationSchemaFieldDefTypeLinearAssignee         AutomationSchemaFieldDefType = "linear_assignee"
+	AutomationSchemaFieldDefTypeLinearLabel            AutomationSchemaFieldDefType = "linear_label"
+	AutomationSchemaFieldDefTypeLinearProject          AutomationSchemaFieldDefType = "linear_project"
+	AutomationSchemaFieldDefTypeLinearState            AutomationSchemaFieldDefType = "linear_state"
+	AutomationSchemaFieldDefTypeLinearTeam             AutomationSchemaFieldDefType = "linear_team"
+	AutomationSchemaFieldDefTypeNumber                 AutomationSchemaFieldDefType = "number"
+	AutomationSchemaFieldDefTypePylonStatus            AutomationSchemaFieldDefType = "pylon_status"
+	AutomationSchemaFieldDefTypePylonTag               AutomationSchemaFieldDefType = "pylon_tag"
+	AutomationSchemaFieldDefTypeRrule                  AutomationSchemaFieldDefType = "rrule"
+	AutomationSchemaFieldDefTypeSelect                 AutomationSchemaFieldDefType = "select"
+	AutomationSchemaFieldDefTypeSlackChannel           AutomationSchemaFieldDefType = "slack_channel"
+	AutomationSchemaFieldDefTypeSlackReaction          AutomationSchemaFieldDefType = "slack_reaction"
+	AutomationSchemaFieldDefTypeSlackUser              AutomationSchemaFieldDefType = "slack_user"
+	AutomationSchemaFieldDefTypeString                 AutomationSchemaFieldDefType = "string"
+)
+
+// Defines values for AutomationSecurityProfileResponseSelection.
+const (
+	Inherit AutomationSecurityProfileResponseSelection = "inherit"
+	None    AutomationSecurityProfileResponseSelection = "none"
+	Profile AutomationSecurityProfileResponseSelection = "profile"
+)
+
+// Defines values for AutomationSessionSettingsInputDevinMode.
+const (
+	AutomationSessionSettingsInputDevinModeFast   AutomationSessionSettingsInputDevinMode = "fast"
+	AutomationSessionSettingsInputDevinModeFusion AutomationSessionSettingsInputDevinMode = "fusion"
+	AutomationSessionSettingsInputDevinModeLite   AutomationSessionSettingsInputDevinMode = "lite"
+	AutomationSessionSettingsInputDevinModeNormal AutomationSessionSettingsInputDevinMode = "normal"
+	AutomationSessionSettingsInputDevinModeUltra  AutomationSessionSettingsInputDevinMode = "ultra"
+)
+
+// Defines values for AutomationSessionSettingsOutputDevinMode.
+const (
+	AutomationSessionSettingsOutputDevinModeFast   AutomationSessionSettingsOutputDevinMode = "fast"
+	AutomationSessionSettingsOutputDevinModeFusion AutomationSessionSettingsOutputDevinMode = "fusion"
+	AutomationSessionSettingsOutputDevinModeLite   AutomationSessionSettingsOutputDevinMode = "lite"
+	AutomationSessionSettingsOutputDevinModeNormal AutomationSessionSettingsOutputDevinMode = "normal"
+	AutomationSessionSettingsOutputDevinModeUltra  AutomationSessionSettingsOutputDevinMode = "ultra"
+)
+
+// Defines values for AutomationSessionSlackConfigMode.
+const (
+	AutomationSessionSlackConfigModeForwardThread AutomationSessionSlackConfigMode = "forward_thread"
+	AutomationSessionSlackConfigModePostResponse  AutomationSessionSlackConfigMode = "post_response"
+	AutomationSessionSlackConfigModePostUpdates   AutomationSessionSlackConfigMode = "post_updates"
+)
+
+// Defines values for AutomationSlackNotificationWhen.
+const (
+	AutomationSlackNotificationWhenAlways            AutomationSlackNotificationWhen = "always"
+	AutomationSlackNotificationWhenDispatchFailed    AutomationSlackNotificationWhen = "dispatch_failed"
+	AutomationSlackNotificationWhenDispatchSucceeded AutomationSlackNotificationWhen = "dispatch_succeeded"
+)
+
+// Defines values for AutomationStartSessionActionInputType.
+const (
+	AutomationStartSessionActionInputTypeStartSession AutomationStartSessionActionInputType = "start_session"
+)
+
+// Defines values for AutomationStartSessionActionOutputType.
+const (
+	AutomationStartSessionActionOutputTypeStartSession AutomationStartSessionActionOutputType = "start_session"
+)
+
+// Defines values for AutomationStartSessionActionUpdateType.
+const (
+	StartSession AutomationStartSessionActionUpdateType = "start_session"
+)
+
+// Defines values for AutomationStringConditionOperator.
+const (
+	Contains      AutomationStringConditionOperator = "contains"
+	EndsWith      AutomationStringConditionOperator = "ends_with"
+	NotContains   AutomationStringConditionOperator = "not_contains"
+	NotEndsWith   AutomationStringConditionOperator = "not_ends_with"
+	NotStartsWith AutomationStringConditionOperator = "not_starts_with"
+	StartsWith    AutomationStringConditionOperator = "starts_with"
+)
+
+// Defines values for AutomationToolsSlackDmScope.
+const (
+	OrgMembers AutomationToolsSlackDmScope = "org_members"
+	Workspace  AutomationToolsSlackDmScope = "workspace"
+)
+
+// Defines values for AutomationTriggerRequestInputEventType.
+const (
+	AutomationTriggerRequestInputEventTypeGithubCheckRun                 AutomationTriggerRequestInputEventType = "github:check_run"
+	AutomationTriggerRequestInputEventTypeGithubIssueComment             AutomationTriggerRequestInputEventType = "github:issue_comment"
+	AutomationTriggerRequestInputEventTypeGithubIssues                   AutomationTriggerRequestInputEventType = "github:issues"
+	AutomationTriggerRequestInputEventTypeGithubPullRequest              AutomationTriggerRequestInputEventType = "github:pull_request"
+	AutomationTriggerRequestInputEventTypeGithubPullRequestReview        AutomationTriggerRequestInputEventType = "github:pull_request_review"
+	AutomationTriggerRequestInputEventTypeGithubPullRequestReviewComment AutomationTriggerRequestInputEventType = "github:pull_request_review_comment"
+	AutomationTriggerRequestInputEventTypeGithubPush                     AutomationTriggerRequestInputEventType = "github:push"
+	AutomationTriggerRequestInputEventTypeGitlabIssue                    AutomationTriggerRequestInputEventType = "gitlab:issue"
+	AutomationTriggerRequestInputEventTypeGitlabIssueNote                AutomationTriggerRequestInputEventType = "gitlab:issue_note"
+	AutomationTriggerRequestInputEventTypeGitlabMergeRequest             AutomationTriggerRequestInputEventType = "gitlab:merge_request"
+	AutomationTriggerRequestInputEventTypeGitlabNote                     AutomationTriggerRequestInputEventType = "gitlab:note"
+	AutomationTriggerRequestInputEventTypeGitlabPipeline                 AutomationTriggerRequestInputEventType = "gitlab:pipeline"
+	AutomationTriggerRequestInputEventTypeGitlabPush                     AutomationTriggerRequestInputEventType = "gitlab:push"
+	AutomationTriggerRequestInputEventTypeIncidentIoFollowUpCreated      AutomationTriggerRequestInputEventType = "incident_io:follow_up_created"
+	AutomationTriggerRequestInputEventTypeIncidentIoIncidentCreated      AutomationTriggerRequestInputEventType = "incident_io:incident_created"
+	AutomationTriggerRequestInputEventTypeIncidentIoSeverityChanged      AutomationTriggerRequestInputEventType = "incident_io:severity_changed"
+	AutomationTriggerRequestInputEventTypeIncidentIoStatusChanged        AutomationTriggerRequestInputEventType = "incident_io:status_changed"
+	AutomationTriggerRequestInputEventTypeJiraAssigned                   AutomationTriggerRequestInputEventType = "jira:assigned"
+	AutomationTriggerRequestInputEventTypeJiraIssueCreated               AutomationTriggerRequestInputEventType = "jira:issue_created"
+	AutomationTriggerRequestInputEventTypeJiraLabelAdded                 AutomationTriggerRequestInputEventType = "jira:label_added"
+	AutomationTriggerRequestInputEventTypeJiraStatusChanged              AutomationTriggerRequestInputEventType = "jira:status_changed"
+	AutomationTriggerRequestInputEventTypeLinearAssigned                 AutomationTriggerRequestInputEventType = "linear:assigned"
+	AutomationTriggerRequestInputEventTypeLinearCreate                   AutomationTriggerRequestInputEventType = "linear:create"
+	AutomationTriggerRequestInputEventTypeLinearLabelAdded               AutomationTriggerRequestInputEventType = "linear:label_added"
+	AutomationTriggerRequestInputEventTypeLinearMoved                    AutomationTriggerRequestInputEventType = "linear:moved"
+	AutomationTriggerRequestInputEventTypeLinearPriorityChanged          AutomationTriggerRequestInputEventType = "linear:priority_changed"
+	AutomationTriggerRequestInputEventTypeLinearStatusChanged            AutomationTriggerRequestInputEventType = "linear:status_changed"
+	AutomationTriggerRequestInputEventTypePylonIssueCreated              AutomationTriggerRequestInputEventType = "pylon:issue_created"
+	AutomationTriggerRequestInputEventTypePylonIssueStatusChanged        AutomationTriggerRequestInputEventType = "pylon:issue_status_changed"
+	AutomationTriggerRequestInputEventTypePylonIssueTagAdded             AutomationTriggerRequestInputEventType = "pylon:issue_tag_added"
+	AutomationTriggerRequestInputEventTypeScheduleRecurring              AutomationTriggerRequestInputEventType = "schedule:recurring"
+	AutomationTriggerRequestInputEventTypeSlackMessage                   AutomationTriggerRequestInputEventType = "slack:message"
+	AutomationTriggerRequestInputEventTypeSlackReactionAdded             AutomationTriggerRequestInputEventType = "slack:reaction_added"
+	AutomationTriggerRequestInputEventTypeSnapshotBuildCompleted         AutomationTriggerRequestInputEventType = "snapshot_build:completed"
+	AutomationTriggerRequestInputEventTypeWebhookIncoming                AutomationTriggerRequestInputEventType = "webhook:incoming"
+)
+
+// Defines values for AutomationTriggerRequestOutputEventType.
+const (
+	AutomationTriggerRequestOutputEventTypeGithubCheckRun                 AutomationTriggerRequestOutputEventType = "github:check_run"
+	AutomationTriggerRequestOutputEventTypeGithubIssueComment             AutomationTriggerRequestOutputEventType = "github:issue_comment"
+	AutomationTriggerRequestOutputEventTypeGithubIssues                   AutomationTriggerRequestOutputEventType = "github:issues"
+	AutomationTriggerRequestOutputEventTypeGithubPullRequest              AutomationTriggerRequestOutputEventType = "github:pull_request"
+	AutomationTriggerRequestOutputEventTypeGithubPullRequestReview        AutomationTriggerRequestOutputEventType = "github:pull_request_review"
+	AutomationTriggerRequestOutputEventTypeGithubPullRequestReviewComment AutomationTriggerRequestOutputEventType = "github:pull_request_review_comment"
+	AutomationTriggerRequestOutputEventTypeGithubPush                     AutomationTriggerRequestOutputEventType = "github:push"
+	AutomationTriggerRequestOutputEventTypeGitlabIssue                    AutomationTriggerRequestOutputEventType = "gitlab:issue"
+	AutomationTriggerRequestOutputEventTypeGitlabIssueNote                AutomationTriggerRequestOutputEventType = "gitlab:issue_note"
+	AutomationTriggerRequestOutputEventTypeGitlabMergeRequest             AutomationTriggerRequestOutputEventType = "gitlab:merge_request"
+	AutomationTriggerRequestOutputEventTypeGitlabNote                     AutomationTriggerRequestOutputEventType = "gitlab:note"
+	AutomationTriggerRequestOutputEventTypeGitlabPipeline                 AutomationTriggerRequestOutputEventType = "gitlab:pipeline"
+	AutomationTriggerRequestOutputEventTypeGitlabPush                     AutomationTriggerRequestOutputEventType = "gitlab:push"
+	AutomationTriggerRequestOutputEventTypeIncidentIoFollowUpCreated      AutomationTriggerRequestOutputEventType = "incident_io:follow_up_created"
+	AutomationTriggerRequestOutputEventTypeIncidentIoIncidentCreated      AutomationTriggerRequestOutputEventType = "incident_io:incident_created"
+	AutomationTriggerRequestOutputEventTypeIncidentIoSeverityChanged      AutomationTriggerRequestOutputEventType = "incident_io:severity_changed"
+	AutomationTriggerRequestOutputEventTypeIncidentIoStatusChanged        AutomationTriggerRequestOutputEventType = "incident_io:status_changed"
+	AutomationTriggerRequestOutputEventTypeJiraAssigned                   AutomationTriggerRequestOutputEventType = "jira:assigned"
+	AutomationTriggerRequestOutputEventTypeJiraIssueCreated               AutomationTriggerRequestOutputEventType = "jira:issue_created"
+	AutomationTriggerRequestOutputEventTypeJiraLabelAdded                 AutomationTriggerRequestOutputEventType = "jira:label_added"
+	AutomationTriggerRequestOutputEventTypeJiraStatusChanged              AutomationTriggerRequestOutputEventType = "jira:status_changed"
+	AutomationTriggerRequestOutputEventTypeLinearAssigned                 AutomationTriggerRequestOutputEventType = "linear:assigned"
+	AutomationTriggerRequestOutputEventTypeLinearCreate                   AutomationTriggerRequestOutputEventType = "linear:create"
+	AutomationTriggerRequestOutputEventTypeLinearLabelAdded               AutomationTriggerRequestOutputEventType = "linear:label_added"
+	AutomationTriggerRequestOutputEventTypeLinearMoved                    AutomationTriggerRequestOutputEventType = "linear:moved"
+	AutomationTriggerRequestOutputEventTypeLinearPriorityChanged          AutomationTriggerRequestOutputEventType = "linear:priority_changed"
+	AutomationTriggerRequestOutputEventTypeLinearStatusChanged            AutomationTriggerRequestOutputEventType = "linear:status_changed"
+	AutomationTriggerRequestOutputEventTypePylonIssueCreated              AutomationTriggerRequestOutputEventType = "pylon:issue_created"
+	AutomationTriggerRequestOutputEventTypePylonIssueStatusChanged        AutomationTriggerRequestOutputEventType = "pylon:issue_status_changed"
+	AutomationTriggerRequestOutputEventTypePylonIssueTagAdded             AutomationTriggerRequestOutputEventType = "pylon:issue_tag_added"
+	AutomationTriggerRequestOutputEventTypeScheduleRecurring              AutomationTriggerRequestOutputEventType = "schedule:recurring"
+	AutomationTriggerRequestOutputEventTypeSlackMessage                   AutomationTriggerRequestOutputEventType = "slack:message"
+	AutomationTriggerRequestOutputEventTypeSlackReactionAdded             AutomationTriggerRequestOutputEventType = "slack:reaction_added"
+	AutomationTriggerRequestOutputEventTypeSnapshotBuildCompleted         AutomationTriggerRequestOutputEventType = "snapshot_build:completed"
+	AutomationTriggerRequestOutputEventTypeWebhookIncoming                AutomationTriggerRequestOutputEventType = "webhook:incoming"
+)
+
 // Defines values for GitConnectionResponseGitProviderType.
 const (
 	AzureDevopsOauth      GitConnectionResponseGitProviderType = "azure_devops_oauth"
@@ -30,6 +316,7 @@ const (
 	GithubToken           GitConnectionResponseGitProviderType = "github_token"
 	GitlabOauth           GitConnectionResponseGitProviderType = "gitlab_oauth"
 	GitlabToken           GitConnectionResponseGitProviderType = "gitlab_token"
+	Perforce              GitConnectionResponseGitProviderType = "perforce"
 )
 
 // Defines values for KnowledgeNoteResponseAccessType.
@@ -48,6 +335,12 @@ const (
 const (
 	RoleRoleTypeEnterprise RoleRoleType = "enterprise"
 	RoleRoleTypeOrg        RoleRoleType = "org"
+)
+
+// Defines values for RoleDetailResponseRoleType.
+const (
+	RoleDetailResponseRoleTypeEnterprise RoleDetailResponseRoleType = "enterprise"
+	RoleDetailResponseRoleTypeOrg        RoleDetailResponseRoleType = "org"
 )
 
 // Defines values for ScheduleCreateRequestAgent.
@@ -133,6 +426,16 @@ const (
 	HandleListNotesV3EnterpriseKnowledgeNotesGetParamsAccessTypeOrg        HandleListNotesV3EnterpriseKnowledgeNotesGetParamsAccessType = "org"
 )
 
+// Defines values for HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes.
+const (
+	AutoTriage       HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes = "auto_triage"
+	IncidentSession  HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes = "incident_session"
+	LongRunning      HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes = "long_running"
+	NewSession       HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes = "new_session"
+	RemediateFinding HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes = "remediate_finding"
+	TriageSession    HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes = "triage_session"
+)
+
 // ACULimitResponse defines model for ACULimitResponse.
 type ACULimitResponse struct {
 	CycleAcuLimit int                       `json:"cycle_acu_limit"`
@@ -144,6 +447,745 @@ type ACULimitResponse struct {
 // ACULimitResponseScope defines model for ACULimitResponse.Scope.
 type ACULimitResponseScope string
 
+// ActorResponse A user or service-user principal attributed to an action or resource.
+type ActorResponse struct {
+	// ID User id or service-user id.
+	ID string `json:"id"`
+
+	// Name Display name, resolved server-side; null when deleted.
+	Name nullable.Nullable[string] `json:"name,omitempty"`
+
+	// Type Kind of principal.
+	Type ActorResponseType `json:"type"`
+}
+
+// ActorResponseType Kind of principal.
+type ActorResponseType string
+
+// AutomationComparisonCondition defines model for AutomationComparisonCondition.
+type AutomationComparisonCondition struct {
+	Field    string                                `json:"field"`
+	Operator AutomationComparisonConditionOperator `json:"operator"`
+	Value    AutomationComparisonCondition_Value   `json:"value"`
+}
+
+// AutomationComparisonConditionOperator defines model for AutomationComparisonCondition.Operator.
+type AutomationComparisonConditionOperator string
+
+// AutomationComparisonConditionValue0 defines model for .
+type AutomationComparisonConditionValue0 = string
+
+// AutomationComparisonConditionValue1 defines model for .
+type AutomationComparisonConditionValue1 = int
+
+// AutomationComparisonConditionValue2 defines model for .
+type AutomationComparisonConditionValue2 = float32
+
+// AutomationComparisonConditionValue3 defines model for .
+type AutomationComparisonConditionValue3 = bool
+
+// AutomationComparisonCondition_Value defines model for AutomationComparisonCondition.Value.
+type AutomationComparisonCondition_Value struct {
+	union json.RawMessage
+}
+
+// AutomationConcurrency defines model for AutomationConcurrency.
+type AutomationConcurrency struct {
+	// MaxConcurrentRuns Maximum in-flight runs for this automation; further triggered events wait in its queue. A run stops counting toward the limit once its session finishes and is awaiting further instructions, not only when the session stops. null = unlimited.
+	MaxConcurrentRuns nullable.Nullable[int] `json:"max_concurrent_runs,omitempty"`
+
+	// MaxQueueDepth Maximum triggered events waiting in the automation's queue to run; events beyond this are dropped. Requires max_concurrent_runs to be set. null = unlimited.
+	MaxQueueDepth nullable.Nullable[int] `json:"max_queue_depth,omitempty"`
+}
+
+// AutomationConditionGroup defines model for AutomationConditionGroup.
+type AutomationConditionGroup struct {
+	// All AND: every condition in the group must match.
+	All []AutomationConditionGroup_All_Item `json:"all"`
+}
+
+// AutomationConditionGroup_All_Item defines model for AutomationConditionGroup.all.Item.
+type AutomationConditionGroup_All_Item struct {
+	union json.RawMessage
+}
+
+// AutomationConditionsInput defines model for AutomationConditions-Input.
+type AutomationConditionsInput struct {
+	// Any OR of AND-groups (fixed two-level DNF).
+	Any []AutomationConditionGroup `json:"any"`
+}
+
+// AutomationConditionsOutput defines model for AutomationConditions-Output.
+type AutomationConditionsOutput struct {
+	// Any OR of AND-groups (fixed two-level DNF).
+	Any []AutomationConditionGroup `json:"any"`
+}
+
+// AutomationCreateRequest defines model for AutomationCreateRequest.
+type AutomationCreateRequest struct {
+	// Actions Non-empty. Caps: at most one start_session; monitor_session must be the only action.
+	Actions     []AutomationCreateRequest_Actions_Item   `json:"actions"`
+	Concurrency nullable.Nullable[AutomationConcurrency] `json:"concurrency,omitempty"`
+	Enabled     *bool                                    `json:"enabled,omitempty"`
+	Limits      nullable.Nullable[AutomationLimits]      `json:"limits,omitempty"`
+
+	// Metadata Org-visible key/value labels for organizing/filtering automations. At most 16 pairs; keys at most 32 chars; values at most 128.
+	Metadata      *map[string]string                         `json:"metadata,omitempty"`
+	Name          string                                     `json:"name"`
+	Notifications nullable.Nullable[AutomationNotifications] `json:"notifications,omitempty"`
+
+	// RunAs Required: explicitly choose the identity spawned sessions run under (organization or creator).
+	RunAs AutomationCreateRequest_RunAs `json:"run_as"`
+
+	// SecurityProfile The automation's own security-profile binding; omitted = inherit from the org/enterprise. Requires the security-profile management permission.
+	SecurityProfile nullable.Nullable[AutomationSecurityProfileSelection] `json:"security_profile,omitempty"`
+
+	// SessionSettings Applied to sessions this automation spawns.
+	SessionSettings nullable.Nullable[AutomationSessionSettingsInput] `json:"session_settings,omitempty"`
+
+	// TemplateID Create-only provenance marker; resolve ids via the templates endpoint. When set and tools.mcp_servers is omitted, the template's required_mcps apply.
+	TemplateID nullable.Nullable[string]          `json:"template_id,omitempty"`
+	Tools      nullable.Nullable[AutomationTools] `json:"tools,omitempty"`
+
+	// Triggers Fires when any trigger matches; once per event. At most one webhook:incoming trigger.
+	Triggers []AutomationTriggerRequestInput `json:"triggers"`
+}
+
+// AutomationCreateRequest_Actions_Item defines model for AutomationCreateRequest.actions.Item.
+type AutomationCreateRequest_Actions_Item struct {
+	union json.RawMessage
+}
+
+// AutomationCreateRequest_RunAs Required: explicitly choose the identity spawned sessions run under (organization or creator).
+type AutomationCreateRequest_RunAs struct {
+	union json.RawMessage
+}
+
+// AutomationEmailNotification defines model for AutomationEmailNotification.
+type AutomationEmailNotification struct {
+	// Recipients null = the automation creator; required for service-user-created automations.
+	Recipients nullable.Nullable[[]string]     `json:"recipients,omitempty"`
+	When       AutomationEmailNotificationWhen `json:"when"`
+}
+
+// AutomationEmailNotificationWhen defines model for AutomationEmailNotification.When.
+type AutomationEmailNotificationWhen string
+
+// AutomationEmptyCondition Unary operator: matches on the field's emptiness; `value` carries no data.
+type AutomationEmptyCondition struct {
+	Field    string                           `json:"field"`
+	Operator AutomationEmptyConditionOperator `json:"operator"`
+	Value    nullable.Nullable[interface{}]   `json:"value,omitempty"`
+}
+
+// AutomationEmptyConditionOperator defines model for AutomationEmptyCondition.Operator.
+type AutomationEmptyConditionOperator string
+
+// AutomationEventSchemaResponse defines model for AutomationEventSchemaResponse.
+type AutomationEventSchemaResponse struct {
+	Category  string `json:"category"`
+	EventType string `json:"event_type"`
+
+	// Fields Condition field path → field definition (type, label, required, options, ...).
+	Fields map[string]AutomationSchemaFieldDef `json:"fields"`
+	Name   string                              `json:"name"`
+
+	// SupportedReplies Valid replies[].type verbs for this event type.
+	SupportedReplies []string `json:"supported_replies"`
+}
+
+// AutomationGlobCondition defines model for AutomationGlobCondition.
+type AutomationGlobCondition struct {
+	Field    string                          `json:"field"`
+	Operator AutomationGlobConditionOperator `json:"operator"`
+
+	// Value Glob patterns; any changed path matches (github:push, gitlab:push).
+	Value []string `json:"value"`
+}
+
+// AutomationGlobConditionOperator defines model for AutomationGlobCondition.Operator.
+type AutomationGlobConditionOperator string
+
+// AutomationHostnameDestination defines model for AutomationHostnameDestination.
+type AutomationHostnameDestination struct {
+	Hostname string `json:"hostname"`
+}
+
+// AutomationInvocationLimits defines model for AutomationInvocationLimits.
+type AutomationInvocationLimits struct {
+	MaxPerWindow  int `json:"max_per_window"`
+	WindowSeconds int `json:"window_seconds"`
+}
+
+// AutomationIpv4Destination defines model for AutomationIpv4Destination.
+type AutomationIpv4Destination struct {
+	Ipv4 string `json:"ipv4"`
+}
+
+// AutomationIpv6Destination defines model for AutomationIpv6Destination.
+type AutomationIpv6Destination struct {
+	Ipv6 string `json:"ipv6"`
+}
+
+// AutomationLastInvocation defines model for AutomationLastInvocation.
+type AutomationLastInvocation struct {
+	FiredAt int `json:"fired_at"`
+
+	// Status succeeded | failed | skipped — open enum, clients must tolerate new values.
+	Status string `json:"status"`
+}
+
+// AutomationLimits defines model for AutomationLimits.
+type AutomationLimits struct {
+	// Invocations Rate-limits the automation's own firing.
+	Invocations nullable.Nullable[AutomationInvocationLimits] `json:"invocations,omitempty"`
+
+	// MaxAcuLimit Per spawned session (same name as the sessions API).
+	MaxAcuLimit nullable.Nullable[int] `json:"max_acu_limit,omitempty"`
+}
+
+// AutomationListCondition defines model for AutomationListCondition.
+type AutomationListCondition struct {
+	Field    string                          `json:"field"`
+	Operator AutomationListConditionOperator `json:"operator"`
+	Value    []string                        `json:"value"`
+}
+
+// AutomationListConditionOperator defines model for AutomationListCondition.Operator.
+type AutomationListConditionOperator string
+
+// AutomationMatchCondition defines model for AutomationMatchCondition.
+type AutomationMatchCondition struct {
+	Field    string                           `json:"field"`
+	Operator AutomationMatchConditionOperator `json:"operator"`
+
+	// Value Regular expression.
+	Value string `json:"value"`
+}
+
+// AutomationMatchConditionOperator defines model for AutomationMatchCondition.Operator.
+type AutomationMatchConditionOperator string
+
+// AutomationMessageSessionAction defines model for AutomationMessageSessionAction.
+type AutomationMessageSessionAction struct {
+	// AutoCreate When true, the first trigger creates a new long-running session owned by the automation and subsequent triggers message it.
+	AutoCreate *bool `json:"auto_create,omitempty"`
+
+	// Prompt The triggering event's payload is appended automatically.
+	Prompt string `json:"prompt"`
+
+	// TargetDevinID Must belong to the org; editing an automation containing this action requires write access to the target session (enable/disable-only edits exempt). Required unless auto_create is true, in which case it is set server-side once the first trigger creates the session; client-supplied values are ignored.
+	TargetDevinID nullable.Nullable[string]           `json:"target_devin_id,omitempty"`
+	Type          *AutomationMessageSessionActionType `json:"type,omitempty"`
+}
+
+// AutomationMessageSessionActionType defines model for AutomationMessageSessionAction.Type.
+type AutomationMessageSessionActionType string
+
+// AutomationMessageSessionActionUpdate defines model for AutomationMessageSessionActionUpdate.
+type AutomationMessageSessionActionUpdate struct {
+	// AutoCreate When true, the first trigger creates a new long-running session owned by the automation and subsequent triggers message it.
+	AutoCreate *bool `json:"auto_create,omitempty"`
+
+	// Prompt The triggering event's payload is appended automatically. Required when creating or adding this action; on a merge-semantics update, omit it to keep the stored value (null is invalid).
+	Prompt nullable.Nullable[string] `json:"prompt,omitempty"`
+
+	// TargetDevinID Must belong to the org; editing an automation containing this action requires write access to the target session (enable/disable-only edits exempt). Required unless auto_create is true, in which case it is set server-side once the first trigger creates the session; client-supplied values are ignored.
+	TargetDevinID nullable.Nullable[string]                 `json:"target_devin_id,omitempty"`
+	Type          *AutomationMessageSessionActionUpdateType `json:"type,omitempty"`
+}
+
+// AutomationMessageSessionActionUpdateType defines model for AutomationMessageSessionActionUpdate.Type.
+type AutomationMessageSessionActionUpdateType string
+
+// AutomationMonitorSessionAction defines model for AutomationMonitorSessionAction.
+type AutomationMonitorSessionAction struct {
+	// SetupPrompt Injected into the session's system prompt. Same reference-token grammar as prompt.
+	SetupPrompt        string                              `json:"setup_prompt"`
+	SlackMonitorConfig AutomationSlackMonitorConfig        `json:"slack_monitor_config"`
+	Type               *AutomationMonitorSessionActionType `json:"type,omitempty"`
+}
+
+// AutomationMonitorSessionActionType defines model for AutomationMonitorSessionAction.Type.
+type AutomationMonitorSessionActionType string
+
+// AutomationMonitorSessionActionUpdate defines model for AutomationMonitorSessionActionUpdate.
+type AutomationMonitorSessionActionUpdate struct {
+	// SetupPrompt Injected into the session's system prompt. Same reference-token grammar as prompt. Required when creating or adding this action; on a merge-semantics update, omit it to keep the stored value (null is invalid).
+	SetupPrompt nullable.Nullable[string] `json:"setup_prompt,omitempty"`
+
+	// SlackMonitorConfig Requires exactly one slack:message trigger on the same channel. Required when creating or adding this action; on a merge-semantics update, omit it to keep the stored value (null is invalid).
+	SlackMonitorConfig nullable.Nullable[AutomationSlackMonitorConfig] `json:"slack_monitor_config,omitempty"`
+	Type               *AutomationMonitorSessionActionUpdateType       `json:"type,omitempty"`
+}
+
+// AutomationMonitorSessionActionUpdateType defines model for AutomationMonitorSessionActionUpdate.Type.
+type AutomationMonitorSessionActionUpdateType string
+
+// AutomationNetPolicy defines model for AutomationNetPolicy.
+type AutomationNetPolicy struct {
+	Allow []AutomationNetPolicy_Allow_Item `json:"allow"`
+}
+
+// AutomationNetPolicy_Allow_Item defines model for AutomationNetPolicy.allow.Item.
+type AutomationNetPolicy_Allow_Item struct {
+	union json.RawMessage
+}
+
+// AutomationNotifications defines model for AutomationNotifications.
+type AutomationNotifications struct {
+	Email nullable.Nullable[AutomationEmailNotification] `json:"email,omitempty"`
+	Slack nullable.Nullable[AutomationSlackNotification] `json:"slack,omitempty"`
+}
+
+// AutomationNumericCondition defines model for AutomationNumericCondition.
+type AutomationNumericCondition struct {
+	Field    string                             `json:"field"`
+	Operator AutomationNumericConditionOperator `json:"operator"`
+	Value    AutomationNumericCondition_Value   `json:"value"`
+}
+
+// AutomationNumericConditionOperator defines model for AutomationNumericCondition.Operator.
+type AutomationNumericConditionOperator string
+
+// AutomationNumericConditionValue0 defines model for .
+type AutomationNumericConditionValue0 = int
+
+// AutomationNumericConditionValue1 defines model for .
+type AutomationNumericConditionValue1 = float32
+
+// AutomationNumericCondition_Value defines model for AutomationNumericCondition.Value.
+type AutomationNumericCondition_Value struct {
+	union json.RawMessage
+}
+
+// AutomationRangeCondition defines model for AutomationRangeCondition.
+type AutomationRangeCondition struct {
+	Field    string                           `json:"field"`
+	Operator AutomationRangeConditionOperator `json:"operator"`
+
+	// Value Inclusive [low, high] range.
+	Value []interface{} `json:"value"`
+}
+
+// AutomationRangeConditionOperator defines model for AutomationRangeCondition.Operator.
+type AutomationRangeConditionOperator string
+
+// AutomationRecurrenceCondition defines model for AutomationRecurrenceCondition.
+type AutomationRecurrenceCondition struct {
+	Field    string                                `json:"field"`
+	Operator AutomationRecurrenceConditionOperator `json:"operator"`
+
+	// Value iCalendar RRULE for schedule:recurring's rrule field, e.g. FREQ=WEEKLY;BYDAY=MO;BYHOUR=9;BYMINUTE=0
+	Value string `json:"value"`
+}
+
+// AutomationRecurrenceConditionOperator defines model for AutomationRecurrenceCondition.Operator.
+type AutomationRecurrenceConditionOperator string
+
+// AutomationReply defines model for AutomationReply.
+type AutomationReply struct {
+	// Type notify_thread: dispatch-time one-way 'session started' breadcrumb in the triggering thread (Slack triggers). attach_thread: dispatch-time two-way binding to the triggering thread (Slack triggers). post_response: deliver the agent's response to the triggering context.
+	Type AutomationReplyType `json:"type"`
+}
+
+// AutomationReplyType notify_thread: dispatch-time one-way 'session started' breadcrumb in the triggering thread (Slack triggers). attach_thread: dispatch-time two-way binding to the triggering thread (Slack triggers). post_response: deliver the agent's response to the triggering context.
+type AutomationReplyType string
+
+// AutomationResponse defines model for AutomationResponse.
+type AutomationResponse struct {
+	Actions      []AutomationResponse_Actions_Item        `json:"actions"`
+	AutomationID string                                   `json:"automation_id"`
+	Concurrency  nullable.Nullable[AutomationConcurrency] `json:"concurrency,omitempty"`
+	CreatedAt    int                                      `json:"created_at"`
+
+	// CreatedBy A user or service-user principal attributed to an action or resource.
+	CreatedBy      ActorResponse                               `json:"created_by"`
+	Enabled        bool                                        `json:"enabled"`
+	LastEditedBy   nullable.Nullable[ActorResponse]            `json:"last_edited_by,omitempty"`
+	LastInvocation nullable.Nullable[AutomationLastInvocation] `json:"last_invocation,omitempty"`
+	Limits         nullable.Nullable[AutomationLimits]         `json:"limits,omitempty"`
+	Metadata       *map[string]string                          `json:"metadata,omitempty"`
+	Name           string                                      `json:"name"`
+	Notifications  nullable.Nullable[AutomationNotifications]  `json:"notifications,omitempty"`
+
+	// RunAs Identity the spawned sessions run under. organization: the org's automation identity (the System User in the app) — sessions use system permissions, so MCP servers installed with a personal (user-scoped) connection cannot be selected, and switching an automation to organization removes them from its selection. creator: personal automation — runs with the creator's own permissions and is visible only to the creator and org admins; rejected for service-user-created automations. Required on create; null on update resets to organization.
+	RunAs *AutomationResponse_RunAs `json:"run_as,omitempty"`
+
+	// SecurityProfile The automation's security-profile binding and the resolved governing profiles. null when security profiles are not enabled for the organization.
+	SecurityProfile nullable.Nullable[AutomationSecurityProfileResponse] `json:"security_profile,omitempty"`
+	SessionSettings nullable.Nullable[AutomationSessionSettingsOutput]   `json:"session_settings,omitempty"`
+	TemplateID      nullable.Nullable[string]                            `json:"template_id,omitempty"`
+	Tools           nullable.Nullable[AutomationTools]                   `json:"tools,omitempty"`
+	Triggers        []AutomationTriggerResponse                          `json:"triggers"`
+	UpdatedAt       int                                                  `json:"updated_at"`
+}
+
+// AutomationResponse_Actions_Item defines model for AutomationResponse.actions.Item.
+type AutomationResponse_Actions_Item struct {
+	union json.RawMessage
+}
+
+// AutomationResponse_RunAs Identity the spawned sessions run under. organization: the org's automation identity (the System User in the app) — sessions use system permissions, so MCP servers installed with a personal (user-scoped) connection cannot be selected, and switching an automation to organization removes them from its selection. creator: personal automation — runs with the creator's own permissions and is visible only to the creator and org admins; rejected for service-user-created automations. Required on create; null on update resets to organization.
+type AutomationResponse_RunAs struct {
+	union json.RawMessage
+}
+
+// AutomationRunAsCreator defines model for AutomationRunAsCreator.
+type AutomationRunAsCreator struct {
+	Type *AutomationRunAsCreatorType `json:"type,omitempty"`
+}
+
+// AutomationRunAsCreatorType defines model for AutomationRunAsCreator.Type.
+type AutomationRunAsCreatorType string
+
+// AutomationRunAsOrganization defines model for AutomationRunAsOrganization.
+type AutomationRunAsOrganization struct {
+	Type *AutomationRunAsOrganizationType `json:"type,omitempty"`
+}
+
+// AutomationRunAsOrganizationType defines model for AutomationRunAsOrganization.Type.
+type AutomationRunAsOrganizationType string
+
+// AutomationSchemaFieldDef Flattened view of a condition field definition.
+//
+// Kind-specific attributes (“options“, “min“/“max“/“unit“,
+// “granularity“, “placeholder“) are populated only for the relevant
+// “type“.
+type AutomationSchemaFieldDef struct {
+	Description nullable.Nullable[string]                              `json:"description,omitempty"`
+	Fixed       *bool                                                  `json:"fixed,omitempty"`
+	Granularity nullable.Nullable[AutomationSchemaFieldDefGranularity] `json:"granularity,omitempty"`
+	Label       string                                                 `json:"label"`
+	Max         nullable.Nullable[float32]                             `json:"max,omitempty"`
+	Min         nullable.Nullable[float32]                             `json:"min,omitempty"`
+	Multiple    nullable.Nullable[bool]                                `json:"multiple,omitempty"`
+	Options     nullable.Nullable[[]AutomationSchemaSelectOption]      `json:"options,omitempty"`
+	Placeholder nullable.Nullable[string]                              `json:"placeholder,omitempty"`
+	Required    *bool                                                  `json:"required,omitempty"`
+	Type        AutomationSchemaFieldDefType                           `json:"type"`
+	Unit        nullable.Nullable[string]                              `json:"unit,omitempty"`
+}
+
+// AutomationSchemaFieldDefGranularity defines model for AutomationSchemaFieldDef.Granularity.
+type AutomationSchemaFieldDefGranularity string
+
+// AutomationSchemaFieldDefType defines model for AutomationSchemaFieldDef.Type.
+type AutomationSchemaFieldDefType string
+
+// AutomationSchemaSelectOption defines model for AutomationSchemaSelectOption.
+type AutomationSchemaSelectOption struct {
+	Label string `json:"label"`
+	Value string `json:"value"`
+}
+
+// AutomationSchemasResponse defines model for AutomationSchemasResponse.
+type AutomationSchemasResponse struct {
+	// Sources Event source → event name → schema.
+	Sources map[string]map[string]AutomationEventSchemaResponse `json:"sources"`
+
+	// UpdateSemantics PATCH semantics active for this organization: 'replace_groups' (a config group present in the request replaces the stored group wholesale) or 'merge_patch' (RFC 7396 for objects: omitted members of a present group keep their stored values, explicit nulls clear; list membership still replaces wholesale — deletion is resending the list without the element — but each sent element merges onto the stored element of the same type when that type appears exactly once on both sides; repeated types must be restated fully). Open enum — clients must tolerate new values.
+	UpdateSemantics string `json:"update_semantics"`
+}
+
+// AutomationSecurityProfileResponse defines model for AutomationSecurityProfileResponse.
+type AutomationSecurityProfileResponse struct {
+	ProfileID nullable.Nullable[string] `json:"profile_id,omitempty"`
+
+	// Selection The automation's own binding: inherit (no binding), none (explicit opt-out), or profile (pins profile_id). Sessions resolve the full enterprise -> org -> automation chain: the automation's network policy only ever narrows the governing profiles' policies, and an opt-out cannot escape a mandatory org/enterprise profile.
+	Selection AutomationSecurityProfileResponseSelection `json:"selection"`
+
+	// Warnings Non-blocking configuration conflicts, e.g. a recommended MCP server whose endpoint hostname the governing profile blocks (spawned sessions will not be able to connect to that server). Only remote MCP endpoint hostnames are checked; an empty list does not guarantee every MCP or network destination will work. Populated on single-automation reads and writes; empty in list responses.
+	Warnings *[]string `json:"warnings,omitempty"`
+}
+
+// AutomationSecurityProfileResponseSelection The automation's own binding: inherit (no binding), none (explicit opt-out), or profile (pins profile_id). Sessions resolve the full enterprise -> org -> automation chain: the automation's network policy only ever narrows the governing profiles' policies, and an opt-out cannot escape a mandatory org/enterprise profile.
+type AutomationSecurityProfileResponseSelection string
+
+// AutomationSecurityProfileSelection The automation's own security-profile binding.
+type AutomationSecurityProfileSelection struct {
+	// ProfileID Security profile to bind to this automation. null records an explicit opt-out (no profile, even when the org or enterprise has a recommended default). Writing this field requires the security-profile management permission; an opt-out cannot escape a mandatory org/enterprise profile.
+	ProfileID nullable.Nullable[string] `json:"profile_id,omitempty"`
+}
+
+// AutomationSessionConfigInput defines model for AutomationSessionConfig-Input.
+type AutomationSessionConfigInput struct {
+	// BypassApproval Auto-approves child-session creation (the only check this flag bypasses); any future bypassable check requires a new field.
+	BypassApproval *bool `json:"bypass_approval,omitempty"`
+
+	// Notifications Session-content notifications (currently Slack only).
+	Notifications nullable.Nullable[AutomationSessionNotificationsConfig] `json:"notifications,omitempty"`
+
+	// Platform VM platform for the session. When null, the session uses the organization's default platform at invocation time.
+	Platform nullable.Nullable[string] `json:"platform,omitempty"`
+
+	// PlaybookID Read-only: derived from the first @playbook: token in the prompt.
+	PlaybookID nullable.Nullable[string] `json:"playbook_id,omitempty"`
+
+	// Repos Read-only: derived from repo tokens in the prompt.
+	Repos *[]string `json:"repos,omitempty"`
+
+	// Tags Session tags. For tagging-enforced enterprises exactly one allowed value is required.
+	Tags *[]string `json:"tags,omitempty"`
+}
+
+// AutomationSessionConfigOutput defines model for AutomationSessionConfig-Output.
+type AutomationSessionConfigOutput struct {
+	// BypassApproval Auto-approves child-session creation (the only check this flag bypasses); any future bypassable check requires a new field.
+	BypassApproval *bool `json:"bypass_approval,omitempty"`
+
+	// Notifications Session-content notifications (currently Slack only).
+	Notifications nullable.Nullable[AutomationSessionNotificationsConfig] `json:"notifications,omitempty"`
+
+	// Platform VM platform for the session. When null, the session uses the organization's default platform at invocation time.
+	Platform nullable.Nullable[string] `json:"platform,omitempty"`
+
+	// PlaybookID Read-only: derived from the first @playbook: token in the prompt.
+	PlaybookID nullable.Nullable[string] `json:"playbook_id,omitempty"`
+
+	// Repos Read-only: derived from repo tokens in the prompt.
+	Repos *[]string `json:"repos,omitempty"`
+
+	// Tags Session tags. For tagging-enforced enterprises exactly one allowed value is required.
+	Tags *[]string `json:"tags,omitempty"`
+}
+
+// AutomationSessionNotificationsConfig Where the spawned session's content goes, as opposed to the
+// automation-level “notifications“ group (dispatch-status pings).
+type AutomationSessionNotificationsConfig struct {
+	// Slack Gives the session a Slack home: two-way for post_updates/forward_thread and post_response after its initial delivery binds the thread.
+	Slack nullable.Nullable[AutomationSessionSlackConfig] `json:"slack,omitempty"`
+}
+
+// AutomationSessionSettingsInput Applied to every session this automation spawns (including monitor
+// sessions).
+type AutomationSessionSettingsInput struct {
+	// DevinMode null = org default.
+	DevinMode nullable.Nullable[AutomationSessionSettingsInputDevinMode] `json:"devin_mode,omitempty"`
+	NetPolicy nullable.Nullable[AutomationNetPolicy]                     `json:"net_policy,omitempty"`
+}
+
+// AutomationSessionSettingsInputDevinMode null = org default.
+type AutomationSessionSettingsInputDevinMode string
+
+// AutomationSessionSettingsOutput Applied to every session this automation spawns (including monitor
+// sessions).
+type AutomationSessionSettingsOutput struct {
+	// DevinMode null = org default.
+	DevinMode nullable.Nullable[AutomationSessionSettingsOutputDevinMode] `json:"devin_mode,omitempty"`
+	NetPolicy nullable.Nullable[AutomationNetPolicy]                      `json:"net_policy,omitempty"`
+}
+
+// AutomationSessionSettingsOutputDevinMode null = org default.
+type AutomationSessionSettingsOutputDevinMode string
+
+// AutomationSessionSlackConfig defines model for AutomationSessionSlackConfig.
+type AutomationSessionSlackConfig struct {
+	ChannelID string `json:"channel_id"`
+
+	// Mode post_updates: the session converses in a thread in the channel (available for non-Slack triggers). forward_thread: the same, plus a backlink posted in the triggering thread (requires a Slack trigger). post_response: the session's final response is posted to the channel as a top-level message, then its thread is bound for replies and follow-up messages (available for any trigger).
+	Mode AutomationSessionSlackConfigMode `json:"mode"`
+}
+
+// AutomationSessionSlackConfigMode post_updates: the session converses in a thread in the channel (available for non-Slack triggers). forward_thread: the same, plus a backlink posted in the triggering thread (requires a Slack trigger). post_response: the session's final response is posted to the channel as a top-level message, then its thread is bound for replies and follow-up messages (available for any trigger).
+type AutomationSessionSlackConfigMode string
+
+// AutomationSlackChannel defines model for AutomationSlackChannel.
+type AutomationSlackChannel struct {
+	ChannelID string `json:"channel_id"`
+	TeamID    string `json:"team_id"`
+}
+
+// AutomationSlackMonitorConfig defines model for AutomationSlackMonitorConfig.
+type AutomationSlackMonitorConfig struct {
+	SourceChannelID string                    `json:"source_channel_id"`
+	TeamID          nullable.Nullable[string] `json:"team_id,omitempty"`
+}
+
+// AutomationSlackNotification defines model for AutomationSlackNotification.
+type AutomationSlackNotification struct {
+	ChannelID string                          `json:"channel_id"`
+	When      AutomationSlackNotificationWhen `json:"when"`
+}
+
+// AutomationSlackNotificationWhen defines model for AutomationSlackNotification.When.
+type AutomationSlackNotificationWhen string
+
+// AutomationStartSessionActionInput defines model for AutomationStartSessionAction-Input.
+type AutomationStartSessionActionInput struct {
+	// Prompt The single source of truth: plain text with inline reference tokens (@{owner}/{repo}, @{path}, @playbook:{id}, @skills:{name}, !{macro}, ${SECRET_NAME}). Kind-prefixed tokens are validated at save; unknown ids are a 400. The triggering event's payload is appended automatically.
+	Prompt  string                                 `json:"prompt"`
+	Session *AutomationSessionConfigInput          `json:"session,omitempty"`
+	Type    *AutomationStartSessionActionInputType `json:"type,omitempty"`
+}
+
+// AutomationStartSessionActionInputType defines model for AutomationStartSessionActionInput.Type.
+type AutomationStartSessionActionInputType string
+
+// AutomationStartSessionActionOutput defines model for AutomationStartSessionAction-Output.
+type AutomationStartSessionActionOutput struct {
+	// Prompt The single source of truth: plain text with inline reference tokens (@{owner}/{repo}, @{path}, @playbook:{id}, @skills:{name}, !{macro}, ${SECRET_NAME}). Kind-prefixed tokens are validated at save; unknown ids are a 400. The triggering event's payload is appended automatically.
+	Prompt  string                                  `json:"prompt"`
+	Session *AutomationSessionConfigOutput          `json:"session,omitempty"`
+	Type    *AutomationStartSessionActionOutputType `json:"type,omitempty"`
+}
+
+// AutomationStartSessionActionOutputType defines model for AutomationStartSessionActionOutput.Type.
+type AutomationStartSessionActionOutputType string
+
+// AutomationStartSessionActionUpdate defines model for AutomationStartSessionActionUpdate.
+type AutomationStartSessionActionUpdate struct {
+	// Prompt The single source of truth: plain text with inline reference tokens (@{owner}/{repo}, @{path}, @playbook:{id}, @skills:{name}, !{macro}, ${SECRET_NAME}). Kind-prefixed tokens are validated at save; unknown ids are a 400. The triggering event's payload is appended automatically. Required when creating or adding this action; on a merge-semantics update, omit it to keep the stored value (null is invalid).
+	Prompt  nullable.Nullable[string]               `json:"prompt,omitempty"`
+	Session *AutomationSessionConfigInput           `json:"session,omitempty"`
+	Type    *AutomationStartSessionActionUpdateType `json:"type,omitempty"`
+}
+
+// AutomationStartSessionActionUpdateType defines model for AutomationStartSessionActionUpdate.Type.
+type AutomationStartSessionActionUpdateType string
+
+// AutomationStringCondition defines model for AutomationStringCondition.
+type AutomationStringCondition struct {
+	Field    string                            `json:"field"`
+	Operator AutomationStringConditionOperator `json:"operator"`
+	Value    string                            `json:"value"`
+}
+
+// AutomationStringConditionOperator defines model for AutomationStringCondition.Operator.
+type AutomationStringConditionOperator string
+
+// AutomationTemplateResponse defines model for AutomationTemplateResponse.
+type AutomationTemplateResponse struct {
+	Actions              []AutomationTemplateResponse_Actions_Item `json:"actions"`
+	Category             string                                    `json:"category"`
+	Description          string                                    `json:"description"`
+	DocsURL              nullable.Nullable[string]                 `json:"docs_url,omitempty"`
+	Featured             *bool                                     `json:"featured,omitempty"`
+	Name                 string                                    `json:"name"`
+	RequiredIntegrations []string                                  `json:"required_integrations"`
+	RequiredMcps         []string                                  `json:"required_mcps"`
+	TemplateID           string                                    `json:"template_id"`
+	Triggers             []AutomationTriggerRequestOutput          `json:"triggers"`
+}
+
+// AutomationTemplateResponse_Actions_Item defines model for AutomationTemplateResponse.actions.Item.
+type AutomationTemplateResponse_Actions_Item struct {
+	union json.RawMessage
+}
+
+// AutomationTemplatesResponse defines model for AutomationTemplatesResponse.
+type AutomationTemplatesResponse struct {
+	Templates []AutomationTemplateResponse `json:"templates"`
+}
+
+// AutomationTools defines model for AutomationTools.
+type AutomationTools struct {
+	// LinearEnabled Grant Linear tools.
+	LinearEnabled nullable.Nullable[bool] `json:"linear_enabled,omitempty"`
+
+	// McpServers Marketplace slugs (the slug field of the mcp-servers resource, e.g. 'github', 'notion') enabled for spawned sessions. Servers installed with a personal (user-scoped) connection require run_as creator; selecting them with run_as organization is rejected since the Automations service identity has no personal token for them, and switching an automation's run_as to organization removes them from the stored selection.
+	McpServers *[]string `json:"mcp_servers,omitempty"`
+
+	// SlackChannels Channels the session's Slack tools may post to.
+	SlackChannels *[]AutomationSlackChannel `json:"slack_channels,omitempty"`
+
+	// SlackDmScope Allow spawned sessions to open 1:1 Slack DMs in the organization's connected workspaces. 'org_members' (enterprise accounts only) restricts DM targets to members of the organization; 'workspace' (non-enterprise accounts only) allows any eligible workspace member. Omit or null to disable DMs.
+	SlackDmScope nullable.Nullable[AutomationToolsSlackDmScope] `json:"slack_dm_scope,omitempty"`
+}
+
+// AutomationToolsSlackDmScope Allow spawned sessions to open 1:1 Slack DMs in the organization's connected workspaces. 'org_members' (enterprise accounts only) restricts DM targets to members of the organization; 'workspace' (non-enterprise accounts only) allows any eligible workspace member. Omit or null to disable DMs.
+type AutomationToolsSlackDmScope string
+
+// AutomationTriggerRequestInput defines model for AutomationTriggerRequest-Input.
+type AutomationTriggerRequestInput struct {
+	// Conditions null matches every event.
+	Conditions nullable.Nullable[AutomationConditionsInput] `json:"conditions,omitempty"`
+
+	// EventType Trigger event type, e.g. 'github:pull_request'.
+	EventType AutomationTriggerRequestInputEventType `json:"event_type"`
+
+	// Replies Where this trigger's session binds and its response is delivered. Only the matched trigger's replies execute, all entries independently; entries are deduplicated.
+	Replies *[]AutomationReply `json:"replies,omitempty"`
+}
+
+// AutomationTriggerRequestInputEventType Trigger event type, e.g. 'github:pull_request'.
+type AutomationTriggerRequestInputEventType string
+
+// AutomationTriggerRequestOutput defines model for AutomationTriggerRequest-Output.
+type AutomationTriggerRequestOutput struct {
+	// Conditions null matches every event.
+	Conditions nullable.Nullable[AutomationConditionsOutput] `json:"conditions,omitempty"`
+
+	// EventType Trigger event type, e.g. 'github:pull_request'.
+	EventType AutomationTriggerRequestOutputEventType `json:"event_type"`
+
+	// Replies Where this trigger's session binds and its response is delivered. Only the matched trigger's replies execute, all entries independently; entries are deduplicated.
+	Replies *[]AutomationReply `json:"replies,omitempty"`
+}
+
+// AutomationTriggerRequestOutputEventType Trigger event type, e.g. 'github:pull_request'.
+type AutomationTriggerRequestOutputEventType string
+
+// AutomationTriggerResponse defines model for AutomationTriggerResponse.
+type AutomationTriggerResponse struct {
+	Conditions nullable.Nullable[AutomationConditionsOutput] `json:"conditions,omitempty"`
+	EventType  string                                        `json:"event_type"`
+	Replies    *[]AutomationReply                            `json:"replies,omitempty"`
+
+	// TriggerID Re-minted when triggers is replaced — not stable across edits.
+	TriggerID string `json:"trigger_id"`
+
+	// Webhook Only on webhook:incoming triggers.
+	Webhook nullable.Nullable[AutomationWebhookResponse] `json:"webhook,omitempty"`
+}
+
+// AutomationUpdateRequest PATCH fields merge member-wise by default: omitted members are kept,
+// explicit nulls clear, and empty groups are no-ops. Metadata merges per key,
+// with null values deleting keys. Lists replace wholesale (deletion = resend
+// the list without the element), while each sent element merges onto the
+// stored element of the same type when that type occurs exactly once on both
+// sides. Element members that are required on create (“prompt“,
+// “setup_prompt“, the monitor/triage slack configs, “scan_id“) may be
+// omitted when a counterpart exists — they carry like any other member;
+// explicit null is rejected.
+type AutomationUpdateRequest struct {
+	Actions       nullable.Nullable[[]AutomationUpdateRequest_Actions_Item] `json:"actions,omitempty"`
+	Concurrency   nullable.Nullable[AutomationConcurrency]                  `json:"concurrency,omitempty"`
+	Enabled       nullable.Nullable[bool]                                   `json:"enabled,omitempty"`
+	Limits        nullable.Nullable[AutomationLimits]                       `json:"limits,omitempty"`
+	Metadata      nullable.Nullable[map[string]*string]                     `json:"metadata,omitempty"`
+	Name          nullable.Nullable[string]                                 `json:"name,omitempty"`
+	Notifications nullable.Nullable[AutomationNotifications]                `json:"notifications,omitempty"`
+
+	// RunAs null resets to organization.
+	RunAs nullable.Nullable[AutomationUpdateRequest_RunAs] `json:"run_as,omitempty"`
+
+	// SecurityProfile The automation's own security-profile binding: a profile_id pins that profile, {"profile_id": null} records an explicit opt-out, and explicit null reverts to inheriting from the org/enterprise. Requires the security-profile management permission.
+	SecurityProfile nullable.Nullable[AutomationSecurityProfileSelection] `json:"security_profile,omitempty"`
+	SessionSettings nullable.Nullable[AutomationSessionSettingsInput]     `json:"session_settings,omitempty"`
+	Tools           nullable.Nullable[AutomationTools]                    `json:"tools,omitempty"`
+	Triggers        nullable.Nullable[[]AutomationTriggerRequestInput]    `json:"triggers,omitempty"`
+}
+
+// AutomationUpdateRequest_Actions_Item defines model for AutomationUpdateRequest.actions.Item.
+type AutomationUpdateRequest_Actions_Item struct {
+	union json.RawMessage
+}
+
+// AutomationUpdateRequest_RunAs null resets to organization.
+type AutomationUpdateRequest_RunAs struct {
+	union json.RawMessage
+}
+
+// AutomationWebhookResponse defines model for AutomationWebhookResponse.
+type AutomationWebhookResponse struct {
+	// Secret Present only when newly minted (create or re-add); never retrievable again. Replacing triggers preserves the existing secret.
+	Secret nullable.Nullable[string] `json:"secret,omitempty"`
+
+	// URL The inbox external systems POST to (header X-Webhook-Secret).
+	URL string `json:"url"`
+}
+
 // DefaultTagRequest defines model for DefaultTagRequest.
 type DefaultTagRequest struct {
 	Tag string `json:"tag"`
@@ -152,6 +1194,29 @@ type DefaultTagRequest struct {
 // DefaultTagResponse defines model for DefaultTagResponse.
 type DefaultTagResponse struct {
 	DefaultTag nullable.Nullable[string] `json:"default_tag"`
+}
+
+// EnterpriseUser defines model for EnterpriseUser.
+type EnterpriseUser struct {
+	Email nullable.Nullable[string] `json:"email"`
+
+	// EnterpriseJoinedAt When the user was added to this enterprise.
+	EnterpriseJoinedAt nullable.Nullable[int]    `json:"enterprise_joined_at,omitempty"`
+	Name               nullable.Nullable[string] `json:"name"`
+	RoleAssignments    []RoleAssignment          `json:"role_assignments"`
+	UserID             string                    `json:"user_id"`
+}
+
+// EnterpriseUserWithIdpRoles defines model for EnterpriseUserWithIdpRoles.
+type EnterpriseUserWithIdpRoles struct {
+	Email nullable.Nullable[string] `json:"email"`
+
+	// EnterpriseJoinedAt When the user was added to this enterprise.
+	EnterpriseJoinedAt nullable.Nullable[int]    `json:"enterprise_joined_at,omitempty"`
+	IdpRoleAssignments *[]IdpRoleAssignment      `json:"idp_role_assignments,omitempty"`
+	Name               nullable.Nullable[string] `json:"name"`
+	RoleAssignments    []RoleAssignment          `json:"role_assignments"`
+	UserID             string                    `json:"user_id"`
 }
 
 // FolderSummary One folder in the knowledge folder tree.
@@ -188,6 +1253,12 @@ type GitConnectionResponse struct {
 	GitProviderType GitConnectionResponseGitProviderType `json:"git_provider_type"`
 	Host            string                               `json:"host"`
 	Name            nullable.Nullable[string]            `json:"name"`
+
+	// PerforceDepotPaths Depot path scopes for perforce connections, e.g. ["//depot/main/..."]. Empty list when none are configured. Null for git connections, or for a perforce connection whose depot-path lookup failed.
+	PerforceDepotPaths nullable.Nullable[[]string] `json:"perforce_depot_paths,omitempty"`
+
+	// WebViewerURL Base URL of the customer's code viewer (e.g. Helix Swarm) used to render browsable file/changelist links
+	WebViewerURL nullable.Nullable[string] `json:"web_viewer_url,omitempty"`
 }
 
 // GitConnectionResponseGitProviderType defines model for GitConnectionResponse.GitProviderType.
@@ -200,6 +1271,7 @@ type GitPermissionBulkCreateRequest struct {
 
 // GitPermissionCreateRequest defines model for GitPermissionCreateRequest.
 type GitPermissionCreateRequest struct {
+	DepotPath       nullable.Nullable[string] `json:"depot_path,omitempty"`
 	GitConnectionID string                    `json:"git_connection_id"`
 	GroupPrefix     nullable.Nullable[string] `json:"group_prefix,omitempty"`
 	PrefixPath      nullable.Nullable[string] `json:"prefix_path,omitempty"`
@@ -210,6 +1282,7 @@ type GitPermissionCreateRequest struct {
 // GitPermissionResponse defines model for GitPermissionResponse.
 type GitPermissionResponse struct {
 	CreatedAt       nullable.Nullable[int]    `json:"created_at,omitempty"`
+	DepotPath       nullable.Nullable[string] `json:"depot_path,omitempty"`
 	GitConnectionID string                    `json:"git_connection_id"`
 	GitPermissionID string                    `json:"git_permission_id"`
 	GroupPrefix     nullable.Nullable[string] `json:"group_prefix,omitempty"`
@@ -347,6 +1420,32 @@ type PaginatedResponseACULimitResponse struct {
 	// HasNextPage Whether there are more items available after this page.
 	HasNextPage *bool              `json:"has_next_page,omitempty"`
 	Items       []ACULimitResponse `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
+// PaginatedResponseAutomationResponse defines model for PaginatedResponse_AutomationResponse_.
+type PaginatedResponseAutomationResponse struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool                `json:"has_next_page,omitempty"`
+	Items       []AutomationResponse `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
+// PaginatedResponseEnterpriseUser defines model for PaginatedResponse_EnterpriseUser_.
+type PaginatedResponseEnterpriseUser struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool            `json:"has_next_page,omitempty"`
+	Items       []EnterpriseUser `json:"items"`
 
 	// Total Optional total count (can be omitted for performance).
 	Total nullable.Nullable[int] `json:"total,omitempty"`
@@ -570,6 +1669,31 @@ type PlaybookResponse struct {
 // PlaybookResponseAccessType defines model for PlaybookResponse.AccessType.
 type PlaybookResponseAccessType string
 
+// ProblemDetail RFC 9457 application/problem+json error body for the v3 API.
+//
+// detail is retained from the legacy {"detail": ...} body for back-compat; the
+// other members are additive. errors carries field-level validation failures
+// (422 only).
+type ProblemDetail struct {
+	// Detail A human-readable explanation specific to this occurrence.
+	Detail nullable.Nullable[string] `json:"detail,omitempty"`
+
+	// Errors Field-level validation errors (422 responses only).
+	Errors nullable.Nullable[[]map[string]interface{}] `json:"errors,omitempty"`
+
+	// Instance A URI reference (the request path) for this occurrence.
+	Instance nullable.Nullable[string] `json:"instance,omitempty"`
+
+	// Status The HTTP status code.
+	Status int `json:"status"`
+
+	// Title A short, human-readable summary of the problem type.
+	Title string `json:"title"`
+
+	// Type A URI reference identifying the problem type.
+	Type *string `json:"type,omitempty"`
+}
+
 // Role defines model for Role.
 type Role struct {
 	RoleID   string       `json:"role_id"`
@@ -585,6 +1709,18 @@ type RoleAssignment struct {
 	OrgID nullable.Nullable[string] `json:"org_id,omitempty"`
 	Role  Role                      `json:"role"`
 }
+
+// RoleDetailResponse defines model for RoleDetailResponse.
+type RoleDetailResponse struct {
+	// Permissions List of permission identifiers granted to this role.
+	Permissions *[]string                  `json:"permissions,omitempty"`
+	RoleID      string                     `json:"role_id"`
+	RoleName    string                     `json:"role_name"`
+	RoleType    RoleDetailResponseRoleType `json:"role_type"`
+}
+
+// RoleDetailResponseRoleType defines model for RoleDetailResponse.RoleType.
+type RoleDetailResponseRoleType string
 
 // ScheduleCreateRequest defines model for ScheduleCreateRequest.
 type ScheduleCreateRequest struct {
@@ -770,15 +1906,6 @@ type UserUpdateRoleRequest struct {
 	RoleID string `json:"role_id"`
 }
 
-// UserWithIdpRoles User with both direct and IDP-group-derived role assignments.
-type UserWithIdpRoles struct {
-	Email              nullable.Nullable[string] `json:"email"`
-	IdpRoleAssignments *[]IdpRoleAssignment      `json:"idp_role_assignments,omitempty"`
-	Name               nullable.Nullable[string] `json:"name"`
-	RoleAssignments    []RoleAssignment          `json:"role_assignments"`
-	UserID             string                    `json:"user_id"`
-}
-
 // HandleGetDevinAcuLimitsV3EnterpriseConsumptionAcuLimitsDevinGetParams defines parameters for HandleGetDevinAcuLimitsV3EnterpriseConsumptionAcuLimitsDevinGet.
 type HandleGetDevinAcuLimitsV3EnterpriseConsumptionAcuLimitsDevinGetParams struct {
 	After *string `form:"after,omitempty" json:"after,omitempty"`
@@ -907,6 +2034,20 @@ type HandleGetRolesV3EnterpriseRolesGetParams struct {
 	First *int    `form:"first,omitempty" json:"first,omitempty"`
 }
 
+// HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParams defines parameters for HandleListAutomationsV3OrganizationsOrgIDAutomationsGet.
+type HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParams struct {
+	After      *string                                                                    `form:"after,omitempty" json:"after,omitempty"`
+	First      *int                                                                       `form:"first,omitempty" json:"first,omitempty"`
+	Search     *string                                                                    `form:"search,omitempty" json:"search,omitempty"`
+	CreatorID  *string                                                                    `form:"creator_id,omitempty" json:"creator_id,omitempty"`
+	Enabled    *bool                                                                      `form:"enabled,omitempty" json:"enabled,omitempty"`
+	EventType  *string                                                                    `form:"event_type,omitempty" json:"event_type,omitempty"`
+	AgentTypes *[]HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes `form:"agent_types,omitempty" json:"agent_types,omitempty"`
+}
+
+// HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes defines parameters for HandleListAutomationsV3OrganizationsOrgIDAutomationsGet.
+type HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes string
+
 // HandleListNotesV3OrganizationsOrgIDKnowledgeNotesGetParams defines parameters for HandleListNotesV3OrganizationsOrgIDKnowledgeNotesGet.
 type HandleListNotesV3OrganizationsOrgIDKnowledgeNotesGetParams struct {
 	After      *string `form:"after,omitempty" json:"after,omitempty"`
@@ -1021,6 +2162,12 @@ type HandleCreatePlaybookV3EnterprisePlaybooksPostJSONRequestBody = PlaybookCrea
 // HandleUpdatePlaybookV3EnterprisePlaybooksPlaybookIDPutJSONRequestBody defines body for HandleUpdatePlaybookV3EnterprisePlaybooksPlaybookIDPut for application/json ContentType.
 type HandleUpdatePlaybookV3EnterprisePlaybooksPlaybookIDPutJSONRequestBody = PlaybookCreateRequest
 
+// HandleCreateAutomationV3OrganizationsOrgIDAutomationsPostJSONRequestBody defines body for HandleCreateAutomationV3OrganizationsOrgIDAutomationsPost for application/json ContentType.
+type HandleCreateAutomationV3OrganizationsOrgIDAutomationsPostJSONRequestBody = AutomationCreateRequest
+
+// HandleUpdateAutomationV3OrganizationsOrgIDAutomationsAutomationIDPatchJSONRequestBody defines body for HandleUpdateAutomationV3OrganizationsOrgIDAutomationsAutomationIDPatch for application/json ContentType.
+type HandleUpdateAutomationV3OrganizationsOrgIDAutomationsAutomationIDPatchJSONRequestBody = AutomationUpdateRequest
+
 // HandleCreateNoteV3OrganizationsOrgIDKnowledgeNotesPostJSONRequestBody defines body for HandleCreateNoteV3OrganizationsOrgIDKnowledgeNotesPost for application/json ContentType.
 type HandleCreateNoteV3OrganizationsOrgIDKnowledgeNotesPostJSONRequestBody = KnowledgeNoteCreateRequest
 
@@ -1041,3 +2188,1049 @@ type HandleUpdateScheduleV3OrganizationsOrgIDSchedulesScheduleIDPatchJSONRequest
 
 // HandleCreateSecretV3OrganizationsOrgIDSecretsPostJSONRequestBody defines body for HandleCreateSecretV3OrganizationsOrgIDSecretsPost for application/json ContentType.
 type HandleCreateSecretV3OrganizationsOrgIDSecretsPostJSONRequestBody = SecretCreateRequest
+
+// AsAutomationComparisonConditionValue0 returns the union data inside the AutomationComparisonCondition_Value as a AutomationComparisonConditionValue0
+func (t AutomationComparisonCondition_Value) AsAutomationComparisonConditionValue0() (AutomationComparisonConditionValue0, error) {
+	var body AutomationComparisonConditionValue0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationComparisonConditionValue0 overwrites any union data inside the AutomationComparisonCondition_Value as the provided AutomationComparisonConditionValue0
+func (t *AutomationComparisonCondition_Value) FromAutomationComparisonConditionValue0(v AutomationComparisonConditionValue0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationComparisonConditionValue0 performs a merge with any union data inside the AutomationComparisonCondition_Value, using the provided AutomationComparisonConditionValue0
+func (t *AutomationComparisonCondition_Value) MergeAutomationComparisonConditionValue0(v AutomationComparisonConditionValue0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationComparisonConditionValue1 returns the union data inside the AutomationComparisonCondition_Value as a AutomationComparisonConditionValue1
+func (t AutomationComparisonCondition_Value) AsAutomationComparisonConditionValue1() (AutomationComparisonConditionValue1, error) {
+	var body AutomationComparisonConditionValue1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationComparisonConditionValue1 overwrites any union data inside the AutomationComparisonCondition_Value as the provided AutomationComparisonConditionValue1
+func (t *AutomationComparisonCondition_Value) FromAutomationComparisonConditionValue1(v AutomationComparisonConditionValue1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationComparisonConditionValue1 performs a merge with any union data inside the AutomationComparisonCondition_Value, using the provided AutomationComparisonConditionValue1
+func (t *AutomationComparisonCondition_Value) MergeAutomationComparisonConditionValue1(v AutomationComparisonConditionValue1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationComparisonConditionValue2 returns the union data inside the AutomationComparisonCondition_Value as a AutomationComparisonConditionValue2
+func (t AutomationComparisonCondition_Value) AsAutomationComparisonConditionValue2() (AutomationComparisonConditionValue2, error) {
+	var body AutomationComparisonConditionValue2
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationComparisonConditionValue2 overwrites any union data inside the AutomationComparisonCondition_Value as the provided AutomationComparisonConditionValue2
+func (t *AutomationComparisonCondition_Value) FromAutomationComparisonConditionValue2(v AutomationComparisonConditionValue2) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationComparisonConditionValue2 performs a merge with any union data inside the AutomationComparisonCondition_Value, using the provided AutomationComparisonConditionValue2
+func (t *AutomationComparisonCondition_Value) MergeAutomationComparisonConditionValue2(v AutomationComparisonConditionValue2) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationComparisonConditionValue3 returns the union data inside the AutomationComparisonCondition_Value as a AutomationComparisonConditionValue3
+func (t AutomationComparisonCondition_Value) AsAutomationComparisonConditionValue3() (AutomationComparisonConditionValue3, error) {
+	var body AutomationComparisonConditionValue3
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationComparisonConditionValue3 overwrites any union data inside the AutomationComparisonCondition_Value as the provided AutomationComparisonConditionValue3
+func (t *AutomationComparisonCondition_Value) FromAutomationComparisonConditionValue3(v AutomationComparisonConditionValue3) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationComparisonConditionValue3 performs a merge with any union data inside the AutomationComparisonCondition_Value, using the provided AutomationComparisonConditionValue3
+func (t *AutomationComparisonCondition_Value) MergeAutomationComparisonConditionValue3(v AutomationComparisonConditionValue3) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t AutomationComparisonCondition_Value) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *AutomationComparisonCondition_Value) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsAutomationComparisonCondition returns the union data inside the AutomationConditionGroup_All_Item as a AutomationComparisonCondition
+func (t AutomationConditionGroup_All_Item) AsAutomationComparisonCondition() (AutomationComparisonCondition, error) {
+	var body AutomationComparisonCondition
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationComparisonCondition overwrites any union data inside the AutomationConditionGroup_All_Item as the provided AutomationComparisonCondition
+func (t *AutomationConditionGroup_All_Item) FromAutomationComparisonCondition(v AutomationComparisonCondition) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationComparisonCondition performs a merge with any union data inside the AutomationConditionGroup_All_Item, using the provided AutomationComparisonCondition
+func (t *AutomationConditionGroup_All_Item) MergeAutomationComparisonCondition(v AutomationComparisonCondition) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationStringCondition returns the union data inside the AutomationConditionGroup_All_Item as a AutomationStringCondition
+func (t AutomationConditionGroup_All_Item) AsAutomationStringCondition() (AutomationStringCondition, error) {
+	var body AutomationStringCondition
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationStringCondition overwrites any union data inside the AutomationConditionGroup_All_Item as the provided AutomationStringCondition
+func (t *AutomationConditionGroup_All_Item) FromAutomationStringCondition(v AutomationStringCondition) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationStringCondition performs a merge with any union data inside the AutomationConditionGroup_All_Item, using the provided AutomationStringCondition
+func (t *AutomationConditionGroup_All_Item) MergeAutomationStringCondition(v AutomationStringCondition) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationNumericCondition returns the union data inside the AutomationConditionGroup_All_Item as a AutomationNumericCondition
+func (t AutomationConditionGroup_All_Item) AsAutomationNumericCondition() (AutomationNumericCondition, error) {
+	var body AutomationNumericCondition
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationNumericCondition overwrites any union data inside the AutomationConditionGroup_All_Item as the provided AutomationNumericCondition
+func (t *AutomationConditionGroup_All_Item) FromAutomationNumericCondition(v AutomationNumericCondition) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationNumericCondition performs a merge with any union data inside the AutomationConditionGroup_All_Item, using the provided AutomationNumericCondition
+func (t *AutomationConditionGroup_All_Item) MergeAutomationNumericCondition(v AutomationNumericCondition) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationEmptyCondition returns the union data inside the AutomationConditionGroup_All_Item as a AutomationEmptyCondition
+func (t AutomationConditionGroup_All_Item) AsAutomationEmptyCondition() (AutomationEmptyCondition, error) {
+	var body AutomationEmptyCondition
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationEmptyCondition overwrites any union data inside the AutomationConditionGroup_All_Item as the provided AutomationEmptyCondition
+func (t *AutomationConditionGroup_All_Item) FromAutomationEmptyCondition(v AutomationEmptyCondition) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationEmptyCondition performs a merge with any union data inside the AutomationConditionGroup_All_Item, using the provided AutomationEmptyCondition
+func (t *AutomationConditionGroup_All_Item) MergeAutomationEmptyCondition(v AutomationEmptyCondition) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationRangeCondition returns the union data inside the AutomationConditionGroup_All_Item as a AutomationRangeCondition
+func (t AutomationConditionGroup_All_Item) AsAutomationRangeCondition() (AutomationRangeCondition, error) {
+	var body AutomationRangeCondition
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRangeCondition overwrites any union data inside the AutomationConditionGroup_All_Item as the provided AutomationRangeCondition
+func (t *AutomationConditionGroup_All_Item) FromAutomationRangeCondition(v AutomationRangeCondition) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRangeCondition performs a merge with any union data inside the AutomationConditionGroup_All_Item, using the provided AutomationRangeCondition
+func (t *AutomationConditionGroup_All_Item) MergeAutomationRangeCondition(v AutomationRangeCondition) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationListCondition returns the union data inside the AutomationConditionGroup_All_Item as a AutomationListCondition
+func (t AutomationConditionGroup_All_Item) AsAutomationListCondition() (AutomationListCondition, error) {
+	var body AutomationListCondition
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationListCondition overwrites any union data inside the AutomationConditionGroup_All_Item as the provided AutomationListCondition
+func (t *AutomationConditionGroup_All_Item) FromAutomationListCondition(v AutomationListCondition) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationListCondition performs a merge with any union data inside the AutomationConditionGroup_All_Item, using the provided AutomationListCondition
+func (t *AutomationConditionGroup_All_Item) MergeAutomationListCondition(v AutomationListCondition) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationMatchCondition returns the union data inside the AutomationConditionGroup_All_Item as a AutomationMatchCondition
+func (t AutomationConditionGroup_All_Item) AsAutomationMatchCondition() (AutomationMatchCondition, error) {
+	var body AutomationMatchCondition
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationMatchCondition overwrites any union data inside the AutomationConditionGroup_All_Item as the provided AutomationMatchCondition
+func (t *AutomationConditionGroup_All_Item) FromAutomationMatchCondition(v AutomationMatchCondition) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationMatchCondition performs a merge with any union data inside the AutomationConditionGroup_All_Item, using the provided AutomationMatchCondition
+func (t *AutomationConditionGroup_All_Item) MergeAutomationMatchCondition(v AutomationMatchCondition) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationRecurrenceCondition returns the union data inside the AutomationConditionGroup_All_Item as a AutomationRecurrenceCondition
+func (t AutomationConditionGroup_All_Item) AsAutomationRecurrenceCondition() (AutomationRecurrenceCondition, error) {
+	var body AutomationRecurrenceCondition
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRecurrenceCondition overwrites any union data inside the AutomationConditionGroup_All_Item as the provided AutomationRecurrenceCondition
+func (t *AutomationConditionGroup_All_Item) FromAutomationRecurrenceCondition(v AutomationRecurrenceCondition) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRecurrenceCondition performs a merge with any union data inside the AutomationConditionGroup_All_Item, using the provided AutomationRecurrenceCondition
+func (t *AutomationConditionGroup_All_Item) MergeAutomationRecurrenceCondition(v AutomationRecurrenceCondition) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationGlobCondition returns the union data inside the AutomationConditionGroup_All_Item as a AutomationGlobCondition
+func (t AutomationConditionGroup_All_Item) AsAutomationGlobCondition() (AutomationGlobCondition, error) {
+	var body AutomationGlobCondition
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationGlobCondition overwrites any union data inside the AutomationConditionGroup_All_Item as the provided AutomationGlobCondition
+func (t *AutomationConditionGroup_All_Item) FromAutomationGlobCondition(v AutomationGlobCondition) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationGlobCondition performs a merge with any union data inside the AutomationConditionGroup_All_Item, using the provided AutomationGlobCondition
+func (t *AutomationConditionGroup_All_Item) MergeAutomationGlobCondition(v AutomationGlobCondition) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t AutomationConditionGroup_All_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *AutomationConditionGroup_All_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsAutomationStartSessionActionInput returns the union data inside the AutomationCreateRequest_Actions_Item as a AutomationStartSessionActionInput
+func (t AutomationCreateRequest_Actions_Item) AsAutomationStartSessionActionInput() (AutomationStartSessionActionInput, error) {
+	var body AutomationStartSessionActionInput
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationStartSessionActionInput overwrites any union data inside the AutomationCreateRequest_Actions_Item as the provided AutomationStartSessionActionInput
+func (t *AutomationCreateRequest_Actions_Item) FromAutomationStartSessionActionInput(v AutomationStartSessionActionInput) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationStartSessionActionInput performs a merge with any union data inside the AutomationCreateRequest_Actions_Item, using the provided AutomationStartSessionActionInput
+func (t *AutomationCreateRequest_Actions_Item) MergeAutomationStartSessionActionInput(v AutomationStartSessionActionInput) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationMessageSessionAction returns the union data inside the AutomationCreateRequest_Actions_Item as a AutomationMessageSessionAction
+func (t AutomationCreateRequest_Actions_Item) AsAutomationMessageSessionAction() (AutomationMessageSessionAction, error) {
+	var body AutomationMessageSessionAction
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationMessageSessionAction overwrites any union data inside the AutomationCreateRequest_Actions_Item as the provided AutomationMessageSessionAction
+func (t *AutomationCreateRequest_Actions_Item) FromAutomationMessageSessionAction(v AutomationMessageSessionAction) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationMessageSessionAction performs a merge with any union data inside the AutomationCreateRequest_Actions_Item, using the provided AutomationMessageSessionAction
+func (t *AutomationCreateRequest_Actions_Item) MergeAutomationMessageSessionAction(v AutomationMessageSessionAction) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationMonitorSessionAction returns the union data inside the AutomationCreateRequest_Actions_Item as a AutomationMonitorSessionAction
+func (t AutomationCreateRequest_Actions_Item) AsAutomationMonitorSessionAction() (AutomationMonitorSessionAction, error) {
+	var body AutomationMonitorSessionAction
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationMonitorSessionAction overwrites any union data inside the AutomationCreateRequest_Actions_Item as the provided AutomationMonitorSessionAction
+func (t *AutomationCreateRequest_Actions_Item) FromAutomationMonitorSessionAction(v AutomationMonitorSessionAction) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationMonitorSessionAction performs a merge with any union data inside the AutomationCreateRequest_Actions_Item, using the provided AutomationMonitorSessionAction
+func (t *AutomationCreateRequest_Actions_Item) MergeAutomationMonitorSessionAction(v AutomationMonitorSessionAction) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t AutomationCreateRequest_Actions_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *AutomationCreateRequest_Actions_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsAutomationRunAsOrganization returns the union data inside the AutomationCreateRequest_RunAs as a AutomationRunAsOrganization
+func (t AutomationCreateRequest_RunAs) AsAutomationRunAsOrganization() (AutomationRunAsOrganization, error) {
+	var body AutomationRunAsOrganization
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRunAsOrganization overwrites any union data inside the AutomationCreateRequest_RunAs as the provided AutomationRunAsOrganization
+func (t *AutomationCreateRequest_RunAs) FromAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRunAsOrganization performs a merge with any union data inside the AutomationCreateRequest_RunAs, using the provided AutomationRunAsOrganization
+func (t *AutomationCreateRequest_RunAs) MergeAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationRunAsCreator returns the union data inside the AutomationCreateRequest_RunAs as a AutomationRunAsCreator
+func (t AutomationCreateRequest_RunAs) AsAutomationRunAsCreator() (AutomationRunAsCreator, error) {
+	var body AutomationRunAsCreator
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRunAsCreator overwrites any union data inside the AutomationCreateRequest_RunAs as the provided AutomationRunAsCreator
+func (t *AutomationCreateRequest_RunAs) FromAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRunAsCreator performs a merge with any union data inside the AutomationCreateRequest_RunAs, using the provided AutomationRunAsCreator
+func (t *AutomationCreateRequest_RunAs) MergeAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t AutomationCreateRequest_RunAs) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *AutomationCreateRequest_RunAs) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsAutomationHostnameDestination returns the union data inside the AutomationNetPolicy_Allow_Item as a AutomationHostnameDestination
+func (t AutomationNetPolicy_Allow_Item) AsAutomationHostnameDestination() (AutomationHostnameDestination, error) {
+	var body AutomationHostnameDestination
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationHostnameDestination overwrites any union data inside the AutomationNetPolicy_Allow_Item as the provided AutomationHostnameDestination
+func (t *AutomationNetPolicy_Allow_Item) FromAutomationHostnameDestination(v AutomationHostnameDestination) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationHostnameDestination performs a merge with any union data inside the AutomationNetPolicy_Allow_Item, using the provided AutomationHostnameDestination
+func (t *AutomationNetPolicy_Allow_Item) MergeAutomationHostnameDestination(v AutomationHostnameDestination) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationIpv4Destination returns the union data inside the AutomationNetPolicy_Allow_Item as a AutomationIpv4Destination
+func (t AutomationNetPolicy_Allow_Item) AsAutomationIpv4Destination() (AutomationIpv4Destination, error) {
+	var body AutomationIpv4Destination
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationIpv4Destination overwrites any union data inside the AutomationNetPolicy_Allow_Item as the provided AutomationIpv4Destination
+func (t *AutomationNetPolicy_Allow_Item) FromAutomationIpv4Destination(v AutomationIpv4Destination) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationIpv4Destination performs a merge with any union data inside the AutomationNetPolicy_Allow_Item, using the provided AutomationIpv4Destination
+func (t *AutomationNetPolicy_Allow_Item) MergeAutomationIpv4Destination(v AutomationIpv4Destination) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationIpv6Destination returns the union data inside the AutomationNetPolicy_Allow_Item as a AutomationIpv6Destination
+func (t AutomationNetPolicy_Allow_Item) AsAutomationIpv6Destination() (AutomationIpv6Destination, error) {
+	var body AutomationIpv6Destination
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationIpv6Destination overwrites any union data inside the AutomationNetPolicy_Allow_Item as the provided AutomationIpv6Destination
+func (t *AutomationNetPolicy_Allow_Item) FromAutomationIpv6Destination(v AutomationIpv6Destination) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationIpv6Destination performs a merge with any union data inside the AutomationNetPolicy_Allow_Item, using the provided AutomationIpv6Destination
+func (t *AutomationNetPolicy_Allow_Item) MergeAutomationIpv6Destination(v AutomationIpv6Destination) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t AutomationNetPolicy_Allow_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *AutomationNetPolicy_Allow_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsAutomationNumericConditionValue0 returns the union data inside the AutomationNumericCondition_Value as a AutomationNumericConditionValue0
+func (t AutomationNumericCondition_Value) AsAutomationNumericConditionValue0() (AutomationNumericConditionValue0, error) {
+	var body AutomationNumericConditionValue0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationNumericConditionValue0 overwrites any union data inside the AutomationNumericCondition_Value as the provided AutomationNumericConditionValue0
+func (t *AutomationNumericCondition_Value) FromAutomationNumericConditionValue0(v AutomationNumericConditionValue0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationNumericConditionValue0 performs a merge with any union data inside the AutomationNumericCondition_Value, using the provided AutomationNumericConditionValue0
+func (t *AutomationNumericCondition_Value) MergeAutomationNumericConditionValue0(v AutomationNumericConditionValue0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationNumericConditionValue1 returns the union data inside the AutomationNumericCondition_Value as a AutomationNumericConditionValue1
+func (t AutomationNumericCondition_Value) AsAutomationNumericConditionValue1() (AutomationNumericConditionValue1, error) {
+	var body AutomationNumericConditionValue1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationNumericConditionValue1 overwrites any union data inside the AutomationNumericCondition_Value as the provided AutomationNumericConditionValue1
+func (t *AutomationNumericCondition_Value) FromAutomationNumericConditionValue1(v AutomationNumericConditionValue1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationNumericConditionValue1 performs a merge with any union data inside the AutomationNumericCondition_Value, using the provided AutomationNumericConditionValue1
+func (t *AutomationNumericCondition_Value) MergeAutomationNumericConditionValue1(v AutomationNumericConditionValue1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t AutomationNumericCondition_Value) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *AutomationNumericCondition_Value) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsAutomationStartSessionActionOutput returns the union data inside the AutomationResponse_Actions_Item as a AutomationStartSessionActionOutput
+func (t AutomationResponse_Actions_Item) AsAutomationStartSessionActionOutput() (AutomationStartSessionActionOutput, error) {
+	var body AutomationStartSessionActionOutput
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationStartSessionActionOutput overwrites any union data inside the AutomationResponse_Actions_Item as the provided AutomationStartSessionActionOutput
+func (t *AutomationResponse_Actions_Item) FromAutomationStartSessionActionOutput(v AutomationStartSessionActionOutput) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationStartSessionActionOutput performs a merge with any union data inside the AutomationResponse_Actions_Item, using the provided AutomationStartSessionActionOutput
+func (t *AutomationResponse_Actions_Item) MergeAutomationStartSessionActionOutput(v AutomationStartSessionActionOutput) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationMessageSessionAction returns the union data inside the AutomationResponse_Actions_Item as a AutomationMessageSessionAction
+func (t AutomationResponse_Actions_Item) AsAutomationMessageSessionAction() (AutomationMessageSessionAction, error) {
+	var body AutomationMessageSessionAction
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationMessageSessionAction overwrites any union data inside the AutomationResponse_Actions_Item as the provided AutomationMessageSessionAction
+func (t *AutomationResponse_Actions_Item) FromAutomationMessageSessionAction(v AutomationMessageSessionAction) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationMessageSessionAction performs a merge with any union data inside the AutomationResponse_Actions_Item, using the provided AutomationMessageSessionAction
+func (t *AutomationResponse_Actions_Item) MergeAutomationMessageSessionAction(v AutomationMessageSessionAction) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationMonitorSessionAction returns the union data inside the AutomationResponse_Actions_Item as a AutomationMonitorSessionAction
+func (t AutomationResponse_Actions_Item) AsAutomationMonitorSessionAction() (AutomationMonitorSessionAction, error) {
+	var body AutomationMonitorSessionAction
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationMonitorSessionAction overwrites any union data inside the AutomationResponse_Actions_Item as the provided AutomationMonitorSessionAction
+func (t *AutomationResponse_Actions_Item) FromAutomationMonitorSessionAction(v AutomationMonitorSessionAction) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationMonitorSessionAction performs a merge with any union data inside the AutomationResponse_Actions_Item, using the provided AutomationMonitorSessionAction
+func (t *AutomationResponse_Actions_Item) MergeAutomationMonitorSessionAction(v AutomationMonitorSessionAction) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t AutomationResponse_Actions_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *AutomationResponse_Actions_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsAutomationRunAsOrganization returns the union data inside the AutomationResponse_RunAs as a AutomationRunAsOrganization
+func (t AutomationResponse_RunAs) AsAutomationRunAsOrganization() (AutomationRunAsOrganization, error) {
+	var body AutomationRunAsOrganization
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRunAsOrganization overwrites any union data inside the AutomationResponse_RunAs as the provided AutomationRunAsOrganization
+func (t *AutomationResponse_RunAs) FromAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRunAsOrganization performs a merge with any union data inside the AutomationResponse_RunAs, using the provided AutomationRunAsOrganization
+func (t *AutomationResponse_RunAs) MergeAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationRunAsCreator returns the union data inside the AutomationResponse_RunAs as a AutomationRunAsCreator
+func (t AutomationResponse_RunAs) AsAutomationRunAsCreator() (AutomationRunAsCreator, error) {
+	var body AutomationRunAsCreator
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRunAsCreator overwrites any union data inside the AutomationResponse_RunAs as the provided AutomationRunAsCreator
+func (t *AutomationResponse_RunAs) FromAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRunAsCreator performs a merge with any union data inside the AutomationResponse_RunAs, using the provided AutomationRunAsCreator
+func (t *AutomationResponse_RunAs) MergeAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t AutomationResponse_RunAs) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *AutomationResponse_RunAs) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsAutomationStartSessionActionOutput returns the union data inside the AutomationTemplateResponse_Actions_Item as a AutomationStartSessionActionOutput
+func (t AutomationTemplateResponse_Actions_Item) AsAutomationStartSessionActionOutput() (AutomationStartSessionActionOutput, error) {
+	var body AutomationStartSessionActionOutput
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationStartSessionActionOutput overwrites any union data inside the AutomationTemplateResponse_Actions_Item as the provided AutomationStartSessionActionOutput
+func (t *AutomationTemplateResponse_Actions_Item) FromAutomationStartSessionActionOutput(v AutomationStartSessionActionOutput) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationStartSessionActionOutput performs a merge with any union data inside the AutomationTemplateResponse_Actions_Item, using the provided AutomationStartSessionActionOutput
+func (t *AutomationTemplateResponse_Actions_Item) MergeAutomationStartSessionActionOutput(v AutomationStartSessionActionOutput) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationMessageSessionAction returns the union data inside the AutomationTemplateResponse_Actions_Item as a AutomationMessageSessionAction
+func (t AutomationTemplateResponse_Actions_Item) AsAutomationMessageSessionAction() (AutomationMessageSessionAction, error) {
+	var body AutomationMessageSessionAction
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationMessageSessionAction overwrites any union data inside the AutomationTemplateResponse_Actions_Item as the provided AutomationMessageSessionAction
+func (t *AutomationTemplateResponse_Actions_Item) FromAutomationMessageSessionAction(v AutomationMessageSessionAction) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationMessageSessionAction performs a merge with any union data inside the AutomationTemplateResponse_Actions_Item, using the provided AutomationMessageSessionAction
+func (t *AutomationTemplateResponse_Actions_Item) MergeAutomationMessageSessionAction(v AutomationMessageSessionAction) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationMonitorSessionAction returns the union data inside the AutomationTemplateResponse_Actions_Item as a AutomationMonitorSessionAction
+func (t AutomationTemplateResponse_Actions_Item) AsAutomationMonitorSessionAction() (AutomationMonitorSessionAction, error) {
+	var body AutomationMonitorSessionAction
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationMonitorSessionAction overwrites any union data inside the AutomationTemplateResponse_Actions_Item as the provided AutomationMonitorSessionAction
+func (t *AutomationTemplateResponse_Actions_Item) FromAutomationMonitorSessionAction(v AutomationMonitorSessionAction) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationMonitorSessionAction performs a merge with any union data inside the AutomationTemplateResponse_Actions_Item, using the provided AutomationMonitorSessionAction
+func (t *AutomationTemplateResponse_Actions_Item) MergeAutomationMonitorSessionAction(v AutomationMonitorSessionAction) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t AutomationTemplateResponse_Actions_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *AutomationTemplateResponse_Actions_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsAutomationStartSessionActionUpdate returns the union data inside the AutomationUpdateRequest_Actions_Item as a AutomationStartSessionActionUpdate
+func (t AutomationUpdateRequest_Actions_Item) AsAutomationStartSessionActionUpdate() (AutomationStartSessionActionUpdate, error) {
+	var body AutomationStartSessionActionUpdate
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationStartSessionActionUpdate overwrites any union data inside the AutomationUpdateRequest_Actions_Item as the provided AutomationStartSessionActionUpdate
+func (t *AutomationUpdateRequest_Actions_Item) FromAutomationStartSessionActionUpdate(v AutomationStartSessionActionUpdate) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationStartSessionActionUpdate performs a merge with any union data inside the AutomationUpdateRequest_Actions_Item, using the provided AutomationStartSessionActionUpdate
+func (t *AutomationUpdateRequest_Actions_Item) MergeAutomationStartSessionActionUpdate(v AutomationStartSessionActionUpdate) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationMessageSessionActionUpdate returns the union data inside the AutomationUpdateRequest_Actions_Item as a AutomationMessageSessionActionUpdate
+func (t AutomationUpdateRequest_Actions_Item) AsAutomationMessageSessionActionUpdate() (AutomationMessageSessionActionUpdate, error) {
+	var body AutomationMessageSessionActionUpdate
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationMessageSessionActionUpdate overwrites any union data inside the AutomationUpdateRequest_Actions_Item as the provided AutomationMessageSessionActionUpdate
+func (t *AutomationUpdateRequest_Actions_Item) FromAutomationMessageSessionActionUpdate(v AutomationMessageSessionActionUpdate) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationMessageSessionActionUpdate performs a merge with any union data inside the AutomationUpdateRequest_Actions_Item, using the provided AutomationMessageSessionActionUpdate
+func (t *AutomationUpdateRequest_Actions_Item) MergeAutomationMessageSessionActionUpdate(v AutomationMessageSessionActionUpdate) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationMonitorSessionActionUpdate returns the union data inside the AutomationUpdateRequest_Actions_Item as a AutomationMonitorSessionActionUpdate
+func (t AutomationUpdateRequest_Actions_Item) AsAutomationMonitorSessionActionUpdate() (AutomationMonitorSessionActionUpdate, error) {
+	var body AutomationMonitorSessionActionUpdate
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationMonitorSessionActionUpdate overwrites any union data inside the AutomationUpdateRequest_Actions_Item as the provided AutomationMonitorSessionActionUpdate
+func (t *AutomationUpdateRequest_Actions_Item) FromAutomationMonitorSessionActionUpdate(v AutomationMonitorSessionActionUpdate) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationMonitorSessionActionUpdate performs a merge with any union data inside the AutomationUpdateRequest_Actions_Item, using the provided AutomationMonitorSessionActionUpdate
+func (t *AutomationUpdateRequest_Actions_Item) MergeAutomationMonitorSessionActionUpdate(v AutomationMonitorSessionActionUpdate) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t AutomationUpdateRequest_Actions_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *AutomationUpdateRequest_Actions_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsAutomationRunAsOrganization returns the union data inside the AutomationUpdateRequest_RunAs as a AutomationRunAsOrganization
+func (t AutomationUpdateRequest_RunAs) AsAutomationRunAsOrganization() (AutomationRunAsOrganization, error) {
+	var body AutomationRunAsOrganization
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRunAsOrganization overwrites any union data inside the AutomationUpdateRequest_RunAs as the provided AutomationRunAsOrganization
+func (t *AutomationUpdateRequest_RunAs) FromAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRunAsOrganization performs a merge with any union data inside the AutomationUpdateRequest_RunAs, using the provided AutomationRunAsOrganization
+func (t *AutomationUpdateRequest_RunAs) MergeAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationRunAsCreator returns the union data inside the AutomationUpdateRequest_RunAs as a AutomationRunAsCreator
+func (t AutomationUpdateRequest_RunAs) AsAutomationRunAsCreator() (AutomationRunAsCreator, error) {
+	var body AutomationRunAsCreator
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRunAsCreator overwrites any union data inside the AutomationUpdateRequest_RunAs as the provided AutomationRunAsCreator
+func (t *AutomationUpdateRequest_RunAs) FromAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRunAsCreator performs a merge with any union data inside the AutomationUpdateRequest_RunAs, using the provided AutomationRunAsCreator
+func (t *AutomationUpdateRequest_RunAs) MergeAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t AutomationUpdateRequest_RunAs) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *AutomationUpdateRequest_RunAs) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}

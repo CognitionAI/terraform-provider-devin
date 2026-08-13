@@ -97,7 +97,7 @@ func (r *orgUserRoleResource) Read(ctx context.Context, req resource.ReadRequest
 
 	// There is no org-scoped GET for a single user; the enterprise GET
 	// returns all of the user's direct role assignments.
-	var result api.UserWithIdpRoles
+	var result api.EnterpriseUserWithIdpRoles
 	err := r.client.Get(ctx, enterpriseMemberUserPath(state.UserID.ValueString()), &result)
 	if IsNotFound(err) {
 		resp.State.RemoveResource(ctx)

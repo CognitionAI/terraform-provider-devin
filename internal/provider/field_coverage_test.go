@@ -95,8 +95,21 @@ var ignoredFields = map[string]map[string]string{
 		"items":           paginationReason,
 		"total":           paginationReason,
 	},
+	"org_user_role_resource.go": {
+		"enterprise_joined_at": "server-managed read-only metadata",
+	},
 	"org_tags_resource.go": {
 		"tag": "exposed via the 'default_tag' attribute",
+	},
+	"automation_resource.go": {
+		"template_id":     "create-only provenance marker for template attribution; not managed config",
+		"created_at":      "server-managed read-only metadata",
+		"created_by":      "server-managed read-only metadata",
+		"updated_at":      "server-managed read-only metadata",
+		"last_edited_by":  "server-managed read-only metadata",
+		"last_invocation": "server-managed runtime status",
+		"security_profile": "security-profile binding is managed via the security-profile " +
+			"permission flow, not yet modeled as provider config",
 	},
 	"schedule_resource.go": {
 		// create_as_user_id / run_as_user_id are impersonation inputs gated by
@@ -117,9 +130,12 @@ var ignoredFields = map[string]map[string]string{
 	},
 	// Data sources that only consume a PaginatedResponse envelope; rows are
 	// flattened into a nested attribute keyed off the items element type.
-	"git_connections_data_source.go": paginationOnly,
-	"idp_groups_data_source.go":      paginationOnly,
-	"organizations_data_source.go":   paginationOnly,
+	"git_connections_data_source.go": mergeIgnored(paginationOnly, map[string]string{
+		"perforce_depot_paths": "Perforce MVP field; not yet exposed in the provider",
+		"web_viewer_url":       "Perforce MVP field; not yet exposed in the provider",
+	}),
+	"idp_groups_data_source.go":    paginationOnly,
+	"organizations_data_source.go": paginationOnly,
 }
 
 const paginationReason = "pagination envelope handled by the list machinery"
@@ -129,6 +145,16 @@ var paginationOnly = map[string]string{
 	"has_next_page": paginationReason,
 	"items":         paginationReason,
 	"total":         paginationReason,
+}
+
+func mergeIgnored(maps ...map[string]string) map[string]string {
+	out := map[string]string{}
+	for _, m := range maps {
+		for k, v := range m {
+			out[k] = v
+		}
+	}
+	return out
 }
 
 func structFieldsByTag(file *ast.File, tagKey string) map[string]map[string]bool {

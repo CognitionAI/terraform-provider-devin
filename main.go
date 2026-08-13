@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 
-var version = "dev"
+var version = "dev" // Overridden by release builds.
 
 func main() {
 	var debug bool

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -186,7 +187,7 @@ func importStateIDFromAttrs(resourceName string, attrs ...string) resource.Impor
 // substituted from state) returns a JSON object whose field matches the given
 // state attribute, validating that what Terraform stored matches the API.
 func checkAPIFieldMatchesState(resourceName, pathTemplate, apiField, stateAttrName string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
+	return func(s *terraform.State) (retErr error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return fmt.Errorf("resource %s not found in state", resourceName)
@@ -212,7 +213,11 @@ func checkAPIFieldMatchesState(resourceName, pathTemplate, apiField, stateAttrNa
 		if err != nil {
 			return err
 		}
-		defer func() { _ = resp.Body.Close() }()
+		defer func() {
+			if closeErr := resp.Body.Close(); closeErr != nil && retErr == nil {
+				retErr = closeErr
+			}
+		}()
 		if resp.StatusCode != http.StatusOK {
 			return fmt.Errorf("GET %s returned %d", path, resp.StatusCode)
 		}
@@ -238,6 +243,79 @@ func checkAPIFieldMatchesState(resourceName, pathTemplate, apiField, stateAttrNa
 		stateValue := attrs[stateAttrName]
 		if apiValue != stateValue {
 			return fmt.Errorf("API field %s = %q does not match state attribute %s = %q", apiField, apiValue, stateAttrName, stateValue)
+		}
+		return nil
+	}
+}
+
+// checkAPIJSONFieldMatchesState asserts that fetching apiPath (with {attr}
+// placeholders substituted from state) returns a JSON object whose field is
+// semantically equal to the JSON stored in the given state attribute. The API
+// returns the field as a nested JSON object while Terraform stores it as a
+// string, so both sides are decoded and compared structurally. An absent API
+// field matches an unset (empty) state attribute, covering the cleared case.
+func checkAPIJSONFieldMatchesState(resourceName, pathTemplate, apiField, stateAttrName string) resource.TestCheckFunc {
+	return func(s *terraform.State) (retErr error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource %s not found in state", resourceName)
+		}
+		attrs := rs.Primary.Attributes
+
+		path := pathTemplate
+		for key, value := range attrs {
+			path = strings.ReplaceAll(path, "{"+key+"}", value)
+		}
+		if strings.Contains(path, "{") {
+			return fmt.Errorf("unresolved placeholder in API path %q", path)
+		}
+
+		url := strings.TrimRight(os.Getenv("DEVIN_API_URL"), "/") + path
+		req, err := http.NewRequest(http.MethodGet, url, nil)
+		if err != nil {
+			return err
+		}
+		req.Header.Set("Authorization", "Bearer "+os.Getenv("DEVIN_TOKEN"))
+		httpClient := &http.Client{Timeout: 30 * time.Second}
+		resp, err := httpClient.Do(req)
+		if err != nil {
+			return err
+		}
+		defer func() {
+			if closeErr := resp.Body.Close(); closeErr != nil && retErr == nil {
+				retErr = closeErr
+			}
+		}()
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("GET %s returned %d", path, resp.StatusCode)
+		}
+		var parsed map[string]any
+		if err := json.NewDecoder(resp.Body).Decode(&parsed); err != nil {
+			return err
+		}
+
+		apiRaw, apiHas := parsed[apiField]
+		if apiHas && apiRaw == nil {
+			apiHas = false
+		}
+		stateValue := attrs[stateAttrName]
+
+		if !apiHas {
+			if stateValue != "" {
+				return fmt.Errorf("API field %s absent but state attribute %s = %q", apiField, stateAttrName, stateValue)
+			}
+			return nil
+		}
+		if stateValue == "" {
+			return fmt.Errorf("API field %s present (%v) but state attribute %s is unset", apiField, apiRaw, stateAttrName)
+		}
+
+		var stateParsed any
+		if err := json.Unmarshal([]byte(stateValue), &stateParsed); err != nil {
+			return fmt.Errorf("state attribute %s is not valid JSON: %w", stateAttrName, err)
+		}
+		if !reflect.DeepEqual(apiRaw, stateParsed) {
+			return fmt.Errorf("API field %s = %v does not match state attribute %s = %v", apiField, apiRaw, stateAttrName, stateParsed)
 		}
 		return nil
 	}

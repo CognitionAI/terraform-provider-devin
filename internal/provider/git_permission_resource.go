@@ -35,6 +35,7 @@ type gitPermissionModel struct {
 	RepoPath        types.String `tfsdk:"repo_path"`
 	GroupPrefix     types.String `tfsdk:"group_prefix"`
 	PrefixPath      types.String `tfsdk:"prefix_path"`
+	DepotPath       types.String `tfsdk:"depot_path"`
 	ReadOnly        types.Bool   `tfsdk:"read_only"`
 }
 
@@ -48,7 +49,7 @@ func (r *gitPermissionResource) Metadata(_ context.Context, req resource.Metadat
 
 func (r *gitPermissionResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manages a git permission for a Devin organization. Exactly one of repo_path, group_prefix, or prefix_path must be set.",
+		Description: "Manages a git permission for a Devin organization. Exactly one of repo_path, group_prefix, prefix_path, or depot_path must be set.",
 		Attributes: map[string]schema.Attribute{
 			"git_permission_id": schema.StringAttribute{
 				Description: "Git permission ID (assigned by Devin).",
@@ -101,6 +102,13 @@ func (r *gitPermissionResource) Schema(_ context.Context, _ resource.SchemaReque
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
+			"depot_path": schema.StringAttribute{
+				Description: "Perforce depot path. Mutually exclusive with repo_path, group_prefix, and prefix_path.",
+				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
 			"read_only": schema.BoolAttribute{
 				Description: "Whether the permission grants read-only access.",
 				Optional:    true,
@@ -117,6 +125,7 @@ func (r *gitPermissionResource) ConfigValidators(_ context.Context) []resource.C
 			path.MatchRoot("repo_path"),
 			path.MatchRoot("group_prefix"),
 			path.MatchRoot("prefix_path"),
+			path.MatchRoot("depot_path"),
 		),
 	}
 }
@@ -146,6 +155,7 @@ func (r *gitPermissionResource) Create(ctx context.Context, req resource.CreateR
 			RepoPath:        optionalStringFrom(plan.RepoPath),
 			GroupPrefix:     optionalStringFrom(plan.GroupPrefix),
 			PrefixPath:      optionalStringFrom(plan.PrefixPath),
+			DepotPath:       optionalStringFrom(plan.DepotPath),
 		}},
 	}
 
@@ -265,4 +275,5 @@ func mapGitPermResponseToModel(resp *api.GitPermissionResponse, model *gitPermis
 	model.RepoPath = stringFromNullable(resp.RepoPath)
 	model.GroupPrefix = stringFromNullable(resp.GroupPrefix)
 	model.PrefixPath = stringFromNullable(resp.PrefixPath)
+	model.DepotPath = stringFromNullable(resp.DepotPath)
 }

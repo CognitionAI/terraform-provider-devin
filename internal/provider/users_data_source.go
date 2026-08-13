@@ -24,10 +24,11 @@ type roleAssignmentModel struct {
 }
 
 type userModel struct {
-	UserID          types.String          `tfsdk:"user_id"`
-	Email           types.String          `tfsdk:"email"`
-	Name            types.String          `tfsdk:"name"`
-	RoleAssignments []roleAssignmentModel `tfsdk:"role_assignments"`
+	UserID             types.String          `tfsdk:"user_id"`
+	Email              types.String          `tfsdk:"email"`
+	EnterpriseJoinedAt types.Int64           `tfsdk:"enterprise_joined_at"`
+	Name               types.String          `tfsdk:"name"`
+	RoleAssignments    []roleAssignmentModel `tfsdk:"role_assignments"`
 }
 
 type usersDataSourceModel struct {
@@ -97,6 +98,10 @@ func (d *usersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 							Description: "Display name of the user.",
 							Computed:    true,
 						},
+						"enterprise_joined_at": schema.Int64Attribute{
+							Description: "When the user was added to this enterprise.",
+							Computed:    true,
+						},
 						"role_assignments": roleAssignmentsSchema(),
 					},
 				},
@@ -131,7 +136,7 @@ func (d *usersDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 			query.Set("email", state.Email.ValueString())
 		}
 
-		var page api.PaginatedResponseUser
+		var page api.PaginatedResponseEnterpriseUser
 		if err := d.client.Get(ctx, enterpriseMemberUsersPath+"?"+query.Encode(), &page); err != nil {
 			resp.Diagnostics.AddError("Failed to list users", err.Error())
 			return
@@ -139,10 +144,11 @@ func (d *usersDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 
 		for _, item := range page.Items {
 			state.Users = append(state.Users, userModel{
-				UserID:          types.StringValue(item.UserID),
-				Email:           stringFromNullable(item.Email),
-				Name:            stringFromNullable(item.Name),
-				RoleAssignments: mapRoleAssignments(item.RoleAssignments),
+				UserID:             types.StringValue(item.UserID),
+				Email:              stringFromNullable(item.Email),
+				EnterpriseJoinedAt: int64FromNullable(item.EnterpriseJoinedAt),
+				Name:               stringFromNullable(item.Name),
+				RoleAssignments:    mapRoleAssignments(item.RoleAssignments),
 			})
 		}
 

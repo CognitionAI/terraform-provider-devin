@@ -24,8 +24,27 @@ resource "devin_playbook" "test" {
 `, providerConfig, orgName, title, body, extra)
 }
 
+const playbookSchemaExtraA = `  structured_output_schema = jsonencode({
+    type = "object"
+    properties = {
+      name = { type = "string" }
+    }
+    required = ["name"]
+  })
+`
+
+const playbookSchemaExtraB = `  structured_output_schema = jsonencode({
+    type = "object"
+    properties = {
+      score = { type = "number" }
+    }
+  })
+`
+
 // Create without the optional macro, validate against the API, import with the
-// composite ID, update fields in place, set the macro, then clear it again.
+// composite ID, update fields in place, set the macro, clear it, then exercise
+// the structured_output_schema lifecycle (set, update, clear) verifying each
+// change round-trips to the API as a JSON object.
 func TestAccPlaybookResource_basic(t *testing.T) {
 	orgName := randomName("tf-acc-pb-org")
 	var playbookID string
@@ -71,6 +90,34 @@ func TestAccPlaybookResource_basic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckNoResourceAttr("devin_playbook.test", "macro"),
 					resource.TestCheckResourceAttrPtr("devin_playbook.test", "playbook_id", &playbookID),
+				),
+			},
+			{
+				Config: playbookConfig(orgName, "Updated title", "Updated body", playbookSchemaExtraA),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("devin_playbook.test", "structured_output_schema"),
+					checkAPIJSONFieldMatchesState("devin_playbook.test", "/v3/organizations/{org_id}/playbooks/{playbook_id}", "structured_output_schema", "structured_output_schema"),
+				),
+			},
+			{
+				ResourceName:                         "devin_playbook.test",
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "playbook_id",
+				ImportStateIdFunc:                    importStateIDFromAttrs("devin_playbook.test", "org_id", "playbook_id"),
+			},
+			{
+				Config: playbookConfig(orgName, "Updated title", "Updated body", playbookSchemaExtraB),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("devin_playbook.test", "structured_output_schema"),
+					checkAPIJSONFieldMatchesState("devin_playbook.test", "/v3/organizations/{org_id}/playbooks/{playbook_id}", "structured_output_schema", "structured_output_schema"),
+				),
+			},
+			{
+				Config: playbookConfig(orgName, "Updated title", "Updated body", ""),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("devin_playbook.test", "structured_output_schema"),
+					checkAPIJSONFieldMatchesState("devin_playbook.test", "/v3/organizations/{org_id}/playbooks/{playbook_id}", "structured_output_schema", "structured_output_schema"),
 				),
 			},
 		},
