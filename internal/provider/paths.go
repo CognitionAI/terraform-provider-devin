@@ -119,3 +119,33 @@ func orgMemberIdpGroupsPath(orgID string) string {
 func orgMemberIdpGroupPath(orgID, name string) string {
 	return orgMemberIdpGroupsPath(orgID) + "/" + url.PathEscape(name)
 }
+
+const snapshotSetupBase = "/v3beta1/organizations"
+
+func orgSnapshotSetupPath(orgID string) string {
+	return snapshotSetupBase + "/" + url.PathEscape(orgID) + "/snapshot-setup"
+}
+
+func orgBlueprintsPath(orgID string) string {
+	return orgSnapshotSetupPath(orgID) + "/blueprints"
+}
+
+func orgBlueprintPath(orgID, blueprintID string) string {
+	return orgBlueprintsPath(orgID) + "/" + url.PathEscape(blueprintID)
+}
+
+func orgBlueprintContentsPath(orgID, blueprintID string) string {
+	return orgBlueprintPath(orgID, blueprintID) + "/contents"
+}
+
+func orgSnapshotBuildsPath(orgID string) string {
+	return orgSnapshotSetupPath(orgID) + "/builds"
+}
+
+func orgSnapshotBuildPath(orgID, buildID string) string {
+	return orgSnapshotBuildsPath(orgID) + "/" + url.PathEscape(buildID)
+}
+
+func orgSnapshotBuildCancelPath(orgID, buildID string) string {
+	return orgSnapshotBuildPath(orgID, buildID) + "/cancel"
+}

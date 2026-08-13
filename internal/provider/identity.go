@@ -203,3 +203,31 @@ func gitPermissionIdentitySchema() identityschema.Schema {
 		},
 	}
 }
+
+type blueprintIdentityModel struct {
+	OrgID       types.String `tfsdk:"org_id"`
+	BlueprintID types.String `tfsdk:"blueprint_id"`
+}
+
+func blueprintIdentitySchema() identityschema.Schema {
+	return identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"org_id":       identityAttribute("Organization ID that owns the blueprint."),
+			"blueprint_id": identityAttribute("Blueprint ID."),
+		},
+	}
+}
+
+type snapshotBuildIdentityModel struct {
+	OrgID   types.String `tfsdk:"org_id"`
+	BuildID types.String `tfsdk:"build_id"`
+}
+
+func snapshotBuildIdentitySchema() identityschema.Schema {
+	return identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"org_id":   identityAttribute("Organization ID the build belongs to."),
+			"build_id": identityAttribute("Snapshot build ID."),
+		},
+	}
+}
