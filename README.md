@@ -98,14 +98,17 @@ resource "devin_org_idp_group_role" "engineering_member" {
 
 ## Data sources
 
-| Data source             | Description                                      |
-| ----------------------- | ------------------------------------------------ |
-| `devin_organizations`   | Organizations in the enterprise                  |
-| `devin_git_connections` | Git connections available to the enterprise      |
-| `devin_roles`           | Roles available for membership and service users |
-| `devin_users`           | Users in the enterprise                          |
-| `devin_service_users`   | Active service users in the enterprise           |
-| `devin_idp_groups`      | IdP groups registered with the enterprise        |
+| Data source                           | Description                                       |
+| ------------------------------------- | ------------------------------------------------- |
+| `devin_organizations`                 | Organizations in the enterprise                   |
+| `devin_git_connections`               | Git connections available to the enterprise       |
+| `devin_roles`                         | Roles available for membership and service users  |
+| `devin_users`                         | Users in the enterprise                           |
+| `devin_service_users`                 | Active service users in the enterprise            |
+| `devin_idp_groups`                    | IdP groups registered with the enterprise         |
+| `devin_knowledge_folders`             | Knowledge folder tree for an org                  |
+| `devin_enterprise_knowledge_folders`  | Enterprise-level knowledge folder tree            |
+
 
 ## List resources (Terraform 1.14+)
 

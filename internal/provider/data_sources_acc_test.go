@@ -192,3 +192,62 @@ data "devin_idp_groups" "all" {
 		},
 	})
 }
+
+// The knowledge folders data source returns an org's folder tree. Devin has
+// no API for creating folders, so a fresh org has an empty tree; the test
+// creates a root-level note and asserts it is counted under root_note_count.
+func TestAccKnowledgeFoldersDataSource_basic(t *testing.T) {
+	orgName := randomName("tf-acc-kf-org")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`%s
+resource "devin_organization" "test" {
+  name = %q
+}
+
+resource "devin_knowledge_note" "root" {
+  org_id  = devin_organization.test.org_id
+  name    = "Root note"
+  body    = "Lives at the root of the knowledge tree."
+  trigger = "When testing the folders data source"
+}
+
+data "devin_knowledge_folders" "all" {
+  org_id     = devin_organization.test.org_id
+  depends_on = [devin_knowledge_note.root]
+}
+`, providerConfig, orgName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.devin_knowledge_folders.all", "folders.#"),
+					resource.TestCheckResourceAttrPair("data.devin_knowledge_folders.all", "org_id", "devin_organization.test", "org_id"),
+					resource.TestCheckResourceAttr("data.devin_knowledge_folders.all", "root_note_count", "1"),
+				),
+			},
+		},
+	})
+}
+
+// The enterprise knowledge folders data source returns the account-level
+// folder tree. The local CI enterprise has no folders, so only the response
+// shape is asserted.
+func TestAccEnterpriseKnowledgeFoldersDataSource_basic(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + `
+data "devin_enterprise_knowledge_folders" "all" {}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.devin_enterprise_knowledge_folders.all", "folders.#"),
+					resource.TestCheckResourceAttrSet("data.devin_enterprise_knowledge_folders.all", "root_note_count"),
+				),
+			},
+		},
+	})
+}

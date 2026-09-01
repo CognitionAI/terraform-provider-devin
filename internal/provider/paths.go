@@ -35,6 +35,10 @@ func orgKnowledgeNotePath(orgID, noteID string) string {
 	return orgKnowledgeNotesPath(orgID) + "/" + url.PathEscape(noteID)
 }
 
+func orgKnowledgeFoldersPath(orgID string) string {
+	return organizationsPath + "/" + url.PathEscape(orgID) + "/knowledge/folders"
+}
+
 func orgSecretsPath(orgID string) string {
 	return organizationsPath + "/" + url.PathEscape(orgID) + "/secrets"
 }
@@ -68,6 +72,7 @@ const (
 	enterpriseMemberIdpGroups        = "/v3/enterprise/members/idp-groups"
 	enterprisePlaybooksPath          = "/v3/enterprise/playbooks"
 	enterpriseKnowledgeNotesPath     = "/v3/enterprise/knowledge/notes"
+	enterpriseKnowledgeFoldersPath   = "/v3/enterprise/knowledge/folders"
 	enterpriseMemberUsersPath        = "/v3/enterprise/members/users"
 	enterpriseMemberServiceUsersPath = "/v3/enterprise/members/service-users"
 )
