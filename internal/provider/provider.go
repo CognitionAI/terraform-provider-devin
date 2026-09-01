@@ -131,6 +131,8 @@ func (p *DevinProvider) DataSources(_ context.Context) []func() datasource.DataS
 		NewUsersDataSource,
 		NewServiceUsersDataSource,
 		NewIdpGroupsDataSource,
+		NewKnowledgeFoldersDataSource,
+		NewEnterpriseKnowledgeFoldersDataSource,
 	}
 }
 
