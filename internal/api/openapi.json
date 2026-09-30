@@ -275,13 +275,16 @@
             "nullable": true
           },
           "run_as": {
-            "description": "Required: explicitly choose the identity spawned sessions run under (organization or creator).",
+            "description": "Required: explicitly choose the identity spawned sessions run under (organization, creator, or service_user).",
             "oneOf": [
               {
                 "$ref": "#/components/schemas/AutomationRunAsOrganization"
               },
               {
                 "$ref": "#/components/schemas/AutomationRunAsCreator"
+              },
+              {
+                "$ref": "#/components/schemas/AutomationRunAsServiceUser"
               }
             ],
             "title": "Run As"
@@ -303,6 +306,27 @@
             ],
             "description": "Applied to sessions this automation spawns.",
             "nullable": true
+          },
+          "slack_reply_access": {
+            "default": "slack_users",
+            "description": "Who may reply into existing sessions from Slack threads: devin_users (linked Devin accounts only), slack_users (anyone in the organization's connected Slack workspaces), or external_slack_users (also Slack Connect users). Does not affect who can trigger the automation.",
+            "enum": [
+              "devin_users",
+              "slack_users",
+              "external_slack_users"
+            ],
+            "title": "Slack Reply Access",
+            "type": "string"
+          },
+          "teams_reply_access": {
+            "default": "teams_users",
+            "description": "Who may reply into existing sessions from Microsoft Teams threads: devin_users (linked Devin accounts only) or teams_users (anyone in the organization's connected Microsoft tenant; the default). Does not affect who can trigger the automation.",
+            "enum": [
+              "devin_users",
+              "teams_users"
+            ],
+            "title": "Teams Reply Access",
+            "type": "string"
           },
           "template_id": {
             "description": "Create-only provenance marker; resolve ids via the templates endpoint. When set and tools.mcp_servers is omitted, the template's required_mcps apply.",
@@ -1025,6 +1049,12 @@
             "title": "Name",
             "type": "string"
           },
+          "next_run_at": {
+            "description": "When the automation's schedule triggers next fire. null when it has no schedule trigger, is disabled, or every schedule has passed its end date.",
+            "nullable": true,
+            "title": "Next Run At",
+            "type": "integer"
+          },
           "notifications": {
             "allOf": [
               {
@@ -1034,13 +1064,16 @@
             "nullable": true
           },
           "run_as": {
-            "description": "Identity the spawned sessions run under. organization: the org's automation identity (the System User in the app) \u2014 sessions use system permissions, so MCP servers installed with a personal (user-scoped) connection cannot be selected, and switching an automation to organization removes them from its selection. creator: personal automation \u2014 runs with the creator's own permissions and is visible only to the creator and org admins; rejected for service-user-created automations. Required on create; null on update resets to organization.",
+            "description": "Identity the spawned sessions run under. organization: the org's automation identity (the System User in the app) \u2014 sessions use system permissions, so MCP servers installed with a personal (user-scoped) connection cannot be selected, and switching an automation to organization removes them from its selection. creator: personal automation \u2014 runs with the creator's own permissions and is visible only to the creator and org admins; rejected for service-user-created automations. service_user: runs as the given service user, with its roles, grants and ACU limits; requires permission to manage that service user. Required on create; null on update resets to organization.",
             "oneOf": [
               {
                 "$ref": "#/components/schemas/AutomationRunAsOrganization"
               },
               {
                 "$ref": "#/components/schemas/AutomationRunAsCreator"
+              },
+              {
+                "$ref": "#/components/schemas/AutomationRunAsServiceUser"
               }
             ],
             "title": "Run As"
@@ -1061,6 +1094,27 @@
               }
             ],
             "nullable": true
+          },
+          "slack_reply_access": {
+            "default": "slack_users",
+            "description": "Who may reply into existing sessions from Slack threads: devin_users (linked Devin accounts only), slack_users (anyone in the organization's connected Slack workspaces), or external_slack_users (also Slack Connect users). Does not affect who can trigger the automation.",
+            "enum": [
+              "devin_users",
+              "slack_users",
+              "external_slack_users"
+            ],
+            "title": "Slack Reply Access",
+            "type": "string"
+          },
+          "teams_reply_access": {
+            "default": "teams_users",
+            "description": "Who may reply into existing sessions from Microsoft Teams threads: devin_users (linked Devin accounts only) or teams_users (anyone in the organization's connected Microsoft tenant; the default). Does not affect who can trigger the automation.",
+            "enum": [
+              "devin_users",
+              "teams_users"
+            ],
+            "title": "Teams Reply Access",
+            "type": "string"
           },
           "template_id": {
             "nullable": true,
@@ -1128,6 +1182,28 @@
           }
         },
         "title": "AutomationRunAsOrganization",
+        "type": "object"
+      },
+      "AutomationRunAsServiceUser": {
+        "additionalProperties": false,
+        "properties": {
+          "service_user_id": {
+            "title": "Service User Id",
+            "type": "string"
+          },
+          "type": {
+            "default": "service_user",
+            "enum": [
+              "service_user"
+            ],
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "service_user_id"
+        ],
+        "title": "AutomationRunAsServiceUser",
         "type": "object"
       },
       "AutomationSchemaFieldDef": {
@@ -1204,8 +1280,13 @@
               "incident_io_severity",
               "incident_io_status",
               "incident_io_incident_type",
+              "pagerduty_service",
+              "pagerduty_team",
+              "pagerduty_priority",
               "github_repo",
               "gitlab_repo",
+              "azure_devops_repo",
+              "bitbucket_data_center_repo",
               "linear_label",
               "linear_state",
               "linear_assignee",
@@ -1217,8 +1298,11 @@
               "jira_epic",
               "slack_user",
               "slack_reaction",
+              "slack_usergroup",
               "pylon_tag",
               "pylon_status",
+              "teams_team",
+              "teams_channel",
               "file_paths"
             ],
             "title": "Type",
@@ -1259,6 +1343,24 @@
       "AutomationSchemasResponse": {
         "additionalProperties": false,
         "properties": {
+          "default_net_policy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutomationNetPolicy"
+              }
+            ],
+            "description": "Network policy clients should start new automations from: the deployment's Git Manager-only policy (add only the destinations the task requires), or null when the governing security profile (see security_profile) has a network policy. In that case sessions use the profile's policy; omit session_settings.net_policy unless the task must restrict further.",
+            "nullable": true
+          },
+          "security_profile": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutomationSchemasSecurityProfile"
+              }
+            ],
+            "description": "Security profile governing this organization's automation sessions, or null when none applies.",
+            "nullable": true
+          },
           "sources": {
             "additionalProperties": {
               "additionalProperties": {
@@ -1277,10 +1379,43 @@
           }
         },
         "required": [
+          "default_net_policy",
           "update_semantics",
           "sources"
         ],
         "title": "AutomationSchemasResponse",
+        "type": "object"
+      },
+      "AutomationSchemasSecurityProfile": {
+        "additionalProperties": false,
+        "description": "The security profile that governs this organization's automation\nsessions (enterprise, organization, or automations default binding).",
+        "properties": {
+          "governs_network": {
+            "description": "Whether the profile has a network policy. When true, sessions are already restricted to the profile's destinations and an automation needs its own session_settings.net_policy only to restrict further.",
+            "title": "Governs Network",
+            "type": "boolean"
+          },
+          "mcp_servers": {
+            "description": "MCP server slugs the profile allows (the ceiling for tools.mcp_servers), or null when the profile does not restrict MCP servers.",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "title": "Mcp Servers",
+            "type": "array"
+          },
+          "name": {
+            "description": "Profile name, for display.",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "governs_network",
+          "mcp_servers"
+        ],
+        "title": "AutomationSchemasSecurityProfile",
         "type": "object"
       },
       "AutomationSecurityProfileResponse": {
@@ -1346,7 +1481,7 @@
                 "$ref": "#/components/schemas/AutomationSessionNotificationsConfig"
               }
             ],
-            "description": "Session-content notifications (currently Slack only).",
+            "description": "Session-content notifications (Slack and Microsoft Teams).",
             "nullable": true
           },
           "platform": {
@@ -1398,7 +1533,7 @@
                 "$ref": "#/components/schemas/AutomationSessionNotificationsConfig"
               }
             ],
-            "description": "Session-content notifications (currently Slack only).",
+            "description": "Session-content notifications (Slack and Microsoft Teams).",
             "nullable": true
           },
           "platform": {
@@ -1446,6 +1581,15 @@
               }
             ],
             "description": "Gives the session a Slack home: two-way for post_updates/forward_thread and post_response after its initial delivery binds the thread.",
+            "nullable": true
+          },
+          "teams": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutomationSessionTeamsConfig"
+              }
+            ],
+            "description": "Posts the session's final response to the Microsoft Teams channel as a new top-level post, then binds its thread for replies (available for any trigger). Cannot be combined with a slack post_response/post_updates home or a post_response reply.",
             "nullable": true
           }
         },
@@ -1533,6 +1677,27 @@
           "channel_id"
         ],
         "title": "AutomationSessionSlackConfig",
+        "type": "object"
+      },
+      "AutomationSessionTeamsConfig": {
+        "additionalProperties": false,
+        "properties": {
+          "channel_id": {
+            "description": "Conversation id of a channel in that team.",
+            "title": "Channel Id",
+            "type": "string"
+          },
+          "team_id": {
+            "description": "Entra group id of a team the Devin app is installed in on the organization's Microsoft Teams connection.",
+            "title": "Team Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "team_id",
+          "channel_id"
+        ],
+        "title": "AutomationSessionTeamsConfig",
         "type": "object"
       },
       "AutomationSlackChannel": {
@@ -1708,6 +1873,27 @@
         "title": "AutomationStringCondition",
         "type": "object"
       },
+      "AutomationTeamsChannel": {
+        "additionalProperties": false,
+        "properties": {
+          "channel_id": {
+            "description": "Teams channel id ('19:...@thread.tacv2'), or '*'.",
+            "title": "Channel Id",
+            "type": "string"
+          },
+          "team_id": {
+            "description": "Entra group id of the Microsoft Teams team, or '*'.",
+            "title": "Team Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "team_id",
+          "channel_id"
+        ],
+        "title": "AutomationTeamsChannel",
+        "type": "object"
+      },
       "AutomationTemplateResponse": {
         "additionalProperties": false,
         "properties": {
@@ -1809,6 +1995,16 @@
       "AutomationTools": {
         "additionalProperties": false,
         "properties": {
+          "jira_projects": {
+            "description": "Jira project ids the session's Jira tools are limited to. Null (the default) allows every project the run identity can access. Projects required by the automation's Jira triggers are always included. While a project list is set, the Atlassian MCP server is not loaded, since it cannot be limited to projects. On update, omitting this member keeps the stored list; send null to clear it.",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "nullable": true,
+            "title": "Jira Projects",
+            "type": "array"
+          },
           "linear_enabled": {
             "description": "Grant Linear tools.",
             "nullable": true,
@@ -1842,6 +2038,15 @@
             "nullable": true,
             "title": "Slack Dm Scope",
             "type": "string"
+          },
+          "teams_channels": {
+            "default": [],
+            "description": "Microsoft Teams channels the session's Teams tool may read and post to. Teams must have the Devin app installed. A single {team_id: '*', channel_id: '*'} entry grants every channel of every team the Devin app is installed in. The grant is capped by the organization's Teams Default Access; the channel of a teams:message trigger is always granted.",
+            "items": {
+              "$ref": "#/components/schemas/AutomationTeamsChannel"
+            },
+            "title": "Teams Channels",
+            "type": "array"
           }
         },
         "title": "AutomationTools",
@@ -1856,7 +2061,7 @@
                 "$ref": "#/components/schemas/AutomationConditions-Input"
               }
             ],
-            "description": "null matches every event.",
+            "description": "null matches every event, except Slack message triggers require a channel restriction or at least one completed filter in every group. is_thread_reply alone does not satisfy this requirement.",
             "nullable": true
           },
           "event_type": {
@@ -1875,9 +2080,18 @@
               "gitlab:issue_note",
               "gitlab:push",
               "gitlab:pipeline",
+              "azure_devops:pull_request",
+              "azure_devops:pull_request_comment",
+              "azure_devops:push",
+              "azure_devops:build",
+              "bitbucket_data_center:pull_request",
+              "bitbucket_data_center:pull_request_comment",
+              "bitbucket_data_center:push",
               "schedule:recurring",
               "slack:message",
               "slack:reaction_added",
+              "slack:usergroup_mentioned",
+              "teams:message",
               "linear:create",
               "linear:label_added",
               "linear:assigned",
@@ -1885,9 +2099,11 @@
               "linear:priority_changed",
               "linear:moved",
               "jira:issue_created",
+              "jira:issue_updated",
               "jira:label_added",
               "jira:status_changed",
               "jira:assigned",
+              "jira:commented",
               "pylon:issue_created",
               "pylon:issue_tag_added",
               "pylon:issue_status_changed",
@@ -1895,6 +2111,10 @@
               "incident_io:status_changed",
               "incident_io:severity_changed",
               "incident_io:follow_up_created",
+              "pagerduty:incident_triggered",
+              "pagerduty:incident_acknowledged",
+              "pagerduty:incident_resolved",
+              "pagerduty:incident_updated",
               "webhook:incoming",
               "snapshot_build:completed"
             ],
@@ -1926,7 +2146,7 @@
                 "$ref": "#/components/schemas/AutomationConditions-Output"
               }
             ],
-            "description": "null matches every event.",
+            "description": "null matches every event, except Slack message triggers require a channel restriction or at least one completed filter in every group. is_thread_reply alone does not satisfy this requirement.",
             "nullable": true
           },
           "event_type": {
@@ -1945,9 +2165,18 @@
               "gitlab:issue_note",
               "gitlab:push",
               "gitlab:pipeline",
+              "azure_devops:pull_request",
+              "azure_devops:pull_request_comment",
+              "azure_devops:push",
+              "azure_devops:build",
+              "bitbucket_data_center:pull_request",
+              "bitbucket_data_center:pull_request_comment",
+              "bitbucket_data_center:push",
               "schedule:recurring",
               "slack:message",
               "slack:reaction_added",
+              "slack:usergroup_mentioned",
+              "teams:message",
               "linear:create",
               "linear:label_added",
               "linear:assigned",
@@ -1955,9 +2184,11 @@
               "linear:priority_changed",
               "linear:moved",
               "jira:issue_created",
+              "jira:issue_updated",
               "jira:label_added",
               "jira:status_changed",
               "jira:assigned",
+              "jira:commented",
               "pylon:issue_created",
               "pylon:issue_tag_added",
               "pylon:issue_status_changed",
@@ -1965,6 +2196,10 @@
               "incident_io:status_changed",
               "incident_io:severity_changed",
               "incident_io:follow_up_created",
+              "pagerduty:incident_triggered",
+              "pagerduty:incident_acknowledged",
+              "pagerduty:incident_resolved",
+              "pagerduty:incident_updated",
               "webhook:incoming",
               "snapshot_build:completed"
             ],
@@ -2108,6 +2343,9 @@
               },
               {
                 "$ref": "#/components/schemas/AutomationRunAsCreator"
+              },
+              {
+                "$ref": "#/components/schemas/AutomationRunAsServiceUser"
               }
             ],
             "title": "Run As"
@@ -2128,6 +2366,27 @@
               }
             ],
             "nullable": true
+          },
+          "slack_reply_access": {
+            "description": "null resets to slack_users.",
+            "enum": [
+              "devin_users",
+              "slack_users",
+              "external_slack_users"
+            ],
+            "nullable": true,
+            "title": "Slack Reply Access",
+            "type": "string"
+          },
+          "teams_reply_access": {
+            "description": "null resets to teams_users.",
+            "enum": [
+              "devin_users",
+              "teams_users"
+            ],
+            "nullable": true,
+            "title": "Teams Reply Access",
+            "type": "string"
           },
           "tools": {
             "allOf": [
@@ -2407,6 +2666,7 @@
               "gitlab_token",
               "gitlab_oauth",
               "azure_devops_oauth",
+              "azure_devops_token",
               "bitbucket_oauth",
               "bitbucket_token",
               "perforce"
@@ -3680,6 +3940,12 @@
             "description": "A human-readable explanation specific to this occurrence.",
             "nullable": true,
             "title": "Detail",
+            "type": "string"
+          },
+          "error_code": {
+            "description": "Machine-readable code for blocked-action refusals (e.g. \"user_frozen\", \"migrated_session\").",
+            "nullable": true,
+            "title": "Error Code",
             "type": "string"
           },
           "errors": {
@@ -11538,7 +11804,9 @@
                   "auto_triage",
                   "remediate_finding",
                   "triage_session",
-                  "incident_session"
+                  "generic_assistant",
+                  "incident_session",
+                  "code_scan"
                 ],
                 "type": "string"
               },
@@ -11722,6 +11990,18 @@
             "schema": {
               "example": "org-abc123def456",
               "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Resolve `default_net_policy` and `security_profile` for a create that sets `security_profile.profile_id` to this profile. Requires the security-profile management permission.",
+            "in": "query",
+            "name": "security_profile_id",
+            "required": false,
+            "schema": {
+              "description": "Resolve `default_net_policy` and `security_profile` for a create that sets `security_profile.profile_id` to this profile. Requires the security-profile management permission.",
+              "nullable": true,
+              "title": "Security Profile Id",
               "type": "string"
             }
           }
@@ -13272,7 +13552,8 @@
     },
     "/v3/organizations/{org_id}/schedules": {
       "get": {
-        "description": "List all schedules for the organization.",
+        "deprecated": true,
+        "description": "List all schedules for the organization.\n\n**Deprecated.** Schedules are superseded by Automations: create an automation with a `schedule:recurring` trigger via `POST /v3/organizations/{org_id}/automations` instead. This endpoint remains available for existing schedules.",
         "operationId": "handle_list_schedules_v3_organizations__org_id__schedules_get",
         "parameters": [
           {
@@ -13378,7 +13659,8 @@
         ]
       },
       "post": {
-        "description": "Create a new scheduled session.",
+        "deprecated": true,
+        "description": "Create a new scheduled session.\n\n**Deprecated.** Schedules are superseded by Automations: create an automation with a `schedule:recurring` trigger via `POST /v3/organizations/{org_id}/automations` instead. For organizations migrated to Automations this endpoint returns `403`; existing schedules remain readable, updatable, and deletable.",
         "operationId": "handle_create_schedule_v3_organizations__org_id__schedules_post",
         "parameters": [
           {
@@ -13473,7 +13755,8 @@
     },
     "/v3/organizations/{org_id}/schedules/{schedule_id}": {
       "delete": {
-        "description": "Soft delete a schedule.",
+        "deprecated": true,
+        "description": "Soft delete a schedule.\n\n**Deprecated.** Schedules are superseded by Automations: create an automation with a `schedule:recurring` trigger via `POST /v3/organizations/{org_id}/automations` instead. This endpoint remains available for existing schedules.",
         "operationId": "handle_delete_schedule_v3_organizations__org_id__schedules__schedule_id__delete",
         "parameters": [
           {
@@ -13567,7 +13850,8 @@
         ]
       },
       "get": {
-        "description": "Get a specific schedule by ID.",
+        "deprecated": true,
+        "description": "Get a specific schedule by ID.\n\n**Deprecated.** Schedules are superseded by Automations: create an automation with a `schedule:recurring` trigger via `POST /v3/organizations/{org_id}/automations` instead. This endpoint remains available for existing schedules.",
         "operationId": "handle_get_schedule_v3_organizations__org_id__schedules__schedule_id__get",
         "parameters": [
           {
@@ -13661,7 +13945,8 @@
         ]
       },
       "patch": {
-        "description": "Update an existing schedule.",
+        "deprecated": true,
+        "description": "Update an existing schedule.\n\n**Deprecated.** Schedules are superseded by Automations: create an automation with a `schedule:recurring` trigger via `POST /v3/organizations/{org_id}/automations` instead. This endpoint remains available for existing schedules.",
         "operationId": "handle_update_schedule_v3_organizations__org_id__schedules__schedule_id__patch",
         "parameters": [
           {

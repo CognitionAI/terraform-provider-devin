@@ -36,6 +36,33 @@ func TestClient_Get(t *testing.T) {
 	}
 }
 
+func TestClient_SendsUserAgent(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if got := r.Header.Get("User-Agent"); got != "Terraform/1.9.5 terraform-provider-devin/1.2.3" {
+			t.Errorf("expected Terraform/1.9.5 terraform-provider-devin/1.2.3 user agent, got %q", got)
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+
+	client := &Client{
+		BaseURL:    server.URL,
+		Token:      "test-token",
+		UserAgent:  UserAgent("1.9.5", "1.2.3"),
+		HTTPClient: server.Client(),
+	}
+
+	if err := client.Post(context.Background(), "/test", map[string]string{}, nil); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestUserAgent_WithoutTerraformVersion(t *testing.T) {
+	if got := UserAgent("", "1.2.3"); got != "terraform-provider-devin/1.2.3" {
+		t.Errorf("expected terraform-provider-devin/1.2.3, got %q", got)
+	}
+}
+
 func TestClient_TrailingSlashBaseURL(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v3/test" {

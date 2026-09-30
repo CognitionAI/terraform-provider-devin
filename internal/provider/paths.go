@@ -31,6 +31,10 @@ func orgKnowledgeNotesPath(orgID string) string {
 	return organizationsPath + "/" + url.PathEscape(orgID) + "/knowledge/notes"
 }
 
+func orgKnowledgeFoldersPath(orgID string) string {
+	return organizationsPath + "/" + url.PathEscape(orgID) + "/knowledge/folders"
+}
+
 func orgKnowledgeNotePath(orgID, noteID string) string {
 	return orgKnowledgeNotesPath(orgID) + "/" + url.PathEscape(noteID)
 }

@@ -34,6 +34,19 @@ const (
 	Neq AutomationComparisonConditionOperator = "neq"
 )
 
+// Defines values for AutomationCreateRequestSlackReplyAccess.
+const (
+	AutomationCreateRequestSlackReplyAccessDevinUsers         AutomationCreateRequestSlackReplyAccess = "devin_users"
+	AutomationCreateRequestSlackReplyAccessExternalSlackUsers AutomationCreateRequestSlackReplyAccess = "external_slack_users"
+	AutomationCreateRequestSlackReplyAccessSlackUsers         AutomationCreateRequestSlackReplyAccess = "slack_users"
+)
+
+// Defines values for AutomationCreateRequestTeamsReplyAccess.
+const (
+	AutomationCreateRequestTeamsReplyAccessDevinUsers AutomationCreateRequestTeamsReplyAccess = "devin_users"
+	AutomationCreateRequestTeamsReplyAccessTeamsUsers AutomationCreateRequestTeamsReplyAccess = "teams_users"
+)
+
 // Defines values for AutomationEmailNotificationWhen.
 const (
 	AutomationEmailNotificationWhenAlways            AutomationEmailNotificationWhen = "always"
@@ -110,6 +123,19 @@ const (
 	AutomationReplyTypePostResponse AutomationReplyType = "post_response"
 )
 
+// Defines values for AutomationResponseSlackReplyAccess.
+const (
+	AutomationResponseSlackReplyAccessDevinUsers         AutomationResponseSlackReplyAccess = "devin_users"
+	AutomationResponseSlackReplyAccessExternalSlackUsers AutomationResponseSlackReplyAccess = "external_slack_users"
+	AutomationResponseSlackReplyAccessSlackUsers         AutomationResponseSlackReplyAccess = "slack_users"
+)
+
+// Defines values for AutomationResponseTeamsReplyAccess.
+const (
+	AutomationResponseTeamsReplyAccessDevinUsers AutomationResponseTeamsReplyAccess = "devin_users"
+	AutomationResponseTeamsReplyAccessTeamsUsers AutomationResponseTeamsReplyAccess = "teams_users"
+)
+
 // Defines values for AutomationRunAsCreatorType.
 const (
 	Creator AutomationRunAsCreatorType = "creator"
@@ -120,6 +146,11 @@ const (
 	Organization AutomationRunAsOrganizationType = "organization"
 )
 
+// Defines values for AutomationRunAsServiceUserType.
+const (
+	AutomationRunAsServiceUserTypeServiceUser AutomationRunAsServiceUserType = "service_user"
+)
+
 // Defines values for AutomationSchemaFieldDefGranularity.
 const (
 	AutomationSchemaFieldDefGranularityDate     AutomationSchemaFieldDefGranularity = "date"
@@ -128,34 +159,42 @@ const (
 
 // Defines values for AutomationSchemaFieldDefType.
 const (
-	AutomationSchemaFieldDefTypeBoolean                AutomationSchemaFieldDefType = "boolean"
-	AutomationSchemaFieldDefTypeDate                   AutomationSchemaFieldDefType = "date"
-	AutomationSchemaFieldDefTypeFilePaths              AutomationSchemaFieldDefType = "file_paths"
-	AutomationSchemaFieldDefTypeGithubRepo             AutomationSchemaFieldDefType = "github_repo"
-	AutomationSchemaFieldDefTypeGitlabRepo             AutomationSchemaFieldDefType = "gitlab_repo"
-	AutomationSchemaFieldDefTypeIncidentIoIncidentType AutomationSchemaFieldDefType = "incident_io_incident_type"
-	AutomationSchemaFieldDefTypeIncidentIoSeverity     AutomationSchemaFieldDefType = "incident_io_severity"
-	AutomationSchemaFieldDefTypeIncidentIoStatus       AutomationSchemaFieldDefType = "incident_io_status"
-	AutomationSchemaFieldDefTypeIncidentIoTeam         AutomationSchemaFieldDefType = "incident_io_team"
-	AutomationSchemaFieldDefTypeJiraAssignee           AutomationSchemaFieldDefType = "jira_assignee"
-	AutomationSchemaFieldDefTypeJiraEpic               AutomationSchemaFieldDefType = "jira_epic"
-	AutomationSchemaFieldDefTypeJiraLabel              AutomationSchemaFieldDefType = "jira_label"
-	AutomationSchemaFieldDefTypeJiraProject            AutomationSchemaFieldDefType = "jira_project"
-	AutomationSchemaFieldDefTypeJiraStatus             AutomationSchemaFieldDefType = "jira_status"
-	AutomationSchemaFieldDefTypeLinearAssignee         AutomationSchemaFieldDefType = "linear_assignee"
-	AutomationSchemaFieldDefTypeLinearLabel            AutomationSchemaFieldDefType = "linear_label"
-	AutomationSchemaFieldDefTypeLinearProject          AutomationSchemaFieldDefType = "linear_project"
-	AutomationSchemaFieldDefTypeLinearState            AutomationSchemaFieldDefType = "linear_state"
-	AutomationSchemaFieldDefTypeLinearTeam             AutomationSchemaFieldDefType = "linear_team"
-	AutomationSchemaFieldDefTypeNumber                 AutomationSchemaFieldDefType = "number"
-	AutomationSchemaFieldDefTypePylonStatus            AutomationSchemaFieldDefType = "pylon_status"
-	AutomationSchemaFieldDefTypePylonTag               AutomationSchemaFieldDefType = "pylon_tag"
-	AutomationSchemaFieldDefTypeRrule                  AutomationSchemaFieldDefType = "rrule"
-	AutomationSchemaFieldDefTypeSelect                 AutomationSchemaFieldDefType = "select"
-	AutomationSchemaFieldDefTypeSlackChannel           AutomationSchemaFieldDefType = "slack_channel"
-	AutomationSchemaFieldDefTypeSlackReaction          AutomationSchemaFieldDefType = "slack_reaction"
-	AutomationSchemaFieldDefTypeSlackUser              AutomationSchemaFieldDefType = "slack_user"
-	AutomationSchemaFieldDefTypeString                 AutomationSchemaFieldDefType = "string"
+	AutomationSchemaFieldDefTypeAzureDevopsRepo         AutomationSchemaFieldDefType = "azure_devops_repo"
+	AutomationSchemaFieldDefTypeBitbucketDataCenterRepo AutomationSchemaFieldDefType = "bitbucket_data_center_repo"
+	AutomationSchemaFieldDefTypeBoolean                 AutomationSchemaFieldDefType = "boolean"
+	AutomationSchemaFieldDefTypeDate                    AutomationSchemaFieldDefType = "date"
+	AutomationSchemaFieldDefTypeFilePaths               AutomationSchemaFieldDefType = "file_paths"
+	AutomationSchemaFieldDefTypeGithubRepo              AutomationSchemaFieldDefType = "github_repo"
+	AutomationSchemaFieldDefTypeGitlabRepo              AutomationSchemaFieldDefType = "gitlab_repo"
+	AutomationSchemaFieldDefTypeIncidentIoIncidentType  AutomationSchemaFieldDefType = "incident_io_incident_type"
+	AutomationSchemaFieldDefTypeIncidentIoSeverity      AutomationSchemaFieldDefType = "incident_io_severity"
+	AutomationSchemaFieldDefTypeIncidentIoStatus        AutomationSchemaFieldDefType = "incident_io_status"
+	AutomationSchemaFieldDefTypeIncidentIoTeam          AutomationSchemaFieldDefType = "incident_io_team"
+	AutomationSchemaFieldDefTypeJiraAssignee            AutomationSchemaFieldDefType = "jira_assignee"
+	AutomationSchemaFieldDefTypeJiraEpic                AutomationSchemaFieldDefType = "jira_epic"
+	AutomationSchemaFieldDefTypeJiraLabel               AutomationSchemaFieldDefType = "jira_label"
+	AutomationSchemaFieldDefTypeJiraProject             AutomationSchemaFieldDefType = "jira_project"
+	AutomationSchemaFieldDefTypeJiraStatus              AutomationSchemaFieldDefType = "jira_status"
+	AutomationSchemaFieldDefTypeLinearAssignee          AutomationSchemaFieldDefType = "linear_assignee"
+	AutomationSchemaFieldDefTypeLinearLabel             AutomationSchemaFieldDefType = "linear_label"
+	AutomationSchemaFieldDefTypeLinearProject           AutomationSchemaFieldDefType = "linear_project"
+	AutomationSchemaFieldDefTypeLinearState             AutomationSchemaFieldDefType = "linear_state"
+	AutomationSchemaFieldDefTypeLinearTeam              AutomationSchemaFieldDefType = "linear_team"
+	AutomationSchemaFieldDefTypeNumber                  AutomationSchemaFieldDefType = "number"
+	AutomationSchemaFieldDefTypePagerdutyPriority       AutomationSchemaFieldDefType = "pagerduty_priority"
+	AutomationSchemaFieldDefTypePagerdutyService        AutomationSchemaFieldDefType = "pagerduty_service"
+	AutomationSchemaFieldDefTypePagerdutyTeam           AutomationSchemaFieldDefType = "pagerduty_team"
+	AutomationSchemaFieldDefTypePylonStatus             AutomationSchemaFieldDefType = "pylon_status"
+	AutomationSchemaFieldDefTypePylonTag                AutomationSchemaFieldDefType = "pylon_tag"
+	AutomationSchemaFieldDefTypeRrule                   AutomationSchemaFieldDefType = "rrule"
+	AutomationSchemaFieldDefTypeSelect                  AutomationSchemaFieldDefType = "select"
+	AutomationSchemaFieldDefTypeSlackChannel            AutomationSchemaFieldDefType = "slack_channel"
+	AutomationSchemaFieldDefTypeSlackReaction           AutomationSchemaFieldDefType = "slack_reaction"
+	AutomationSchemaFieldDefTypeSlackUser               AutomationSchemaFieldDefType = "slack_user"
+	AutomationSchemaFieldDefTypeSlackUsergroup          AutomationSchemaFieldDefType = "slack_usergroup"
+	AutomationSchemaFieldDefTypeString                  AutomationSchemaFieldDefType = "string"
+	AutomationSchemaFieldDefTypeTeamsChannel            AutomationSchemaFieldDefType = "teams_channel"
+	AutomationSchemaFieldDefTypeTeamsTeam               AutomationSchemaFieldDefType = "teams_team"
 )
 
 // Defines values for AutomationSecurityProfileResponseSelection.
@@ -230,85 +269,129 @@ const (
 
 // Defines values for AutomationTriggerRequestInputEventType.
 const (
-	AutomationTriggerRequestInputEventTypeGithubCheckRun                 AutomationTriggerRequestInputEventType = "github:check_run"
-	AutomationTriggerRequestInputEventTypeGithubIssueComment             AutomationTriggerRequestInputEventType = "github:issue_comment"
-	AutomationTriggerRequestInputEventTypeGithubIssues                   AutomationTriggerRequestInputEventType = "github:issues"
-	AutomationTriggerRequestInputEventTypeGithubPullRequest              AutomationTriggerRequestInputEventType = "github:pull_request"
-	AutomationTriggerRequestInputEventTypeGithubPullRequestReview        AutomationTriggerRequestInputEventType = "github:pull_request_review"
-	AutomationTriggerRequestInputEventTypeGithubPullRequestReviewComment AutomationTriggerRequestInputEventType = "github:pull_request_review_comment"
-	AutomationTriggerRequestInputEventTypeGithubPush                     AutomationTriggerRequestInputEventType = "github:push"
-	AutomationTriggerRequestInputEventTypeGitlabIssue                    AutomationTriggerRequestInputEventType = "gitlab:issue"
-	AutomationTriggerRequestInputEventTypeGitlabIssueNote                AutomationTriggerRequestInputEventType = "gitlab:issue_note"
-	AutomationTriggerRequestInputEventTypeGitlabMergeRequest             AutomationTriggerRequestInputEventType = "gitlab:merge_request"
-	AutomationTriggerRequestInputEventTypeGitlabNote                     AutomationTriggerRequestInputEventType = "gitlab:note"
-	AutomationTriggerRequestInputEventTypeGitlabPipeline                 AutomationTriggerRequestInputEventType = "gitlab:pipeline"
-	AutomationTriggerRequestInputEventTypeGitlabPush                     AutomationTriggerRequestInputEventType = "gitlab:push"
-	AutomationTriggerRequestInputEventTypeIncidentIoFollowUpCreated      AutomationTriggerRequestInputEventType = "incident_io:follow_up_created"
-	AutomationTriggerRequestInputEventTypeIncidentIoIncidentCreated      AutomationTriggerRequestInputEventType = "incident_io:incident_created"
-	AutomationTriggerRequestInputEventTypeIncidentIoSeverityChanged      AutomationTriggerRequestInputEventType = "incident_io:severity_changed"
-	AutomationTriggerRequestInputEventTypeIncidentIoStatusChanged        AutomationTriggerRequestInputEventType = "incident_io:status_changed"
-	AutomationTriggerRequestInputEventTypeJiraAssigned                   AutomationTriggerRequestInputEventType = "jira:assigned"
-	AutomationTriggerRequestInputEventTypeJiraIssueCreated               AutomationTriggerRequestInputEventType = "jira:issue_created"
-	AutomationTriggerRequestInputEventTypeJiraLabelAdded                 AutomationTriggerRequestInputEventType = "jira:label_added"
-	AutomationTriggerRequestInputEventTypeJiraStatusChanged              AutomationTriggerRequestInputEventType = "jira:status_changed"
-	AutomationTriggerRequestInputEventTypeLinearAssigned                 AutomationTriggerRequestInputEventType = "linear:assigned"
-	AutomationTriggerRequestInputEventTypeLinearCreate                   AutomationTriggerRequestInputEventType = "linear:create"
-	AutomationTriggerRequestInputEventTypeLinearLabelAdded               AutomationTriggerRequestInputEventType = "linear:label_added"
-	AutomationTriggerRequestInputEventTypeLinearMoved                    AutomationTriggerRequestInputEventType = "linear:moved"
-	AutomationTriggerRequestInputEventTypeLinearPriorityChanged          AutomationTriggerRequestInputEventType = "linear:priority_changed"
-	AutomationTriggerRequestInputEventTypeLinearStatusChanged            AutomationTriggerRequestInputEventType = "linear:status_changed"
-	AutomationTriggerRequestInputEventTypePylonIssueCreated              AutomationTriggerRequestInputEventType = "pylon:issue_created"
-	AutomationTriggerRequestInputEventTypePylonIssueStatusChanged        AutomationTriggerRequestInputEventType = "pylon:issue_status_changed"
-	AutomationTriggerRequestInputEventTypePylonIssueTagAdded             AutomationTriggerRequestInputEventType = "pylon:issue_tag_added"
-	AutomationTriggerRequestInputEventTypeScheduleRecurring              AutomationTriggerRequestInputEventType = "schedule:recurring"
-	AutomationTriggerRequestInputEventTypeSlackMessage                   AutomationTriggerRequestInputEventType = "slack:message"
-	AutomationTriggerRequestInputEventTypeSlackReactionAdded             AutomationTriggerRequestInputEventType = "slack:reaction_added"
-	AutomationTriggerRequestInputEventTypeSnapshotBuildCompleted         AutomationTriggerRequestInputEventType = "snapshot_build:completed"
-	AutomationTriggerRequestInputEventTypeWebhookIncoming                AutomationTriggerRequestInputEventType = "webhook:incoming"
+	AutomationTriggerRequestInputEventTypeAzureDevopsBuild                      AutomationTriggerRequestInputEventType = "azure_devops:build"
+	AutomationTriggerRequestInputEventTypeAzureDevopsPullRequest                AutomationTriggerRequestInputEventType = "azure_devops:pull_request"
+	AutomationTriggerRequestInputEventTypeAzureDevopsPullRequestComment         AutomationTriggerRequestInputEventType = "azure_devops:pull_request_comment"
+	AutomationTriggerRequestInputEventTypeAzureDevopsPush                       AutomationTriggerRequestInputEventType = "azure_devops:push"
+	AutomationTriggerRequestInputEventTypeBitbucketDataCenterPullRequest        AutomationTriggerRequestInputEventType = "bitbucket_data_center:pull_request"
+	AutomationTriggerRequestInputEventTypeBitbucketDataCenterPullRequestComment AutomationTriggerRequestInputEventType = "bitbucket_data_center:pull_request_comment"
+	AutomationTriggerRequestInputEventTypeBitbucketDataCenterPush               AutomationTriggerRequestInputEventType = "bitbucket_data_center:push"
+	AutomationTriggerRequestInputEventTypeGithubCheckRun                        AutomationTriggerRequestInputEventType = "github:check_run"
+	AutomationTriggerRequestInputEventTypeGithubIssueComment                    AutomationTriggerRequestInputEventType = "github:issue_comment"
+	AutomationTriggerRequestInputEventTypeGithubIssues                          AutomationTriggerRequestInputEventType = "github:issues"
+	AutomationTriggerRequestInputEventTypeGithubPullRequest                     AutomationTriggerRequestInputEventType = "github:pull_request"
+	AutomationTriggerRequestInputEventTypeGithubPullRequestReview               AutomationTriggerRequestInputEventType = "github:pull_request_review"
+	AutomationTriggerRequestInputEventTypeGithubPullRequestReviewComment        AutomationTriggerRequestInputEventType = "github:pull_request_review_comment"
+	AutomationTriggerRequestInputEventTypeGithubPush                            AutomationTriggerRequestInputEventType = "github:push"
+	AutomationTriggerRequestInputEventTypeGitlabIssue                           AutomationTriggerRequestInputEventType = "gitlab:issue"
+	AutomationTriggerRequestInputEventTypeGitlabIssueNote                       AutomationTriggerRequestInputEventType = "gitlab:issue_note"
+	AutomationTriggerRequestInputEventTypeGitlabMergeRequest                    AutomationTriggerRequestInputEventType = "gitlab:merge_request"
+	AutomationTriggerRequestInputEventTypeGitlabNote                            AutomationTriggerRequestInputEventType = "gitlab:note"
+	AutomationTriggerRequestInputEventTypeGitlabPipeline                        AutomationTriggerRequestInputEventType = "gitlab:pipeline"
+	AutomationTriggerRequestInputEventTypeGitlabPush                            AutomationTriggerRequestInputEventType = "gitlab:push"
+	AutomationTriggerRequestInputEventTypeIncidentIoFollowUpCreated             AutomationTriggerRequestInputEventType = "incident_io:follow_up_created"
+	AutomationTriggerRequestInputEventTypeIncidentIoIncidentCreated             AutomationTriggerRequestInputEventType = "incident_io:incident_created"
+	AutomationTriggerRequestInputEventTypeIncidentIoSeverityChanged             AutomationTriggerRequestInputEventType = "incident_io:severity_changed"
+	AutomationTriggerRequestInputEventTypeIncidentIoStatusChanged               AutomationTriggerRequestInputEventType = "incident_io:status_changed"
+	AutomationTriggerRequestInputEventTypeJiraAssigned                          AutomationTriggerRequestInputEventType = "jira:assigned"
+	AutomationTriggerRequestInputEventTypeJiraCommented                         AutomationTriggerRequestInputEventType = "jira:commented"
+	AutomationTriggerRequestInputEventTypeJiraIssueCreated                      AutomationTriggerRequestInputEventType = "jira:issue_created"
+	AutomationTriggerRequestInputEventTypeJiraIssueUpdated                      AutomationTriggerRequestInputEventType = "jira:issue_updated"
+	AutomationTriggerRequestInputEventTypeJiraLabelAdded                        AutomationTriggerRequestInputEventType = "jira:label_added"
+	AutomationTriggerRequestInputEventTypeJiraStatusChanged                     AutomationTriggerRequestInputEventType = "jira:status_changed"
+	AutomationTriggerRequestInputEventTypeLinearAssigned                        AutomationTriggerRequestInputEventType = "linear:assigned"
+	AutomationTriggerRequestInputEventTypeLinearCreate                          AutomationTriggerRequestInputEventType = "linear:create"
+	AutomationTriggerRequestInputEventTypeLinearLabelAdded                      AutomationTriggerRequestInputEventType = "linear:label_added"
+	AutomationTriggerRequestInputEventTypeLinearMoved                           AutomationTriggerRequestInputEventType = "linear:moved"
+	AutomationTriggerRequestInputEventTypeLinearPriorityChanged                 AutomationTriggerRequestInputEventType = "linear:priority_changed"
+	AutomationTriggerRequestInputEventTypeLinearStatusChanged                   AutomationTriggerRequestInputEventType = "linear:status_changed"
+	AutomationTriggerRequestInputEventTypePagerdutyIncidentAcknowledged         AutomationTriggerRequestInputEventType = "pagerduty:incident_acknowledged"
+	AutomationTriggerRequestInputEventTypePagerdutyIncidentResolved             AutomationTriggerRequestInputEventType = "pagerduty:incident_resolved"
+	AutomationTriggerRequestInputEventTypePagerdutyIncidentTriggered            AutomationTriggerRequestInputEventType = "pagerduty:incident_triggered"
+	AutomationTriggerRequestInputEventTypePagerdutyIncidentUpdated              AutomationTriggerRequestInputEventType = "pagerduty:incident_updated"
+	AutomationTriggerRequestInputEventTypePylonIssueCreated                     AutomationTriggerRequestInputEventType = "pylon:issue_created"
+	AutomationTriggerRequestInputEventTypePylonIssueStatusChanged               AutomationTriggerRequestInputEventType = "pylon:issue_status_changed"
+	AutomationTriggerRequestInputEventTypePylonIssueTagAdded                    AutomationTriggerRequestInputEventType = "pylon:issue_tag_added"
+	AutomationTriggerRequestInputEventTypeScheduleRecurring                     AutomationTriggerRequestInputEventType = "schedule:recurring"
+	AutomationTriggerRequestInputEventTypeSlackMessage                          AutomationTriggerRequestInputEventType = "slack:message"
+	AutomationTriggerRequestInputEventTypeSlackReactionAdded                    AutomationTriggerRequestInputEventType = "slack:reaction_added"
+	AutomationTriggerRequestInputEventTypeSlackUsergroupMentioned               AutomationTriggerRequestInputEventType = "slack:usergroup_mentioned"
+	AutomationTriggerRequestInputEventTypeSnapshotBuildCompleted                AutomationTriggerRequestInputEventType = "snapshot_build:completed"
+	AutomationTriggerRequestInputEventTypeTeamsMessage                          AutomationTriggerRequestInputEventType = "teams:message"
+	AutomationTriggerRequestInputEventTypeWebhookIncoming                       AutomationTriggerRequestInputEventType = "webhook:incoming"
 )
 
 // Defines values for AutomationTriggerRequestOutputEventType.
 const (
-	AutomationTriggerRequestOutputEventTypeGithubCheckRun                 AutomationTriggerRequestOutputEventType = "github:check_run"
-	AutomationTriggerRequestOutputEventTypeGithubIssueComment             AutomationTriggerRequestOutputEventType = "github:issue_comment"
-	AutomationTriggerRequestOutputEventTypeGithubIssues                   AutomationTriggerRequestOutputEventType = "github:issues"
-	AutomationTriggerRequestOutputEventTypeGithubPullRequest              AutomationTriggerRequestOutputEventType = "github:pull_request"
-	AutomationTriggerRequestOutputEventTypeGithubPullRequestReview        AutomationTriggerRequestOutputEventType = "github:pull_request_review"
-	AutomationTriggerRequestOutputEventTypeGithubPullRequestReviewComment AutomationTriggerRequestOutputEventType = "github:pull_request_review_comment"
-	AutomationTriggerRequestOutputEventTypeGithubPush                     AutomationTriggerRequestOutputEventType = "github:push"
-	AutomationTriggerRequestOutputEventTypeGitlabIssue                    AutomationTriggerRequestOutputEventType = "gitlab:issue"
-	AutomationTriggerRequestOutputEventTypeGitlabIssueNote                AutomationTriggerRequestOutputEventType = "gitlab:issue_note"
-	AutomationTriggerRequestOutputEventTypeGitlabMergeRequest             AutomationTriggerRequestOutputEventType = "gitlab:merge_request"
-	AutomationTriggerRequestOutputEventTypeGitlabNote                     AutomationTriggerRequestOutputEventType = "gitlab:note"
-	AutomationTriggerRequestOutputEventTypeGitlabPipeline                 AutomationTriggerRequestOutputEventType = "gitlab:pipeline"
-	AutomationTriggerRequestOutputEventTypeGitlabPush                     AutomationTriggerRequestOutputEventType = "gitlab:push"
-	AutomationTriggerRequestOutputEventTypeIncidentIoFollowUpCreated      AutomationTriggerRequestOutputEventType = "incident_io:follow_up_created"
-	AutomationTriggerRequestOutputEventTypeIncidentIoIncidentCreated      AutomationTriggerRequestOutputEventType = "incident_io:incident_created"
-	AutomationTriggerRequestOutputEventTypeIncidentIoSeverityChanged      AutomationTriggerRequestOutputEventType = "incident_io:severity_changed"
-	AutomationTriggerRequestOutputEventTypeIncidentIoStatusChanged        AutomationTriggerRequestOutputEventType = "incident_io:status_changed"
-	AutomationTriggerRequestOutputEventTypeJiraAssigned                   AutomationTriggerRequestOutputEventType = "jira:assigned"
-	AutomationTriggerRequestOutputEventTypeJiraIssueCreated               AutomationTriggerRequestOutputEventType = "jira:issue_created"
-	AutomationTriggerRequestOutputEventTypeJiraLabelAdded                 AutomationTriggerRequestOutputEventType = "jira:label_added"
-	AutomationTriggerRequestOutputEventTypeJiraStatusChanged              AutomationTriggerRequestOutputEventType = "jira:status_changed"
-	AutomationTriggerRequestOutputEventTypeLinearAssigned                 AutomationTriggerRequestOutputEventType = "linear:assigned"
-	AutomationTriggerRequestOutputEventTypeLinearCreate                   AutomationTriggerRequestOutputEventType = "linear:create"
-	AutomationTriggerRequestOutputEventTypeLinearLabelAdded               AutomationTriggerRequestOutputEventType = "linear:label_added"
-	AutomationTriggerRequestOutputEventTypeLinearMoved                    AutomationTriggerRequestOutputEventType = "linear:moved"
-	AutomationTriggerRequestOutputEventTypeLinearPriorityChanged          AutomationTriggerRequestOutputEventType = "linear:priority_changed"
-	AutomationTriggerRequestOutputEventTypeLinearStatusChanged            AutomationTriggerRequestOutputEventType = "linear:status_changed"
-	AutomationTriggerRequestOutputEventTypePylonIssueCreated              AutomationTriggerRequestOutputEventType = "pylon:issue_created"
-	AutomationTriggerRequestOutputEventTypePylonIssueStatusChanged        AutomationTriggerRequestOutputEventType = "pylon:issue_status_changed"
-	AutomationTriggerRequestOutputEventTypePylonIssueTagAdded             AutomationTriggerRequestOutputEventType = "pylon:issue_tag_added"
-	AutomationTriggerRequestOutputEventTypeScheduleRecurring              AutomationTriggerRequestOutputEventType = "schedule:recurring"
-	AutomationTriggerRequestOutputEventTypeSlackMessage                   AutomationTriggerRequestOutputEventType = "slack:message"
-	AutomationTriggerRequestOutputEventTypeSlackReactionAdded             AutomationTriggerRequestOutputEventType = "slack:reaction_added"
-	AutomationTriggerRequestOutputEventTypeSnapshotBuildCompleted         AutomationTriggerRequestOutputEventType = "snapshot_build:completed"
-	AutomationTriggerRequestOutputEventTypeWebhookIncoming                AutomationTriggerRequestOutputEventType = "webhook:incoming"
+	AutomationTriggerRequestOutputEventTypeAzureDevopsBuild                      AutomationTriggerRequestOutputEventType = "azure_devops:build"
+	AutomationTriggerRequestOutputEventTypeAzureDevopsPullRequest                AutomationTriggerRequestOutputEventType = "azure_devops:pull_request"
+	AutomationTriggerRequestOutputEventTypeAzureDevopsPullRequestComment         AutomationTriggerRequestOutputEventType = "azure_devops:pull_request_comment"
+	AutomationTriggerRequestOutputEventTypeAzureDevopsPush                       AutomationTriggerRequestOutputEventType = "azure_devops:push"
+	AutomationTriggerRequestOutputEventTypeBitbucketDataCenterPullRequest        AutomationTriggerRequestOutputEventType = "bitbucket_data_center:pull_request"
+	AutomationTriggerRequestOutputEventTypeBitbucketDataCenterPullRequestComment AutomationTriggerRequestOutputEventType = "bitbucket_data_center:pull_request_comment"
+	AutomationTriggerRequestOutputEventTypeBitbucketDataCenterPush               AutomationTriggerRequestOutputEventType = "bitbucket_data_center:push"
+	AutomationTriggerRequestOutputEventTypeGithubCheckRun                        AutomationTriggerRequestOutputEventType = "github:check_run"
+	AutomationTriggerRequestOutputEventTypeGithubIssueComment                    AutomationTriggerRequestOutputEventType = "github:issue_comment"
+	AutomationTriggerRequestOutputEventTypeGithubIssues                          AutomationTriggerRequestOutputEventType = "github:issues"
+	AutomationTriggerRequestOutputEventTypeGithubPullRequest                     AutomationTriggerRequestOutputEventType = "github:pull_request"
+	AutomationTriggerRequestOutputEventTypeGithubPullRequestReview               AutomationTriggerRequestOutputEventType = "github:pull_request_review"
+	AutomationTriggerRequestOutputEventTypeGithubPullRequestReviewComment        AutomationTriggerRequestOutputEventType = "github:pull_request_review_comment"
+	AutomationTriggerRequestOutputEventTypeGithubPush                            AutomationTriggerRequestOutputEventType = "github:push"
+	AutomationTriggerRequestOutputEventTypeGitlabIssue                           AutomationTriggerRequestOutputEventType = "gitlab:issue"
+	AutomationTriggerRequestOutputEventTypeGitlabIssueNote                       AutomationTriggerRequestOutputEventType = "gitlab:issue_note"
+	AutomationTriggerRequestOutputEventTypeGitlabMergeRequest                    AutomationTriggerRequestOutputEventType = "gitlab:merge_request"
+	AutomationTriggerRequestOutputEventTypeGitlabNote                            AutomationTriggerRequestOutputEventType = "gitlab:note"
+	AutomationTriggerRequestOutputEventTypeGitlabPipeline                        AutomationTriggerRequestOutputEventType = "gitlab:pipeline"
+	AutomationTriggerRequestOutputEventTypeGitlabPush                            AutomationTriggerRequestOutputEventType = "gitlab:push"
+	AutomationTriggerRequestOutputEventTypeIncidentIoFollowUpCreated             AutomationTriggerRequestOutputEventType = "incident_io:follow_up_created"
+	AutomationTriggerRequestOutputEventTypeIncidentIoIncidentCreated             AutomationTriggerRequestOutputEventType = "incident_io:incident_created"
+	AutomationTriggerRequestOutputEventTypeIncidentIoSeverityChanged             AutomationTriggerRequestOutputEventType = "incident_io:severity_changed"
+	AutomationTriggerRequestOutputEventTypeIncidentIoStatusChanged               AutomationTriggerRequestOutputEventType = "incident_io:status_changed"
+	AutomationTriggerRequestOutputEventTypeJiraAssigned                          AutomationTriggerRequestOutputEventType = "jira:assigned"
+	AutomationTriggerRequestOutputEventTypeJiraCommented                         AutomationTriggerRequestOutputEventType = "jira:commented"
+	AutomationTriggerRequestOutputEventTypeJiraIssueCreated                      AutomationTriggerRequestOutputEventType = "jira:issue_created"
+	AutomationTriggerRequestOutputEventTypeJiraIssueUpdated                      AutomationTriggerRequestOutputEventType = "jira:issue_updated"
+	AutomationTriggerRequestOutputEventTypeJiraLabelAdded                        AutomationTriggerRequestOutputEventType = "jira:label_added"
+	AutomationTriggerRequestOutputEventTypeJiraStatusChanged                     AutomationTriggerRequestOutputEventType = "jira:status_changed"
+	AutomationTriggerRequestOutputEventTypeLinearAssigned                        AutomationTriggerRequestOutputEventType = "linear:assigned"
+	AutomationTriggerRequestOutputEventTypeLinearCreate                          AutomationTriggerRequestOutputEventType = "linear:create"
+	AutomationTriggerRequestOutputEventTypeLinearLabelAdded                      AutomationTriggerRequestOutputEventType = "linear:label_added"
+	AutomationTriggerRequestOutputEventTypeLinearMoved                           AutomationTriggerRequestOutputEventType = "linear:moved"
+	AutomationTriggerRequestOutputEventTypeLinearPriorityChanged                 AutomationTriggerRequestOutputEventType = "linear:priority_changed"
+	AutomationTriggerRequestOutputEventTypeLinearStatusChanged                   AutomationTriggerRequestOutputEventType = "linear:status_changed"
+	AutomationTriggerRequestOutputEventTypePagerdutyIncidentAcknowledged         AutomationTriggerRequestOutputEventType = "pagerduty:incident_acknowledged"
+	AutomationTriggerRequestOutputEventTypePagerdutyIncidentResolved             AutomationTriggerRequestOutputEventType = "pagerduty:incident_resolved"
+	AutomationTriggerRequestOutputEventTypePagerdutyIncidentTriggered            AutomationTriggerRequestOutputEventType = "pagerduty:incident_triggered"
+	AutomationTriggerRequestOutputEventTypePagerdutyIncidentUpdated              AutomationTriggerRequestOutputEventType = "pagerduty:incident_updated"
+	AutomationTriggerRequestOutputEventTypePylonIssueCreated                     AutomationTriggerRequestOutputEventType = "pylon:issue_created"
+	AutomationTriggerRequestOutputEventTypePylonIssueStatusChanged               AutomationTriggerRequestOutputEventType = "pylon:issue_status_changed"
+	AutomationTriggerRequestOutputEventTypePylonIssueTagAdded                    AutomationTriggerRequestOutputEventType = "pylon:issue_tag_added"
+	AutomationTriggerRequestOutputEventTypeScheduleRecurring                     AutomationTriggerRequestOutputEventType = "schedule:recurring"
+	AutomationTriggerRequestOutputEventTypeSlackMessage                          AutomationTriggerRequestOutputEventType = "slack:message"
+	AutomationTriggerRequestOutputEventTypeSlackReactionAdded                    AutomationTriggerRequestOutputEventType = "slack:reaction_added"
+	AutomationTriggerRequestOutputEventTypeSlackUsergroupMentioned               AutomationTriggerRequestOutputEventType = "slack:usergroup_mentioned"
+	AutomationTriggerRequestOutputEventTypeSnapshotBuildCompleted                AutomationTriggerRequestOutputEventType = "snapshot_build:completed"
+	AutomationTriggerRequestOutputEventTypeTeamsMessage                          AutomationTriggerRequestOutputEventType = "teams:message"
+	AutomationTriggerRequestOutputEventTypeWebhookIncoming                       AutomationTriggerRequestOutputEventType = "webhook:incoming"
+)
+
+// Defines values for AutomationUpdateRequestSlackReplyAccess.
+const (
+	AutomationUpdateRequestSlackReplyAccessDevinUsers         AutomationUpdateRequestSlackReplyAccess = "devin_users"
+	AutomationUpdateRequestSlackReplyAccessExternalSlackUsers AutomationUpdateRequestSlackReplyAccess = "external_slack_users"
+	AutomationUpdateRequestSlackReplyAccessSlackUsers         AutomationUpdateRequestSlackReplyAccess = "slack_users"
+)
+
+// Defines values for AutomationUpdateRequestTeamsReplyAccess.
+const (
+	AutomationUpdateRequestTeamsReplyAccessDevinUsers AutomationUpdateRequestTeamsReplyAccess = "devin_users"
+	AutomationUpdateRequestTeamsReplyAccessTeamsUsers AutomationUpdateRequestTeamsReplyAccess = "teams_users"
 )
 
 // Defines values for GitConnectionResponseGitProviderType.
 const (
 	AzureDevopsOauth      GitConnectionResponseGitProviderType = "azure_devops_oauth"
+	AzureDevopsToken      GitConnectionResponseGitProviderType = "azure_devops_token"
 	BitbucketOauth        GitConnectionResponseGitProviderType = "bitbucket_oauth"
 	BitbucketToken        GitConnectionResponseGitProviderType = "bitbucket_token"
 	GithubApp             GitConnectionResponseGitProviderType = "github_app"
@@ -429,6 +512,8 @@ const (
 // Defines values for HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes.
 const (
 	AutoTriage       HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes = "auto_triage"
+	CodeScan         HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes = "code_scan"
+	GenericAssistant HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes = "generic_assistant"
 	IncidentSession  HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes = "incident_session"
 	LongRunning      HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes = "long_running"
 	NewSession       HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes = "new_session"
@@ -534,7 +619,7 @@ type AutomationCreateRequest struct {
 	Name          string                                     `json:"name"`
 	Notifications nullable.Nullable[AutomationNotifications] `json:"notifications,omitempty"`
 
-	// RunAs Required: explicitly choose the identity spawned sessions run under (organization or creator).
+	// RunAs Required: explicitly choose the identity spawned sessions run under (organization, creator, or service_user).
 	RunAs AutomationCreateRequest_RunAs `json:"run_as"`
 
 	// SecurityProfile The automation's own security-profile binding; omitted = inherit from the org/enterprise. Requires the security-profile management permission.
@@ -542,6 +627,12 @@ type AutomationCreateRequest struct {
 
 	// SessionSettings Applied to sessions this automation spawns.
 	SessionSettings nullable.Nullable[AutomationSessionSettingsInput] `json:"session_settings,omitempty"`
+
+	// SlackReplyAccess Who may reply into existing sessions from Slack threads: devin_users (linked Devin accounts only), slack_users (anyone in the organization's connected Slack workspaces), or external_slack_users (also Slack Connect users). Does not affect who can trigger the automation.
+	SlackReplyAccess *AutomationCreateRequestSlackReplyAccess `json:"slack_reply_access,omitempty"`
+
+	// TeamsReplyAccess Who may reply into existing sessions from Microsoft Teams threads: devin_users (linked Devin accounts only) or teams_users (anyone in the organization's connected Microsoft tenant; the default). Does not affect who can trigger the automation.
+	TeamsReplyAccess *AutomationCreateRequestTeamsReplyAccess `json:"teams_reply_access,omitempty"`
 
 	// TemplateID Create-only provenance marker; resolve ids via the templates endpoint. When set and tools.mcp_servers is omitted, the template's required_mcps apply.
 	TemplateID nullable.Nullable[string]          `json:"template_id,omitempty"`
@@ -556,10 +647,16 @@ type AutomationCreateRequest_Actions_Item struct {
 	union json.RawMessage
 }
 
-// AutomationCreateRequest_RunAs Required: explicitly choose the identity spawned sessions run under (organization or creator).
+// AutomationCreateRequest_RunAs Required: explicitly choose the identity spawned sessions run under (organization, creator, or service_user).
 type AutomationCreateRequest_RunAs struct {
 	union json.RawMessage
 }
+
+// AutomationCreateRequestSlackReplyAccess Who may reply into existing sessions from Slack threads: devin_users (linked Devin accounts only), slack_users (anyone in the organization's connected Slack workspaces), or external_slack_users (also Slack Connect users). Does not affect who can trigger the automation.
+type AutomationCreateRequestSlackReplyAccess string
+
+// AutomationCreateRequestTeamsReplyAccess Who may reply into existing sessions from Microsoft Teams threads: devin_users (linked Devin accounts only) or teams_users (anyone in the organization's connected Microsoft tenant; the default). Does not affect who can trigger the automation.
+type AutomationCreateRequestTeamsReplyAccess string
 
 // AutomationEmailNotification defines model for AutomationEmailNotification.
 type AutomationEmailNotification struct {
@@ -807,18 +904,27 @@ type AutomationResponse struct {
 	Limits         nullable.Nullable[AutomationLimits]         `json:"limits,omitempty"`
 	Metadata       *map[string]string                          `json:"metadata,omitempty"`
 	Name           string                                      `json:"name"`
-	Notifications  nullable.Nullable[AutomationNotifications]  `json:"notifications,omitempty"`
 
-	// RunAs Identity the spawned sessions run under. organization: the org's automation identity (the System User in the app) — sessions use system permissions, so MCP servers installed with a personal (user-scoped) connection cannot be selected, and switching an automation to organization removes them from its selection. creator: personal automation — runs with the creator's own permissions and is visible only to the creator and org admins; rejected for service-user-created automations. Required on create; null on update resets to organization.
+	// NextRunAt When the automation's schedule triggers next fire. null when it has no schedule trigger, is disabled, or every schedule has passed its end date.
+	NextRunAt     nullable.Nullable[int]                     `json:"next_run_at,omitempty"`
+	Notifications nullable.Nullable[AutomationNotifications] `json:"notifications,omitempty"`
+
+	// RunAs Identity the spawned sessions run under. organization: the org's automation identity (the System User in the app) — sessions use system permissions, so MCP servers installed with a personal (user-scoped) connection cannot be selected, and switching an automation to organization removes them from its selection. creator: personal automation — runs with the creator's own permissions and is visible only to the creator and org admins; rejected for service-user-created automations. service_user: runs as the given service user, with its roles, grants and ACU limits; requires permission to manage that service user. Required on create; null on update resets to organization.
 	RunAs *AutomationResponse_RunAs `json:"run_as,omitempty"`
 
 	// SecurityProfile The automation's security-profile binding and the resolved governing profiles. null when security profiles are not enabled for the organization.
 	SecurityProfile nullable.Nullable[AutomationSecurityProfileResponse] `json:"security_profile,omitempty"`
 	SessionSettings nullable.Nullable[AutomationSessionSettingsOutput]   `json:"session_settings,omitempty"`
-	TemplateID      nullable.Nullable[string]                            `json:"template_id,omitempty"`
-	Tools           nullable.Nullable[AutomationTools]                   `json:"tools,omitempty"`
-	Triggers        []AutomationTriggerResponse                          `json:"triggers"`
-	UpdatedAt       int                                                  `json:"updated_at"`
+
+	// SlackReplyAccess Who may reply into existing sessions from Slack threads: devin_users (linked Devin accounts only), slack_users (anyone in the organization's connected Slack workspaces), or external_slack_users (also Slack Connect users). Does not affect who can trigger the automation.
+	SlackReplyAccess *AutomationResponseSlackReplyAccess `json:"slack_reply_access,omitempty"`
+
+	// TeamsReplyAccess Who may reply into existing sessions from Microsoft Teams threads: devin_users (linked Devin accounts only) or teams_users (anyone in the organization's connected Microsoft tenant; the default). Does not affect who can trigger the automation.
+	TeamsReplyAccess *AutomationResponseTeamsReplyAccess `json:"teams_reply_access,omitempty"`
+	TemplateID       nullable.Nullable[string]           `json:"template_id,omitempty"`
+	Tools            nullable.Nullable[AutomationTools]  `json:"tools,omitempty"`
+	Triggers         []AutomationTriggerResponse         `json:"triggers"`
+	UpdatedAt        int                                 `json:"updated_at"`
 }
 
 // AutomationResponse_Actions_Item defines model for AutomationResponse.actions.Item.
@@ -826,10 +932,16 @@ type AutomationResponse_Actions_Item struct {
 	union json.RawMessage
 }
 
-// AutomationResponse_RunAs Identity the spawned sessions run under. organization: the org's automation identity (the System User in the app) — sessions use system permissions, so MCP servers installed with a personal (user-scoped) connection cannot be selected, and switching an automation to organization removes them from its selection. creator: personal automation — runs with the creator's own permissions and is visible only to the creator and org admins; rejected for service-user-created automations. Required on create; null on update resets to organization.
+// AutomationResponse_RunAs Identity the spawned sessions run under. organization: the org's automation identity (the System User in the app) — sessions use system permissions, so MCP servers installed with a personal (user-scoped) connection cannot be selected, and switching an automation to organization removes them from its selection. creator: personal automation — runs with the creator's own permissions and is visible only to the creator and org admins; rejected for service-user-created automations. service_user: runs as the given service user, with its roles, grants and ACU limits; requires permission to manage that service user. Required on create; null on update resets to organization.
 type AutomationResponse_RunAs struct {
 	union json.RawMessage
 }
+
+// AutomationResponseSlackReplyAccess Who may reply into existing sessions from Slack threads: devin_users (linked Devin accounts only), slack_users (anyone in the organization's connected Slack workspaces), or external_slack_users (also Slack Connect users). Does not affect who can trigger the automation.
+type AutomationResponseSlackReplyAccess string
+
+// AutomationResponseTeamsReplyAccess Who may reply into existing sessions from Microsoft Teams threads: devin_users (linked Devin accounts only) or teams_users (anyone in the organization's connected Microsoft tenant; the default). Does not affect who can trigger the automation.
+type AutomationResponseTeamsReplyAccess string
 
 // AutomationRunAsCreator defines model for AutomationRunAsCreator.
 type AutomationRunAsCreator struct {
@@ -846,6 +958,15 @@ type AutomationRunAsOrganization struct {
 
 // AutomationRunAsOrganizationType defines model for AutomationRunAsOrganization.Type.
 type AutomationRunAsOrganizationType string
+
+// AutomationRunAsServiceUser defines model for AutomationRunAsServiceUser.
+type AutomationRunAsServiceUser struct {
+	ServiceUserID string                          `json:"service_user_id"`
+	Type          *AutomationRunAsServiceUserType `json:"type,omitempty"`
+}
+
+// AutomationRunAsServiceUserType defines model for AutomationRunAsServiceUser.Type.
+type AutomationRunAsServiceUserType string
 
 // AutomationSchemaFieldDef Flattened view of a condition field definition.
 //
@@ -881,11 +1002,30 @@ type AutomationSchemaSelectOption struct {
 
 // AutomationSchemasResponse defines model for AutomationSchemasResponse.
 type AutomationSchemasResponse struct {
+	// DefaultNetPolicy Network policy clients should start new automations from: the deployment's Git Manager-only policy (add only the destinations the task requires), or null when the governing security profile (see security_profile) has a network policy. In that case sessions use the profile's policy; omit session_settings.net_policy unless the task must restrict further.
+	DefaultNetPolicy nullable.Nullable[AutomationNetPolicy] `json:"default_net_policy"`
+
+	// SecurityProfile Security profile governing this organization's automation sessions, or null when none applies.
+	SecurityProfile nullable.Nullable[AutomationSchemasSecurityProfile] `json:"security_profile,omitempty"`
+
 	// Sources Event source → event name → schema.
 	Sources map[string]map[string]AutomationEventSchemaResponse `json:"sources"`
 
 	// UpdateSemantics PATCH semantics active for this organization: 'replace_groups' (a config group present in the request replaces the stored group wholesale) or 'merge_patch' (RFC 7396 for objects: omitted members of a present group keep their stored values, explicit nulls clear; list membership still replaces wholesale — deletion is resending the list without the element — but each sent element merges onto the stored element of the same type when that type appears exactly once on both sides; repeated types must be restated fully). Open enum — clients must tolerate new values.
 	UpdateSemantics string `json:"update_semantics"`
+}
+
+// AutomationSchemasSecurityProfile The security profile that governs this organization's automation
+// sessions (enterprise, organization, or automations default binding).
+type AutomationSchemasSecurityProfile struct {
+	// GovernsNetwork Whether the profile has a network policy. When true, sessions are already restricted to the profile's destinations and an automation needs its own session_settings.net_policy only to restrict further.
+	GovernsNetwork bool `json:"governs_network"`
+
+	// McpServers MCP server slugs the profile allows (the ceiling for tools.mcp_servers), or null when the profile does not restrict MCP servers.
+	McpServers nullable.Nullable[[]string] `json:"mcp_servers"`
+
+	// Name Profile name, for display.
+	Name string `json:"name"`
 }
 
 // AutomationSecurityProfileResponse defines model for AutomationSecurityProfileResponse.
@@ -913,7 +1053,7 @@ type AutomationSessionConfigInput struct {
 	// BypassApproval Auto-approves child-session creation (the only check this flag bypasses); any future bypassable check requires a new field.
 	BypassApproval *bool `json:"bypass_approval,omitempty"`
 
-	// Notifications Session-content notifications (currently Slack only).
+	// Notifications Session-content notifications (Slack and Microsoft Teams).
 	Notifications nullable.Nullable[AutomationSessionNotificationsConfig] `json:"notifications,omitempty"`
 
 	// Platform VM platform for the session. When null, the session uses the organization's default platform at invocation time.
@@ -934,7 +1074,7 @@ type AutomationSessionConfigOutput struct {
 	// BypassApproval Auto-approves child-session creation (the only check this flag bypasses); any future bypassable check requires a new field.
 	BypassApproval *bool `json:"bypass_approval,omitempty"`
 
-	// Notifications Session-content notifications (currently Slack only).
+	// Notifications Session-content notifications (Slack and Microsoft Teams).
 	Notifications nullable.Nullable[AutomationSessionNotificationsConfig] `json:"notifications,omitempty"`
 
 	// Platform VM platform for the session. When null, the session uses the organization's default platform at invocation time.
@@ -955,6 +1095,9 @@ type AutomationSessionConfigOutput struct {
 type AutomationSessionNotificationsConfig struct {
 	// Slack Gives the session a Slack home: two-way for post_updates/forward_thread and post_response after its initial delivery binds the thread.
 	Slack nullable.Nullable[AutomationSessionSlackConfig] `json:"slack,omitempty"`
+
+	// Teams Posts the session's final response to the Microsoft Teams channel as a new top-level post, then binds its thread for replies (available for any trigger). Cannot be combined with a slack post_response/post_updates home or a post_response reply.
+	Teams nullable.Nullable[AutomationSessionTeamsConfig] `json:"teams,omitempty"`
 }
 
 // AutomationSessionSettingsInput Applied to every session this automation spawns (including monitor
@@ -989,6 +1132,15 @@ type AutomationSessionSlackConfig struct {
 
 // AutomationSessionSlackConfigMode post_updates: the session converses in a thread in the channel (available for non-Slack triggers). forward_thread: the same, plus a backlink posted in the triggering thread (requires a Slack trigger). post_response: the session's final response is posted to the channel as a top-level message, then its thread is bound for replies and follow-up messages (available for any trigger).
 type AutomationSessionSlackConfigMode string
+
+// AutomationSessionTeamsConfig defines model for AutomationSessionTeamsConfig.
+type AutomationSessionTeamsConfig struct {
+	// ChannelID Conversation id of a channel in that team.
+	ChannelID string `json:"channel_id"`
+
+	// TeamID Entra group id of a team the Devin app is installed in on the organization's Microsoft Teams connection.
+	TeamID string `json:"team_id"`
+}
 
 // AutomationSlackChannel defines model for AutomationSlackChannel.
 type AutomationSlackChannel struct {
@@ -1054,6 +1206,15 @@ type AutomationStringCondition struct {
 // AutomationStringConditionOperator defines model for AutomationStringCondition.Operator.
 type AutomationStringConditionOperator string
 
+// AutomationTeamsChannel defines model for AutomationTeamsChannel.
+type AutomationTeamsChannel struct {
+	// ChannelID Teams channel id ('19:...@thread.tacv2'), or '*'.
+	ChannelID string `json:"channel_id"`
+
+	// TeamID Entra group id of the Microsoft Teams team, or '*'.
+	TeamID string `json:"team_id"`
+}
+
 // AutomationTemplateResponse defines model for AutomationTemplateResponse.
 type AutomationTemplateResponse struct {
 	Actions              []AutomationTemplateResponse_Actions_Item `json:"actions"`
@@ -1080,6 +1241,9 @@ type AutomationTemplatesResponse struct {
 
 // AutomationTools defines model for AutomationTools.
 type AutomationTools struct {
+	// JiraProjects Jira project ids the session's Jira tools are limited to. Null (the default) allows every project the run identity can access. Projects required by the automation's Jira triggers are always included. While a project list is set, the Atlassian MCP server is not loaded, since it cannot be limited to projects. On update, omitting this member keeps the stored list; send null to clear it.
+	JiraProjects nullable.Nullable[[]string] `json:"jira_projects,omitempty"`
+
 	// LinearEnabled Grant Linear tools.
 	LinearEnabled nullable.Nullable[bool] `json:"linear_enabled,omitempty"`
 
@@ -1091,6 +1255,9 @@ type AutomationTools struct {
 
 	// SlackDmScope Allow spawned sessions to open 1:1 Slack DMs in the organization's connected workspaces. 'org_members' (enterprise accounts only) restricts DM targets to members of the organization; 'workspace' (non-enterprise accounts only) allows any eligible workspace member. Omit or null to disable DMs.
 	SlackDmScope nullable.Nullable[AutomationToolsSlackDmScope] `json:"slack_dm_scope,omitempty"`
+
+	// TeamsChannels Microsoft Teams channels the session's Teams tool may read and post to. Teams must have the Devin app installed. A single {team_id: '*', channel_id: '*'} entry grants every channel of every team the Devin app is installed in. The grant is capped by the organization's Teams Default Access; the channel of a teams:message trigger is always granted.
+	TeamsChannels *[]AutomationTeamsChannel `json:"teams_channels,omitempty"`
 }
 
 // AutomationToolsSlackDmScope Allow spawned sessions to open 1:1 Slack DMs in the organization's connected workspaces. 'org_members' (enterprise accounts only) restricts DM targets to members of the organization; 'workspace' (non-enterprise accounts only) allows any eligible workspace member. Omit or null to disable DMs.
@@ -1098,7 +1265,7 @@ type AutomationToolsSlackDmScope string
 
 // AutomationTriggerRequestInput defines model for AutomationTriggerRequest-Input.
 type AutomationTriggerRequestInput struct {
-	// Conditions null matches every event.
+	// Conditions null matches every event, except Slack message triggers require a channel restriction or at least one completed filter in every group. is_thread_reply alone does not satisfy this requirement.
 	Conditions nullable.Nullable[AutomationConditionsInput] `json:"conditions,omitempty"`
 
 	// EventType Trigger event type, e.g. 'github:pull_request'.
@@ -1113,7 +1280,7 @@ type AutomationTriggerRequestInputEventType string
 
 // AutomationTriggerRequestOutput defines model for AutomationTriggerRequest-Output.
 type AutomationTriggerRequestOutput struct {
-	// Conditions null matches every event.
+	// Conditions null matches every event, except Slack message triggers require a channel restriction or at least one completed filter in every group. is_thread_reply alone does not satisfy this requirement.
 	Conditions nullable.Nullable[AutomationConditionsOutput] `json:"conditions,omitempty"`
 
 	// EventType Trigger event type, e.g. 'github:pull_request'.
@@ -1163,8 +1330,14 @@ type AutomationUpdateRequest struct {
 	// SecurityProfile The automation's own security-profile binding: a profile_id pins that profile, {"profile_id": null} records an explicit opt-out, and explicit null reverts to inheriting from the org/enterprise. Requires the security-profile management permission.
 	SecurityProfile nullable.Nullable[AutomationSecurityProfileSelection] `json:"security_profile,omitempty"`
 	SessionSettings nullable.Nullable[AutomationSessionSettingsInput]     `json:"session_settings,omitempty"`
-	Tools           nullable.Nullable[AutomationTools]                    `json:"tools,omitempty"`
-	Triggers        nullable.Nullable[[]AutomationTriggerRequestInput]    `json:"triggers,omitempty"`
+
+	// SlackReplyAccess null resets to slack_users.
+	SlackReplyAccess nullable.Nullable[AutomationUpdateRequestSlackReplyAccess] `json:"slack_reply_access,omitempty"`
+
+	// TeamsReplyAccess null resets to teams_users.
+	TeamsReplyAccess nullable.Nullable[AutomationUpdateRequestTeamsReplyAccess] `json:"teams_reply_access,omitempty"`
+	Tools            nullable.Nullable[AutomationTools]                         `json:"tools,omitempty"`
+	Triggers         nullable.Nullable[[]AutomationTriggerRequestInput]         `json:"triggers,omitempty"`
 }
 
 // AutomationUpdateRequest_Actions_Item defines model for AutomationUpdateRequest.actions.Item.
@@ -1176,6 +1349,12 @@ type AutomationUpdateRequest_Actions_Item struct {
 type AutomationUpdateRequest_RunAs struct {
 	union json.RawMessage
 }
+
+// AutomationUpdateRequestSlackReplyAccess null resets to slack_users.
+type AutomationUpdateRequestSlackReplyAccess string
+
+// AutomationUpdateRequestTeamsReplyAccess null resets to teams_users.
+type AutomationUpdateRequestTeamsReplyAccess string
 
 // AutomationWebhookResponse defines model for AutomationWebhookResponse.
 type AutomationWebhookResponse struct {
@@ -1678,6 +1857,9 @@ type ProblemDetail struct {
 	// Detail A human-readable explanation specific to this occurrence.
 	Detail nullable.Nullable[string] `json:"detail,omitempty"`
 
+	// ErrorCode Machine-readable code for blocked-action refusals (e.g. "user_frozen", "migrated_session").
+	ErrorCode nullable.Nullable[string] `json:"error_code,omitempty"`
+
 	// Errors Field-level validation errors (422 responses only).
 	Errors nullable.Nullable[[]map[string]interface{}] `json:"errors,omitempty"`
 
@@ -2047,6 +2229,12 @@ type HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParams struct {
 
 // HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes defines parameters for HandleListAutomationsV3OrganizationsOrgIDAutomationsGet.
 type HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes string
+
+// HandleGetAutomationSchemasV3OrganizationsOrgIDAutomationsSchemasGetParams defines parameters for HandleGetAutomationSchemasV3OrganizationsOrgIDAutomationsSchemasGet.
+type HandleGetAutomationSchemasV3OrganizationsOrgIDAutomationsSchemasGetParams struct {
+	// SecurityProfileID Resolve `default_net_policy` and `security_profile` for a create that sets `security_profile.profile_id` to this profile. Requires the security-profile management permission.
+	SecurityProfileID *string `form:"security_profile_id,omitempty" json:"security_profile_id,omitempty"`
+}
 
 // HandleListNotesV3OrganizationsOrgIDKnowledgeNotesGetParams defines parameters for HandleListNotesV3OrganizationsOrgIDKnowledgeNotesGet.
 type HandleListNotesV3OrganizationsOrgIDKnowledgeNotesGetParams struct {
@@ -2687,6 +2875,32 @@ func (t *AutomationCreateRequest_RunAs) MergeAutomationRunAsCreator(v Automation
 	return err
 }
 
+// AsAutomationRunAsServiceUser returns the union data inside the AutomationCreateRequest_RunAs as a AutomationRunAsServiceUser
+func (t AutomationCreateRequest_RunAs) AsAutomationRunAsServiceUser() (AutomationRunAsServiceUser, error) {
+	var body AutomationRunAsServiceUser
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRunAsServiceUser overwrites any union data inside the AutomationCreateRequest_RunAs as the provided AutomationRunAsServiceUser
+func (t *AutomationCreateRequest_RunAs) FromAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRunAsServiceUser performs a merge with any union data inside the AutomationCreateRequest_RunAs, using the provided AutomationRunAsServiceUser
+func (t *AutomationCreateRequest_RunAs) MergeAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 func (t AutomationCreateRequest_RunAs) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
@@ -2987,6 +3201,32 @@ func (t *AutomationResponse_RunAs) MergeAutomationRunAsCreator(v AutomationRunAs
 	return err
 }
 
+// AsAutomationRunAsServiceUser returns the union data inside the AutomationResponse_RunAs as a AutomationRunAsServiceUser
+func (t AutomationResponse_RunAs) AsAutomationRunAsServiceUser() (AutomationRunAsServiceUser, error) {
+	var body AutomationRunAsServiceUser
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRunAsServiceUser overwrites any union data inside the AutomationResponse_RunAs as the provided AutomationRunAsServiceUser
+func (t *AutomationResponse_RunAs) FromAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRunAsServiceUser performs a merge with any union data inside the AutomationResponse_RunAs, using the provided AutomationRunAsServiceUser
+func (t *AutomationResponse_RunAs) MergeAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 func (t AutomationResponse_RunAs) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
@@ -3215,6 +3455,32 @@ func (t *AutomationUpdateRequest_RunAs) FromAutomationRunAsCreator(v AutomationR
 
 // MergeAutomationRunAsCreator performs a merge with any union data inside the AutomationUpdateRequest_RunAs, using the provided AutomationRunAsCreator
 func (t *AutomationUpdateRequest_RunAs) MergeAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationRunAsServiceUser returns the union data inside the AutomationUpdateRequest_RunAs as a AutomationRunAsServiceUser
+func (t AutomationUpdateRequest_RunAs) AsAutomationRunAsServiceUser() (AutomationRunAsServiceUser, error) {
+	var body AutomationRunAsServiceUser
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRunAsServiceUser overwrites any union data inside the AutomationUpdateRequest_RunAs as the provided AutomationRunAsServiceUser
+func (t *AutomationUpdateRequest_RunAs) FromAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRunAsServiceUser performs a merge with any union data inside the AutomationUpdateRequest_RunAs, using the provided AutomationRunAsServiceUser
+func (t *AutomationUpdateRequest_RunAs) MergeAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err

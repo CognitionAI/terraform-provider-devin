@@ -87,6 +87,43 @@ data "devin_git_connections" "all" {}
 	})
 }
 
+// The knowledge folders data source is scoped to an organization. The newly
+// created local-harness organization may have no folders, so only collection
+// shapes and the org linkage are asserted.
+func TestAccKnowledgeFoldersDataSource_basic(t *testing.T) {
+	orgName := randomName("tf-acc-ds-knowledge-folders")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + fmt.Sprintf(`
+resource "devin_organization" "test" {
+  name = %q
+}
+
+data "devin_knowledge_folders" "test" {
+  org_id     = devin_organization.test.org_id
+  depends_on = [devin_organization.test]
+}
+`, orgName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"data.devin_knowledge_folders.test",
+						"org_id",
+						"devin_organization.test",
+						"org_id",
+					),
+					resource.TestCheckResourceAttrSet("data.devin_knowledge_folders.test", "folder_ids_by_path.%"),
+					resource.TestCheckResourceAttrSet("data.devin_knowledge_folders.test", "folders.#"),
+					resource.TestCheckResourceAttrSet("data.devin_knowledge_folders.test", "root_note_count"),
+				),
+			},
+		},
+	})
+}
+
 // The users data source lists enterprise members. The test enterprise has at
 // least one user, and the email filter narrows to one match.
 func TestAccUsersDataSource_basic(t *testing.T) {

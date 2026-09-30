@@ -137,7 +137,7 @@ func TestDecodeAndNullFillJSONUsesEmptyListsForNonNullablePointers(t *testing.T)
 	if err := json.Unmarshal(raw, &object); err != nil {
 		t.Fatal(err)
 	}
-	for _, field := range []string{"mcp_servers", "slack_channels"} {
+	for _, field := range []string{"mcp_servers", "slack_channels", "teams_channels"} {
 		value, ok := object[field].([]any)
 		if !ok || len(value) != 0 {
 			t.Fatalf("expected %s to be an empty array, got %v", field, object[field])
@@ -413,20 +413,23 @@ func runAsResponse(t *testing.T, raw string) *api.AutomationResponse {
 
 func TestAutomationRunAsFromResponse(t *testing.T) {
 	cases := []struct {
-		name string
-		raw  string
-		want string
+		name            string
+		raw             string
+		want            string
+		wantServiceUser types.String
 	}{
-		{"absent", "", "organization"},
-		{"organization", `{"type": "organization"}`, "organization"},
-		{"creator", `{"type": "creator"}`, "creator"},
-		{"null", `null`, "organization"},
-		{"empty object", `{}`, "organization"},
+		{"absent", "", "organization", types.StringNull()},
+		{"organization", `{"type": "organization"}`, "organization", types.StringNull()},
+		{"creator", `{"type": "creator"}`, "creator", types.StringNull()},
+		{"service user", `{"type": "service_user", "service_user_id": "service-user-1"}`, "service_user", types.StringValue("service-user-1")},
+		{"null", `null`, "organization", types.StringNull()},
+		{"empty object", `{}`, "organization", types.StringNull()},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			if got := automationRunAsFromResponse(runAsResponse(t, tc.raw)); got != tc.want {
-				t.Errorf("got %q, want %q", got, tc.want)
+			got, gotServiceUser := automationRunAsFromResponse(runAsResponse(t, tc.raw), types.StringValue(tc.want))
+			if got.ValueString() != tc.want || !gotServiceUser.Equal(tc.wantServiceUser) {
+				t.Errorf("got (%v, %v), want (%q, %v)", got, gotServiceUser, tc.want, tc.wantServiceUser)
 			}
 		})
 	}

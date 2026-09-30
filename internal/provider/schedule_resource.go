@@ -59,7 +59,12 @@ func (r *scheduleResource) Metadata(_ context.Context, req resource.MetadataRequ
 
 func (r *scheduleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manages a scheduled Devin session (recurring cron schedule or one-time run) within an organization.",
+		Description: "Manages a scheduled Devin session (recurring cron schedule or one-time run) within an organization. " +
+			"Deprecated: schedules are superseded by Automations; use a devin_automation resource with a " +
+			"schedule:recurring trigger instead. Existing devin_schedule resources keep working, but creating new " +
+			"schedules is rejected by the API for organizations migrated to Automations.",
+		DeprecationMessage: "Schedules are superseded by Automations. Use devin_automation with a schedule:recurring " +
+			"trigger instead; the API rejects new schedule creation for organizations migrated to Automations.",
 		Attributes: map[string]schema.Attribute{
 			"schedule_id": schema.StringAttribute{
 				Description: "Schedule ID (assigned by Devin).",

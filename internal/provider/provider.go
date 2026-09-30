@@ -91,6 +91,7 @@ func (p *DevinProvider) Configure(ctx context.Context, req provider.ConfigureReq
 	client := &Client{
 		BaseURL:            apiURL,
 		Token:              token,
+		UserAgent:          UserAgent(req.TerraformVersion, p.version),
 		HTTPClient:         NewRetryHTTPClient(),
 		MutatingHTTPClient: NewMutatingRetryHTTPClient(),
 	}
@@ -131,6 +132,7 @@ func (p *DevinProvider) DataSources(_ context.Context) []func() datasource.DataS
 		NewUsersDataSource,
 		NewServiceUsersDataSource,
 		NewIdpGroupsDataSource,
+		NewKnowledgeFoldersDataSource,
 	}
 }
 

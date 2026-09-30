@@ -15,10 +15,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Tag names reserved by the platform (e.g. for security code-scan sessions);
-// the API rejects them (case-insensitively) in allowed-tag lists.
+// Tag names reserved by the platform (applied server-side to security
+// code-scan, agent-readiness and oncall ingestion sessions); the API rejects them
+// (case-insensitively) in allowed-tag lists.
 var reservedSessionTags = map[string]bool{
 	"security-code-scan": true,
+	"agent-readiness":    true,
+	"oncall-ingestion":   true,
 }
 
 var _ resource.Resource = &orgTagsResource{}
@@ -58,7 +61,7 @@ func (r *orgTagsResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			},
 			"tags": schema.SetAttribute{
 				Description: "The full set of allowed session tags for the organization. Reserved tag names " +
-					"(e.g. `security-code-scan`) are managed by the platform and cannot be included.",
+					"(e.g. `security-code-scan`, `agent-readiness`, `oncall-ingestion`) are managed by the platform and cannot be included.",
 				ElementType: types.StringType,
 				Required:    true,
 			},

@@ -3,16 +3,41 @@
 page_title: "devin_schedule Resource - devin"
 subcategory: ""
 description: |-
-  Manages a scheduled Devin session (recurring cron schedule or one-time run) within an organization.
+  Manages a scheduled Devin session (recurring cron schedule or one-time run) within an organization. Deprecated: schedules are superseded by Automations; use a devin_automation resource with a schedule:recurring trigger instead. Existing devin_schedule resources keep working, but creating new schedules is rejected by the API for organizations migrated to Automations.
 ---
 
 # devin_schedule (Resource)
 
-Manages a scheduled Devin session (recurring cron schedule or one-time run) within an organization.
+Manages a scheduled Devin session (recurring cron schedule or one-time run) within an organization. Deprecated: schedules are superseded by Automations; use a devin_automation resource with a schedule:recurring trigger instead. Existing devin_schedule resources keep working, but creating new schedules is rejected by the API for organizations migrated to Automations.
 
 ## Example Usage
 
 ```terraform
+# devin_schedule is deprecated. New scheduled work should be a devin_automation
+# with a schedule:recurring trigger, e.g.:
+#
+# resource "devin_automation" "nightly_triage" {
+#   org_id = devin_organization.backend.org_id
+#   name   = "Nightly issue triage"
+#   triggers = jsonencode([{
+#     event_type = "schedule:recurring"
+#     conditions = {
+#       any = [{ all = [{
+#         field    = "rrule"
+#         operator = "recurrence"
+#         value    = "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;BYHOUR=6;BYMINUTE=0"
+#       }] }]
+#     }
+#   }])
+#   actions = jsonencode([{
+#     type   = "start_session"
+#     prompt = "Triage new GitHub issues, label them, and propose fixes for the easy ones."
+#   }])
+# }
+#
+# Existing devin_schedule resources keep working; the examples below are kept
+# for organizations not yet migrated to Automations.
+
 # Recurring schedule: run every weekday morning.
 resource "devin_schedule" "nightly_triage" {
   org_id    = devin_organization.backend.org_id

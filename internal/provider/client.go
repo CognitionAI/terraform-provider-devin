@@ -14,9 +14,21 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 )
 
+// UserAgent identifies Terraform and this provider to the Devin API, which
+// attributes resources created with it to Terraform. It follows the usual
+// provider convention: "Terraform/<cli version> terraform-provider-devin/<version>".
+func UserAgent(terraformVersion, providerVersion string) string {
+	ua := "terraform-provider-devin/" + providerVersion
+	if terraformVersion == "" {
+		return ua
+	}
+	return "Terraform/" + terraformVersion + " " + ua
+}
+
 type Client struct {
 	BaseURL    string
 	Token      string
+	UserAgent  string
 	HTTPClient *http.Client
 	// MutatingHTTPClient, when set, is used for non-idempotent requests
 	// (POST and PATCH) instead of HTTPClient. These methods may create or
@@ -82,6 +94,9 @@ func (c *Client) do(ctx context.Context, method, path string, body any, result a
 	}
 
 	req.Header.Set("Authorization", "Bearer "+c.Token)
+	if c.UserAgent != "" {
+		req.Header.Set("User-Agent", c.UserAgent)
+	}
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}

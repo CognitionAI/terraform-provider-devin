@@ -28,7 +28,7 @@ resource "devin_org_tags" "backend" {
 ### Required
 
 - `org_id` (String) Organization ID whose allowed tags are managed.
-- `tags` (Set of String) The full set of allowed session tags for the organization. Reserved tag names (e.g. `security-code-scan`) are managed by the platform and cannot be included.
+- `tags` (Set of String) The full set of allowed session tags for the organization. Reserved tag names (e.g. `security-code-scan`, `agent-readiness`, `oncall-ingestion`) are managed by the platform and cannot be included.
 
 ### Optional
 

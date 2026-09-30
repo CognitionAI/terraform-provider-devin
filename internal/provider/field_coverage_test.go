@@ -108,6 +108,7 @@ var ignoredFields = map[string]map[string]string{
 		"updated_at":      "server-managed read-only metadata",
 		"last_edited_by":  "server-managed read-only metadata",
 		"last_invocation": "server-managed runtime status",
+		"next_run_at":     "server-managed runtime status",
 		"security_profile": "security-profile binding is managed via the security-profile " +
 			"permission flow, not yet modeled as provider config",
 	},
@@ -136,6 +137,10 @@ var ignoredFields = map[string]map[string]string{
 	}),
 	"idp_groups_data_source.go":    paginationOnly,
 	"organizations_data_source.go": paginationOnly,
+}
+
+var additionalCoveredAPITypes = map[string][]string{
+	"knowledge_folders_data_source.go": {"FolderSummary", "FolderTreeResponse"},
 }
 
 const paginationReason = "pagination envelope handled by the list machinery"
@@ -212,6 +217,57 @@ func referencedAPITypes(file *ast.File) map[string]bool {
 	return out
 }
 
+func coveredAPITypes(base string, file *ast.File, apiStructs map[string]map[string]bool) []string {
+	selected := map[string]bool{}
+	for ref := range referencedAPITypes(file) {
+		if _, ok := apiStructs[ref]; !ok {
+			continue
+		}
+		if strings.HasSuffix(ref, "Request") || strings.HasSuffix(ref, "Response") {
+			selected[ref] = true
+		}
+	}
+	for _, ref := range additionalCoveredAPITypes[base] {
+		if _, ok := apiStructs[ref]; ok {
+			selected[ref] = true
+		}
+	}
+
+	models := make([]string, 0, len(selected))
+	for model := range selected {
+		models = append(models, model)
+	}
+	sort.Strings(models)
+	return models
+}
+
+func TestCoveredAPITypesIncludesExplicitNestedModels(t *testing.T) {
+	file, err := parser.ParseFile(token.NewFileSet(), "test.go", []byte(`package provider
+
+var _ = api.FolderSummary{}
+var _ = api.FolderTreeResponse{}
+var _ = api.KnownRequest{}
+var _ = api.KnownResponse{}
+var _ = api.KnownModel{}
+`), 0)
+	if err != nil {
+		t.Fatalf("parse test file: %v", err)
+	}
+
+	apiStructs := map[string]map[string]bool{
+		"FolderSummary":      {},
+		"FolderTreeResponse": {},
+		"KnownRequest":       {},
+		"KnownResponse":      {},
+		"KnownModel":         {},
+	}
+	got := coveredAPITypes("knowledge_folders_data_source.go", file, apiStructs)
+	want := []string{"FolderSummary", "FolderTreeResponse", "KnownRequest", "KnownResponse"}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("covered API types = %v, want %v", got, want)
+	}
+}
+
 func TestFieldCoverage(t *testing.T) {
 	fset := token.NewFileSet()
 
@@ -248,16 +304,7 @@ func TestFieldCoverage(t *testing.T) {
 			}
 		}
 
-		var models []string
-		for ref := range referencedAPITypes(f) {
-			if _, ok := apiStructs[ref]; !ok {
-				continue
-			}
-			if strings.HasSuffix(ref, "Request") || strings.HasSuffix(ref, "Response") {
-				models = append(models, ref)
-			}
-		}
-		sort.Strings(models)
+		models := coveredAPITypes(base, f, apiStructs)
 		if len(models) == 0 {
 			continue
 		}

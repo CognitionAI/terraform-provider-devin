@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -26,6 +27,7 @@ import (
 var _ resource.Resource = &automationResource{}
 var _ resource.ResourceWithImportState = &automationResource{}
 var _ resource.ResourceWithIdentity = &automationResource{}
+var _ resource.ResourceWithValidateConfig = &automationResource{}
 
 type automationResource struct {
 	client *Client
@@ -40,21 +42,24 @@ type automationResource struct {
 // trigger_id). Scalars (name, enabled, metadata, run_as) are refreshed on
 // Read.
 type automationModel struct {
-	AutomationID    types.String         `tfsdk:"automation_id"`
-	OrgID           types.String         `tfsdk:"org_id"`
-	Name            types.String         `tfsdk:"name"`
-	Enabled         types.Bool           `tfsdk:"enabled"`
-	Metadata        types.Map            `tfsdk:"metadata"`
-	Triggers        jsontypes.Normalized `tfsdk:"triggers"`
-	Actions         jsontypes.Normalized `tfsdk:"actions"`
-	Notifications   jsontypes.Normalized `tfsdk:"notifications"`
-	Limits          jsontypes.Normalized `tfsdk:"limits"`
-	Concurrency     jsontypes.Normalized `tfsdk:"concurrency"`
-	Tools           jsontypes.Normalized `tfsdk:"tools"`
-	SessionSettings jsontypes.Normalized `tfsdk:"session_settings"`
-	RunAs           types.String         `tfsdk:"run_as"`
-	WebhookURL      types.String         `tfsdk:"webhook_url"`
-	WebhookSecret   types.String         `tfsdk:"webhook_secret"`
+	AutomationID     types.String         `tfsdk:"automation_id"`
+	OrgID            types.String         `tfsdk:"org_id"`
+	Name             types.String         `tfsdk:"name"`
+	Enabled          types.Bool           `tfsdk:"enabled"`
+	Metadata         types.Map            `tfsdk:"metadata"`
+	Triggers         jsontypes.Normalized `tfsdk:"triggers"`
+	Actions          jsontypes.Normalized `tfsdk:"actions"`
+	Notifications    jsontypes.Normalized `tfsdk:"notifications"`
+	Limits           jsontypes.Normalized `tfsdk:"limits"`
+	Concurrency      jsontypes.Normalized `tfsdk:"concurrency"`
+	Tools            jsontypes.Normalized `tfsdk:"tools"`
+	SessionSettings  jsontypes.Normalized `tfsdk:"session_settings"`
+	RunAs            types.String         `tfsdk:"run_as"`
+	RunAsServiceUser types.String         `tfsdk:"run_as_service_user_id"`
+	SlackReplyAccess types.String         `tfsdk:"slack_reply_access"`
+	TeamsReplyAccess types.String         `tfsdk:"teams_reply_access"`
+	WebhookURL       types.String         `tfsdk:"webhook_url"`
+	WebhookSecret    types.String         `tfsdk:"webhook_secret"`
 }
 
 func NewAutomationResource() resource.Resource {
@@ -111,7 +116,9 @@ func (r *automationResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				CustomType: jsontypes.NormalizedType{},
 				Description: "JSON-encoded array of triggers (use jsonencode(...)). Each trigger is an " +
 					"object with event_type (e.g. 'github:pull_request'), optional conditions (two-level " +
-					"any/all envelope of {field, operator, value} conditions; null matches every event), " +
+					"any/all envelope of {field, operator, value} conditions). Slack message triggers require " +
+					"a channel restriction or completed filter in every group; is_thread_reply alone is insufficient. " +
+					"For other events, null conditions match every event. " +
 					"and optional replies (array of {type} where type is notify_thread, attach_thread, or " +
 					"post_response). The automation fires when any trigger matches; at most one " +
 					"webhook:incoming trigger.",
@@ -166,13 +173,43 @@ func (r *automationResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				Optional: true,
 			},
 			"run_as": schema.StringAttribute{
-				Description: "Identity the spawned sessions run under: 'organization' or 'creator' " +
+				Description: "Identity the spawned sessions run under: 'organization', 'creator' " +
 					"(personal automation, visible only to the creator and org admins; rejected for " +
-					"service-user-created automations). The API requires an explicit choice on " +
-					"create, so the provider sends 'organization' when this is not set.",
+					"service-user-created automations) or 'service_user' (the service user named by " +
+					"run_as_service_user_id; requires permission to manage that service user). The " +
+					"API requires an explicit choice on create, so the provider sends 'organization' " +
+					"when this is not set.",
 				Optional: true,
 				Validators: []validator.String{
-					stringvalidator.OneOf("organization", "creator"),
+					stringvalidator.OneOf("organization", "creator", "service_user"),
+				},
+			},
+			"run_as_service_user_id": schema.StringAttribute{
+				Description: "ID of the service user the spawned sessions run as. Required when run_as " +
+					"is 'service_user' and must be unset otherwise.",
+				Optional: true,
+			},
+			"slack_reply_access": schema.StringAttribute{
+				Description: "Who may reply into existing sessions from Slack threads: 'devin_users' " +
+					"(linked Devin accounts only), 'slack_users' (anyone in the organization's connected " +
+					"Slack workspaces), or 'external_slack_users' (also Slack Connect users). Does not " +
+					"affect who can trigger the automation. Defaults to 'slack_users'.",
+				Optional: true,
+				Computed: true,
+				Default:  stringdefault.StaticString("slack_users"),
+				Validators: []validator.String{
+					stringvalidator.OneOf("devin_users", "slack_users", "external_slack_users"),
+				},
+			},
+			"teams_reply_access": schema.StringAttribute{
+				Description: "Who may reply into existing sessions from Microsoft Teams threads: 'devin_users' " +
+					"(linked Devin accounts only) or 'teams_users' (anyone in the organization's connected " +
+					"Microsoft tenant). Does not affect who can trigger the automation. Defaults to 'teams_users'.",
+				Optional: true,
+				Computed: true,
+				Default:  stringdefault.StaticString("teams_users"),
+				Validators: []validator.String{
+					stringvalidator.OneOf("devin_users", "teams_users"),
 				},
 			},
 			"webhook_url": schema.StringAttribute{
@@ -229,11 +266,16 @@ func (r *automationResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	// The API requires an explicit run-as choice on create; an unset
 	// attribute means the organization identity.
-	runAs := "organization"
-	if !plan.RunAs.IsNull() {
-		runAs = plan.RunAs.ValueString()
+	validateRunAs(plan, &resp.Diagnostics)
+	unionFromJSON(&body.RunAs, runAsJSON(plan), "run_as", &resp.Diagnostics)
+	if !plan.SlackReplyAccess.IsNull() && !plan.SlackReplyAccess.IsUnknown() {
+		slackReplyAccess := api.AutomationCreateRequestSlackReplyAccess(plan.SlackReplyAccess.ValueString())
+		body.SlackReplyAccess = &slackReplyAccess
 	}
-	unionFromJSON(&body.RunAs, runAsJSON(runAs), "run_as", &resp.Diagnostics)
+	if !plan.TeamsReplyAccess.IsNull() && !plan.TeamsReplyAccess.IsUnknown() {
+		teamsReplyAccess := api.AutomationCreateRequestTeamsReplyAccess(plan.TeamsReplyAccess.ValueString())
+		body.TeamsReplyAccess = &teamsReplyAccess
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -279,7 +321,9 @@ func (r *automationResource) Read(ctx context.Context, req resource.ReadRequest,
 	if result.Metadata != nil && len(*result.Metadata) == 0 && priorMetadata.IsNull() {
 		state.Metadata = types.MapNull(types.StringType)
 	}
-	state.RunAs = normalizeRunAsState(automationRunAsFromResponse(&result), state.RunAs)
+	state.RunAs, state.RunAsServiceUser = automationRunAsFromResponse(&result, state.RunAs)
+	state.SlackReplyAccess = automationSlackReplyAccessFromResponse(&result)
+	state.TeamsReplyAccess = automationTeamsReplyAccessFromResponse(&result)
 	state.WebhookURL, state.WebhookSecret = automationWebhook(&result, state.WebhookSecret)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	setIdentity(ctx, resp.Identity, automationIdentityModel{OrgID: state.OrgID, AutomationID: state.AutomationID}, &resp.Diagnostics)
@@ -334,13 +378,24 @@ func (r *automationResource) Update(ctx context.Context, req resource.UpdateRequ
 	if normalizedJSONChanged(ctx, plan.SessionSettings, state.SessionSettings, &resp.Diagnostics) {
 		body.SessionSettings = nullableGroupFromJSON[api.AutomationSessionSettingsInput](plan.SessionSettings, "session_settings", &resp.Diagnostics)
 	}
+	validateRunAs(plan, &resp.Diagnostics)
 	if plan.RunAs.IsNull() {
 		// Explicit null resets to the default organization identity.
 		body.RunAs = nullable.NewNullNullable[api.AutomationUpdateRequest_RunAs]()
 	} else {
 		var runAs api.AutomationUpdateRequest_RunAs
-		unionFromJSON(&runAs, runAsJSON(plan.RunAs.ValueString()), "run_as", &resp.Diagnostics)
+		unionFromJSON(&runAs, runAsJSON(plan), "run_as", &resp.Diagnostics)
 		body.RunAs = nullable.NewNullableWithValue(runAs)
+	}
+	if plan.SlackReplyAccess.IsNull() {
+		body.SlackReplyAccess = nullable.NewNullNullable[api.AutomationUpdateRequestSlackReplyAccess]()
+	} else if !plan.SlackReplyAccess.IsUnknown() {
+		body.SlackReplyAccess = nullable.NewNullableWithValue(api.AutomationUpdateRequestSlackReplyAccess(plan.SlackReplyAccess.ValueString()))
+	}
+	if plan.TeamsReplyAccess.IsNull() {
+		body.TeamsReplyAccess = nullable.NewNullNullable[api.AutomationUpdateRequestTeamsReplyAccess]()
+	} else if !plan.TeamsReplyAccess.IsUnknown() {
+		body.TeamsReplyAccess = nullable.NewNullableWithValue(api.AutomationUpdateRequestTeamsReplyAccess(plan.TeamsReplyAccess.ValueString()))
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -740,8 +795,46 @@ func unionFromJSON(target json.Unmarshaler, raw string, attribute string, diags 
 	}
 }
 
-func runAsJSON(value string) string {
-	raw, _ := json.Marshal(map[string]string{"type": value})
+// ValidateConfig mirrors the API's run_as rules so invalid combinations
+// fail at plan time when both values are known; Create and Update re-check
+// them at apply time for values that were unknown during planning.
+func (r *automationResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var config automationModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() || config.RunAs.IsUnknown() || config.RunAsServiceUser.IsUnknown() {
+		return
+	}
+	validateRunAs(config, &resp.Diagnostics)
+}
+
+// validateRunAs enforces the run_as / run_as_service_user_id pairing: a
+// non-empty run_as_service_user_id is required with 'service_user' and
+// rejected with any other (or an unset) run_as.
+func validateRunAs(m automationModel, diags *diag.Diagnostics) {
+	isServiceUser := m.RunAs.ValueString() == "service_user"
+	hasServiceUser := !m.RunAsServiceUser.IsNull() && m.RunAsServiceUser.ValueString() != ""
+	switch {
+	case isServiceUser && !hasServiceUser:
+		diags.AddAttributeError(path.Root("run_as_service_user_id"), "Missing service user",
+			"run_as_service_user_id is required when run_as is 'service_user'.")
+	case !isServiceUser && !m.RunAsServiceUser.IsNull():
+		diags.AddAttributeError(path.Root("run_as_service_user_id"), "Unexpected service user",
+			"run_as_service_user_id may only be set when run_as is 'service_user'.")
+	}
+}
+
+// runAsJSON builds the run_as union body from the plan. An unset run_as
+// means the organization identity.
+func runAsJSON(plan automationModel) string {
+	runAs := "organization"
+	if !plan.RunAs.IsNull() {
+		runAs = plan.RunAs.ValueString()
+	}
+	body := map[string]string{"type": runAs}
+	if runAs == "service_user" {
+		body["service_user_id"] = plan.RunAsServiceUser.ValueString()
+	}
+	raw, _ := json.Marshal(body)
 	return string(raw)
 }
 
@@ -854,24 +947,46 @@ func (webhookRecomputeModifier) PlanModifyString(ctx context.Context, req planmo
 	}
 }
 
-// automationRunAsFromResponse extracts the run-as identity from the response
-// union ({"type": "organization"|"creator"}); a missing or unrecognized
-// value means the organization default.
-func automationRunAsFromResponse(result *api.AutomationResponse) string {
-	if result.RunAs == nil {
-		return "organization"
-	}
-	raw, err := json.Marshal(result.RunAs)
-	if err != nil {
-		return "organization"
-	}
+// automationRunAsFromResponse extracts the run-as identity and, for
+// 'service_user', the service user id from the response union; a missing or
+// unrecognized value means the organization default. The type is passed
+// through normalizeRunAsState against the prior run_as state.
+func automationRunAsFromResponse(result *api.AutomationResponse, prior types.String) (types.String, types.String) {
 	var runAs struct {
-		Type string `json:"type"`
+		Type          string `json:"type"`
+		ServiceUserID string `json:"service_user_id"`
 	}
-	if err := json.Unmarshal(raw, &runAs); err != nil || runAs.Type == "" {
-		return "organization"
+	if result.RunAs != nil {
+		if raw, err := json.Marshal(result.RunAs); err == nil {
+			_ = json.Unmarshal(raw, &runAs)
+		}
 	}
-	return runAs.Type
+	if runAs.Type == "" {
+		runAs.Type = "organization"
+	}
+	serviceUser := types.StringNull()
+	if runAs.Type == "service_user" {
+		serviceUser = types.StringValue(runAs.ServiceUserID)
+	}
+	return normalizeRunAsState(runAs.Type, prior), serviceUser
+}
+
+// automationSlackReplyAccessFromResponse maps an omitted policy to the API
+// default.
+func automationSlackReplyAccessFromResponse(result *api.AutomationResponse) types.String {
+	if result.SlackReplyAccess == nil {
+		return types.StringValue(string(api.AutomationResponseSlackReplyAccessSlackUsers))
+	}
+	return types.StringValue(string(*result.SlackReplyAccess))
+}
+
+// automationTeamsReplyAccessFromResponse maps an omitted policy to the API
+// default.
+func automationTeamsReplyAccessFromResponse(result *api.AutomationResponse) types.String {
+	if result.TeamsReplyAccess == nil {
+		return types.StringValue(string(api.AutomationResponseTeamsReplyAccessTeamsUsers))
+	}
+	return types.StringValue(string(*result.TeamsReplyAccess))
 }
 
 // normalizeRunAsState returns the refreshed state value for run_as. A null
