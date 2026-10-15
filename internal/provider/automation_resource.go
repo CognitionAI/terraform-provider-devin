@@ -160,8 +160,9 @@ func (r *automationResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			},
 			"tools": schema.StringAttribute{
 				CustomType: jsontypes.NormalizedType{},
-				Description: "JSON-encoded tools object (use jsonencode(...)), e.g. MCP servers and " +
-					"Linear tooling for spawned sessions. Members modeled by the API as non-nullable " +
+				Description: "JSON-encoded tools object (use jsonencode(...)), e.g. MCP servers, " +
+					"Linear tooling, and Microsoft Teams channel or DM grants for spawned sessions. " +
+					"Members modeled by the API as non-nullable " +
 					"optional scalars can be changed but cannot be cleared through PATCH.",
 				Optional: true,
 			},

@@ -1,6 +1,9 @@
 package provider
 
-import "net/url"
+import (
+	"net/url"
+	"strings"
+)
 
 const (
 	enterpriseOrganizationsPath = "/v3/enterprise/organizations"
@@ -122,4 +125,45 @@ func orgMemberIdpGroupsPath(orgID string) string {
 
 func orgMemberIdpGroupPath(orgID, name string) string {
 	return orgMemberIdpGroupsPath(orgID) + "/" + url.PathEscape(name)
+}
+
+const enterpriseBlueprintsPath = "/v3/enterprise/snapshot-setup/blueprints"
+
+func enterpriseBlueprintPath(blueprintID string) string {
+	return enterpriseBlueprintsPath + "/" + url.PathEscape(blueprintID)
+}
+
+func orgBlueprintsPath(orgID string) string {
+	return organizationsPath + "/" + url.PathEscape(orgID) + "/snapshot-setup/blueprints"
+}
+
+func orgBlueprintPath(orgID, blueprintID string) string {
+	return orgBlueprintsPath(orgID) + "/" + url.PathEscape(blueprintID)
+}
+
+func orgIndexedRepositoriesPath(orgID string) string {
+	return organizationsPath + "/" + url.PathEscape(orgID) + "/repositories/indexing"
+}
+
+// orgRepositoryIndexingPath escapes each segment of the repository path
+// ("owner/repo") separately: the API matches the slashes literally.
+func orgRepositoryIndexingPath(orgID, repositoryPath string) string {
+	segments := strings.Split(repositoryPath, "/")
+	for i, segment := range segments {
+		segments[i] = url.PathEscape(segment)
+	}
+	return organizationsPath + "/" + url.PathEscape(orgID) + "/repositories/" + strings.Join(segments, "/") + "/indexing"
+}
+
+func orgRepositoriesPath(orgID string) string {
+	return organizationsPath + "/" + url.PathEscape(orgID) + "/repositories"
+}
+
+// blueprintFilesPath returns the files path of an org/repo blueprint, or of
+// the enterprise blueprint when orgID is empty.
+func blueprintFilesPath(orgID, blueprintID string) string {
+	if orgID == "" {
+		return enterpriseBlueprintPath(blueprintID) + "/files"
+	}
+	return orgBlueprintPath(orgID, blueprintID) + "/files"
 }

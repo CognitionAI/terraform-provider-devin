@@ -157,3 +157,20 @@ func setToStrings(ctx context.Context, set types.Set, diags *diag.Diagnostics) [
 	}
 	return values
 }
+
+// optionalBoolFrom leaves the field unspecified (omitted from the request)
+// when the value is null or unknown.
+func optionalBoolFrom(value types.Bool) nullable.Nullable[bool] {
+	var result nullable.Nullable[bool]
+	if !value.IsNull() && !value.IsUnknown() {
+		result.Set(value.ValueBool())
+	}
+	return result
+}
+
+func boolFromNullable(value nullable.Nullable[bool]) types.Bool {
+	if !value.IsSpecified() || value.IsNull() {
+		return types.BoolNull()
+	}
+	return types.BoolValue(value.MustGet())
+}

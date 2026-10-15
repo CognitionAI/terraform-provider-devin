@@ -95,6 +95,10 @@ resource "devin_org_idp_group_role" "engineering_member" {
 | `devin_enterprise_service_user_role` | Enterprise role for an existing service user                 |
 | `devin_org_service_user_role`        | Org role for an existing service user                        |
 | `devin_org_user_role`                | Org role for an existing enterprise user                     |
+| `devin_repository_indexing`          | Indexing (search and wiki) for a connected repo and branches |
+| `devin_blueprint`                    | Org-wide or repository snapshot setup blueprint              |
+| `devin_enterprise_blueprint`         | Enterprise-wide snapshot setup blueprint (singleton)         |
+| `devin_blueprint_file`               | File attached to a snapshot setup blueprint                  |
 
 ## Data sources
 
@@ -106,6 +110,7 @@ resource "devin_org_idp_group_role" "engineering_member" {
 | `devin_users`           | Users in the enterprise                          |
 | `devin_service_users`   | Active service users in the enterprise           |
 | `devin_idp_groups`      | IdP groups registered with the enterprise        |
+| `devin_repositories`    | Repositories connected to an organization        |
 
 ## List resources (Terraform 1.14+)
 

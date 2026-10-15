@@ -99,7 +99,7 @@ output "incident_hook_url" {
 - `session_settings` (String) JSON-encoded settings object applied to sessions this automation spawns (use jsonencode(...)). Members modeled by the API as non-nullable optional scalars can be changed but cannot be cleared through PATCH.
 - `slack_reply_access` (String) Who may reply into existing sessions from Slack threads: 'devin_users' (linked Devin accounts only), 'slack_users' (anyone in the organization's connected Slack workspaces), or 'external_slack_users' (also Slack Connect users). Does not affect who can trigger the automation. Defaults to 'slack_users'.
 - `teams_reply_access` (String) Who may reply into existing sessions from Microsoft Teams threads: 'devin_users' (linked Devin accounts only) or 'teams_users' (anyone in the organization's connected Microsoft tenant). Does not affect who can trigger the automation. Defaults to 'teams_users'.
-- `tools` (String) JSON-encoded tools object (use jsonencode(...)), e.g. MCP servers and Linear tooling for spawned sessions. Members modeled by the API as non-nullable optional scalars can be changed but cannot be cleared through PATCH.
+- `tools` (String) JSON-encoded tools object (use jsonencode(...)), e.g. MCP servers, Linear tooling, and Microsoft Teams channel or DM grants for spawned sessions. Members modeled by the API as non-nullable optional scalars can be changed but cannot be cleared through PATCH.
 
 ### Read-Only
 

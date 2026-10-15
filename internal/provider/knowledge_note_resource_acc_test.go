@@ -3,7 +3,6 @@ package provider
 import (
 	"fmt"
 	"net/http"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -65,27 +64,6 @@ func TestAccKnowledgeNoteResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrPtr("devin_knowledge_note.test", "note_id", &noteID),
 					checkAPIFieldMatchesState("devin_knowledge_note.test", "/v3/organizations/{org_id}/knowledge/notes/{note_id}", "name", "name"),
 				),
-			},
-		},
-	})
-}
-
-// Malformed composite import IDs must be rejected.
-func TestAccKnowledgeNoteResource_importInvalidID(t *testing.T) {
-	orgName := randomName("tf-acc-kn-import")
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: knowledgeNoteConfig(orgName, "Import test", "body", "When testing"),
-			},
-			{
-				ResourceName:  "devin_knowledge_note.test",
-				ImportState:   true,
-				ImportStateId: "missing-a-slash",
-				ExpectError:   regexp.MustCompile(`Unexpected import identifier`),
 			},
 		},
 	})

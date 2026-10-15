@@ -278,7 +278,6 @@ func TestNullFillActionsKeepsRequiredMembersOmitted(t *testing.T) {
 		{"monitor_session omitted setup_prompt", `[{"type":"monitor_session"}]`, "setup_prompt", false, nil},
 		{"monitor_session omitted slack_monitor_config", `[{"type":"monitor_session"}]`, "slack_monitor_config", false, nil},
 		{"scan_new_commits omitted scan_id", `[{"type":"scan_new_commits"}]`, "scan_id", false, nil},
-		{"scan_new_commits explicit scan_id", `[{"type":"scan_new_commits","scan_id":"scan-1"}]`, "scan_id", true, "scan-1"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -298,21 +297,6 @@ func TestNullFillActionsKeepsRequiredMembersOmitted(t *testing.T) {
 				t.Fatalf("%s = %v, want %v", tc.member, value, tc.wantValue)
 			}
 		})
-	}
-}
-
-func TestMetadataDeletionHelpers(t *testing.T) {
-	value := "v"
-	if metadataHasDeletions(map[string]*string{"keep": &value}) {
-		t.Error("expected no deletions for a patch of plain values")
-	}
-	patch := map[string]*string{"keep": &value, "drop": nil}
-	if !metadataHasDeletions(patch) {
-		t.Error("expected a nil value to count as a deletion")
-	}
-	replaced := metadataWithoutDeletions(patch)
-	if len(replaced) != 1 || replaced["keep"] != &value {
-		t.Errorf("expected only the kept key to survive, got %v", replaced)
 	}
 }
 

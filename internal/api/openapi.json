@@ -1064,7 +1064,7 @@
             "nullable": true
           },
           "run_as": {
-            "description": "Identity the spawned sessions run under. organization: the org's automation identity (the System User in the app) \u2014 sessions use system permissions, so MCP servers installed with a personal (user-scoped) connection cannot be selected, and switching an automation to organization removes them from its selection. creator: personal automation \u2014 runs with the creator's own permissions and is visible only to the creator and org admins; rejected for service-user-created automations. service_user: runs as the given service user, with its roles, grants and ACU limits; requires permission to manage that service user. Required on create; null on update resets to organization.",
+            "description": "Identity the spawned sessions run under. organization: the org's automation identity. When the organization has a default service user for automations, sessions run as that service user and the response returns run_as service_user with its id; saving requires every permission that service user holds. Otherwise it is the System User in the app \u2014 sessions use system permissions, so MCP servers installed with a personal (user-scoped) connection cannot be selected, and switching an automation to organization removes them from its selection. creator: personal automation \u2014 runs with the creator's own permissions and is visible only to the creator and org admins; rejected for service-user-created automations. service_user: runs as the given service user, with its roles, grants and ACU limits; requires permission to manage that service user. Required on create; null on update resets to organization.",
             "oneOf": [
               {
                 "$ref": "#/components/schemas/AutomationRunAsOrganization"
@@ -1343,6 +1343,37 @@
       "AutomationSchemasResponse": {
         "additionalProperties": false,
         "properties": {
+          "available_devin_modes": {
+            "description": "Modes session_settings.devin_mode accepts for a new selection right now, as the organization's automation identity: the stable modes it can spawn plus, when the organization's preview rollout allows, the research previews. A stored mode outside this list is preserved by edits that do not change it.",
+            "items": {
+              "enum": [
+                "normal",
+                "fast",
+                "lite",
+                "ultra",
+                "fusion",
+                "swe-2-medium",
+                "swe-2-high",
+                "swe-2-max"
+              ],
+              "type": "string"
+            },
+            "title": "Available Devin Modes",
+            "type": "array"
+          },
+          "default_fallback_devin_mode": {
+            "description": "Stable mode to prefill session_settings.fallback_devin_mode with when a research preview is selected: the organization's default mode when it is stable and available, else the first available stable mode; null when none is available.",
+            "enum": [
+              "normal",
+              "fast",
+              "lite",
+              "ultra",
+              "fusion"
+            ],
+            "nullable": true,
+            "title": "Default Fallback Devin Mode",
+            "type": "string"
+          },
           "default_net_policy": {
             "allOf": [
               {
@@ -1601,7 +1632,13 @@
         "description": "Applied to every session this automation spawns (including monitor\nsessions).",
         "properties": {
           "devin_mode": {
-            "description": "null = org default.",
+            "description": "null = org default. One of normal, fast, lite, ultra, fusion, or a research preview the organization can use (see schemas.available_devin_modes). Research previews require fallback_devin_mode; a stored preview the organization can no longer use stays stored (unrelated edits preserve it) and its sessions start on fallback_devin_mode.",
+            "nullable": true,
+            "title": "Devin Mode",
+            "type": "string"
+          },
+          "fallback_devin_mode": {
+            "description": "Stable mode sessions start in when devin_mode is a research preview that is unavailable at run time. Required with a preview devin_mode (see schemas.default_fallback_devin_mode), rejected with a stable or null devin_mode; cleared with devin_mode.",
             "enum": [
               "normal",
               "fast",
@@ -1610,7 +1647,7 @@
               "fusion"
             ],
             "nullable": true,
-            "title": "Devin Mode",
+            "title": "Fallback Devin Mode",
             "type": "string"
           },
           "net_policy": {
@@ -1630,7 +1667,13 @@
         "description": "Applied to every session this automation spawns (including monitor\nsessions).",
         "properties": {
           "devin_mode": {
-            "description": "null = org default.",
+            "description": "null = org default. One of normal, fast, lite, ultra, fusion, or a research preview the organization can use (see schemas.available_devin_modes). Research previews require fallback_devin_mode; a stored preview the organization can no longer use stays stored (unrelated edits preserve it) and its sessions start on fallback_devin_mode.",
+            "nullable": true,
+            "title": "Devin Mode",
+            "type": "string"
+          },
+          "fallback_devin_mode": {
+            "description": "Stable mode sessions start in when devin_mode is a research preview that is unavailable at run time. Required with a preview devin_mode (see schemas.default_fallback_devin_mode), rejected with a stable or null devin_mode; cleared with devin_mode.",
             "enum": [
               "normal",
               "fast",
@@ -1639,7 +1682,7 @@
               "fusion"
             ],
             "nullable": true,
-            "title": "Devin Mode",
+            "title": "Fallback Devin Mode",
             "type": "string"
           },
           "net_policy": {
@@ -2047,6 +2090,15 @@
             },
             "title": "Teams Channels",
             "type": "array"
+          },
+          "teams_dm_scope": {
+            "description": "Allow spawned sessions to open 1:1 Microsoft Teams DMs. DMs only reach users who installed the Devin app in Teams personally. Capped by Teams Default Access and the governing security profile.",
+            "enum": [
+              "installed_users"
+            ],
+            "nullable": true,
+            "title": "Teams Dm Scope",
+            "type": "string"
           }
         },
         "title": "AutomationTools",
@@ -2429,6 +2481,301 @@
         "title": "AutomationWebhookResponse",
         "type": "object"
       },
+      "Blueprint": {
+        "description": "Public ``Blueprint`` resource shape.\n\nNote: the ``type`` enum may grow in the future; clients MUST gracefully\nhandle unknown values.  YAML contents are fetched separately via\n``GET /blueprints/{id}/contents``.",
+        "properties": {
+          "blueprint_id": {
+            "title": "Blueprint Id",
+            "type": "string"
+          },
+          "build_on_default_branch_commit": {
+            "description": "Whether each push to the repo's default branch builds the environment. Null unless this is a repo's root blueprint.",
+            "nullable": true,
+            "title": "Build On Default Branch Commit",
+            "type": "boolean"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "integer"
+          },
+          "repo_name": {
+            "nullable": true,
+            "title": "Repo Name",
+            "type": "string"
+          },
+          "report_check_runs": {
+            "description": "Whether each commit build is reported as a GitHub check run on the commit. Null unless this is a repo's root blueprint.",
+            "nullable": true,
+            "title": "Report Check Runs",
+            "type": "boolean"
+          },
+          "source": {
+            "description": "Where the YAML is authored: 'git' (synced from .devin/blueprint.yaml in the repo) or 'database' (edited via the API/UI). Always null for enterprise- and org-tier blueprints.",
+            "enum": [
+              "git",
+              "database"
+            ],
+            "nullable": true,
+            "title": "Source",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "enterprise",
+              "org",
+              "repo"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "blueprint_id",
+          "type",
+          "repo_name",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Blueprint",
+        "type": "object"
+      },
+      "BlueprintFile": {
+        "description": "Public ``BlueprintFile`` resource shape.",
+        "properties": {
+          "blueprint_id": {
+            "title": "Blueprint Id",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "integer"
+          },
+          "env_var_name": {
+            "title": "Env Var Name",
+            "type": "string"
+          },
+          "file_id": {
+            "title": "File Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "size_bytes": {
+            "title": "Size Bytes",
+            "type": "integer"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "file_id",
+          "blueprint_id",
+          "name",
+          "env_var_name",
+          "size_bytes",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "BlueprintFile",
+        "type": "object"
+      },
+      "BlueprintFileList": {
+        "description": "List envelope for blueprint files.",
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/BlueprintFile"
+            },
+            "title": "Data",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "BlueprintFileList",
+        "type": "object"
+      },
+      "BlueprintList": {
+        "description": "List envelope for blueprints (returned in execution order).",
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Blueprint"
+            },
+            "title": "Data",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "BlueprintList",
+        "type": "object"
+      },
+      "Body_upload_enterprise_blueprint_file_endpoint_v3_enterprise_snapshot_setup_blueprints__blueprint_id__files_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_enterprise_blueprint_file_endpoint_v3_enterprise_snapshot_setup_blueprints__blueprint_id__files_post",
+        "type": "object"
+      },
+      "Body_upload_org_blueprint_file_v3_organizations__org_id__snapshot_setup_blueprints__blueprint_id__files_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_org_blueprint_file_v3_organizations__org_id__snapshot_setup_blueprints__blueprint_id__files_post",
+        "type": "object"
+      },
+      "Build": {
+        "description": "Public ``Build`` resource shape \u2014 opaque \"did this succeed yet?\" view.\n\nPer spec, no platform/snapshot/per-job introspection is exposed.  Future\nadditions (``triggered_by_repo``, build metadata, etc.) are additive.",
+        "properties": {
+          "build_id": {
+            "title": "Build Id",
+            "type": "string"
+          },
+          "completed_at": {
+            "nullable": true,
+            "title": "Completed At",
+            "type": "integer"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "integer"
+          },
+          "pinned": {
+            "title": "Pinned",
+            "type": "boolean"
+          },
+          "started_at": {
+            "nullable": true,
+            "title": "Started At",
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "running",
+              "succeeded",
+              "failed",
+              "cancelled"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "trigger": {
+            "enum": [
+              "manual",
+              "auto"
+            ],
+            "nullable": true,
+            "title": "Trigger",
+            "type": "string"
+          },
+          "triggered_by_user_id": {
+            "nullable": true,
+            "title": "Triggered By User Id",
+            "type": "string"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "build_id",
+          "status",
+          "trigger",
+          "triggered_by_user_id",
+          "pinned",
+          "started_at",
+          "completed_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Build",
+        "type": "object"
+      },
+      "BulkIndexRepositoriesRequest": {
+        "properties": {
+          "repositories": {
+            "items": {
+              "$ref": "#/components/schemas/RepositoryIndexingItem"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Repositories",
+            "type": "array"
+          }
+        },
+        "required": [
+          "repositories"
+        ],
+        "title": "BulkIndexRepositoriesRequest",
+        "type": "object"
+      },
+      "CreateEnterpriseBlueprintBody": {
+        "properties": {
+          "contents": {
+            "description": "YAML body for the new blueprint. Omit to create an empty blueprint.",
+            "nullable": true,
+            "title": "Contents",
+            "type": "string"
+          }
+        },
+        "title": "CreateEnterpriseBlueprintBody",
+        "type": "object"
+      },
+      "CreateOrgBlueprintBody": {
+        "properties": {
+          "contents": {
+            "description": "Optional initial YAML body for the blueprint. Not allowed with source='git' (contents come from the repo).",
+            "nullable": true,
+            "title": "Contents",
+            "type": "string"
+          },
+          "repo_name": {
+            "description": "If set, creates a repo-tier blueprint for that repository. If omitted, creates an org-wide (org-tier) blueprint.",
+            "nullable": true,
+            "title": "Repo Name",
+            "type": "string"
+          },
+          "source": {
+            "description": "Repo-tier only. 'git' reads .devin/blueprint.yaml (and its includes) from the repo's default branch and keeps the blueprint in sync with it; 'database' stores the YAML in Devin. Defaults to 'database' when omitted.",
+            "enum": [
+              "git",
+              "database"
+            ],
+            "nullable": true,
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "title": "CreateOrgBlueprintBody",
+        "type": "object"
+      },
       "DefaultTagRequest": {
         "properties": {
           "tag": {
@@ -2469,6 +2816,15 @@
             "title": "Enterprise Joined At",
             "type": "integer"
           },
+          "idp_identities": {
+            "description": "The user's identities on the enterprise's SSO connections. Only returned when enabled for the enterprise.",
+            "items": {
+              "$ref": "#/components/schemas/IdpIdentity"
+            },
+            "nullable": true,
+            "title": "Idp Identities",
+            "type": "array"
+          },
           "name": {
             "nullable": true,
             "title": "Name",
@@ -2507,6 +2863,15 @@
             "nullable": true,
             "title": "Enterprise Joined At",
             "type": "integer"
+          },
+          "idp_identities": {
+            "description": "The user's identities on the enterprise's SSO connections. Only returned when enabled for the enterprise.",
+            "items": {
+              "$ref": "#/components/schemas/IdpIdentity"
+            },
+            "nullable": true,
+            "title": "Idp Identities",
+            "type": "array"
           },
           "idp_role_assignments": {
             "items": {
@@ -2621,6 +2986,11 @@
             "title": "Repo Description",
             "type": "string"
           },
+          "repo_full_name": {
+            "description": "Devin's identifier for the repository, used as repository_path by the indexing and blueprint endpoints: the path for github.com (e.g. 'org/repo'), host-prefixed for other git hosts (e.g. 'gitlab.example.com/group/repo'), or a perforce:// URI.",
+            "title": "Repo Full Name",
+            "type": "string"
+          },
           "repo_language": {
             "nullable": true,
             "title": "Repo Language",
@@ -2641,6 +3011,7 @@
           "git_connection_host",
           "repo_name",
           "repo_path",
+          "repo_full_name",
           "repo_description",
           "last_updated_at",
           "repo_language"
@@ -2664,11 +3035,13 @@
               "github_individual_token",
               "github_app",
               "gitlab_token",
+              "gitlab_project_token",
               "gitlab_oauth",
               "azure_devops_oauth",
               "azure_devops_token",
               "bitbucket_oauth",
               "bitbucket_token",
+              "bitbucket_cloud_token",
               "perforce"
             ],
             "title": "Git Provider Type",
@@ -2922,6 +3295,26 @@
         "title": "IdpGroupsBulkCreateRequest",
         "type": "object"
       },
+      "IdpIdentity": {
+        "properties": {
+          "connection_name": {
+            "description": "Name of the SSO connection.",
+            "title": "Connection Name",
+            "type": "string"
+          },
+          "subject": {
+            "description": "The user's subject identifier at the connection's identity provider (SAML NameID or OIDC `sub`).",
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "connection_name",
+          "subject"
+        ],
+        "title": "IdpIdentity",
+        "type": "object"
+      },
       "IdpRoleAssignment": {
         "description": "A role assignment inherited via IDP group membership.",
         "properties": {
@@ -2943,6 +3336,19 @@
           "idp_group_name"
         ],
         "title": "IdpRoleAssignment",
+        "type": "object"
+      },
+      "IndexRepositoryRequest": {
+        "properties": {
+          "branch_names": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Branch Names",
+            "type": "array"
+          }
+        },
+        "title": "IndexRepositoryRequest",
         "type": "object"
       },
       "IpAccessListAddRequest": {
@@ -3303,6 +3709,40 @@
         "title": "PaginatedResponse[AutomationResponse]",
         "type": "object"
       },
+      "PaginatedResponse_Build_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Build"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[Build]",
+        "type": "object"
+      },
       "PaginatedResponse_EnterpriseUser_": {
         "properties": {
           "end_cursor": {
@@ -3643,6 +4083,74 @@
         "title": "PaginatedResponse[PlaybookResponse]",
         "type": "object"
       },
+      "PaginatedResponse_RepositoryIndexingResponse_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RepositoryIndexingResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[RepositoryIndexingResponse]",
+        "type": "object"
+      },
+      "PaginatedResponse_RepositoryResponse_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RepositoryResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[RepositoryResponse]",
+        "type": "object"
+      },
       "PaginatedResponse_Role_": {
         "properties": {
           "end_cursor": {
@@ -3813,6 +4321,12 @@
         "title": "PaginatedResponse[User]",
         "type": "object"
       },
+      "PinBuildBody": {
+        "description": "``POST /builds/{id}/pin`` body. Empty per spec.",
+        "properties": {},
+        "title": "PinBuildBody",
+        "type": "object"
+      },
       "PlaybookCreateRequest": {
         "properties": {
           "body": {
@@ -3933,6 +4447,27 @@
         "title": "PlaybookResponse",
         "type": "object"
       },
+      "PresignedDownload": {
+        "description": "Reusable presigned-URL response (10-minute TTL).",
+        "properties": {
+          "expires_at": {
+            "description": "Unix timestamp at which the URL expires.",
+            "title": "Expires At",
+            "type": "integer"
+          },
+          "url": {
+            "description": "Presigned GET URL (HTTPS).",
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "expires_at"
+        ],
+        "title": "PresignedDownload",
+        "type": "object"
+      },
       "ProblemDetail": {
         "description": "RFC 9457 application/problem+json error body for the v3 API.\n\ndetail is retained from the legacy {\"detail\": ...} body for back-compat; the\nother members are additive. errors carries field-level validation failures\n(422 only).",
         "properties": {
@@ -3986,6 +4521,223 @@
           "status"
         ],
         "title": "ProblemDetail",
+        "type": "object"
+      },
+      "RemoveRepositoriesRequest": {
+        "properties": {
+          "repository_paths": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Repository Paths",
+            "type": "array"
+          }
+        },
+        "required": [
+          "repository_paths"
+        ],
+        "title": "RemoveRepositoriesRequest",
+        "type": "object"
+      },
+      "RepoIndexJobResponse": {
+        "properties": {
+          "branch_name": {
+            "nullable": true,
+            "title": "Branch Name",
+            "type": "string"
+          },
+          "commit": {
+            "title": "Commit",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "integer"
+          },
+          "job_id": {
+            "title": "Job Id",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "failed",
+              "completed",
+              "in_progress"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id",
+          "status",
+          "commit",
+          "branch_name",
+          "created_at"
+        ],
+        "title": "RepoIndexJobResponse",
+        "type": "object"
+      },
+      "RepoIndexingStatusResponse": {
+        "properties": {
+          "indexing_enabled": {
+            "title": "Indexing Enabled",
+            "type": "boolean"
+          },
+          "latest_completed_search_index_job": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RepoIndexJobResponse"
+              }
+            ],
+            "nullable": true
+          },
+          "latest_completed_wiki_index_job": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RepoIndexJobResponse"
+              }
+            ],
+            "nullable": true
+          },
+          "latest_indexes": {
+            "items": {
+              "$ref": "#/components/schemas/RepoIndexJobResponse"
+            },
+            "title": "Latest Indexes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "indexing_enabled",
+          "latest_indexes",
+          "latest_completed_search_index_job",
+          "latest_completed_wiki_index_job"
+        ],
+        "title": "RepoIndexingStatusResponse",
+        "type": "object"
+      },
+      "RepositoryIndexingItem": {
+        "properties": {
+          "branch_names": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Branch Names",
+            "type": "array"
+          },
+          "repository_path": {
+            "description": "e.g., 'org/repo-name'",
+            "title": "Repository Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "repository_path"
+        ],
+        "title": "RepositoryIndexingItem",
+        "type": "object"
+      },
+      "RepositoryIndexingResponse": {
+        "properties": {
+          "branches": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Branches",
+            "type": "array"
+          },
+          "indexing_enabled": {
+            "title": "Indexing Enabled",
+            "type": "boolean"
+          },
+          "indexing_status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RepoIndexingStatusResponse"
+              }
+            ],
+            "nullable": true
+          },
+          "repository_path": {
+            "title": "Repository Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "repository_path",
+          "indexing_enabled",
+          "branches"
+        ],
+        "title": "RepositoryIndexingResponse",
+        "type": "object"
+      },
+      "RepositoryResponse": {
+        "properties": {
+          "git_connection_host": {
+            "title": "Git Connection Host",
+            "type": "string"
+          },
+          "git_connection_id": {
+            "title": "Git Connection Id",
+            "type": "string"
+          },
+          "indexing_status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RepoIndexingStatusResponse"
+              }
+            ],
+            "nullable": true
+          },
+          "last_updated_at": {
+            "nullable": true,
+            "title": "Last Updated At",
+            "type": "integer"
+          },
+          "provider_repository_id": {
+            "title": "Provider Repository Id",
+            "type": "string"
+          },
+          "repo_description": {
+            "nullable": true,
+            "title": "Repo Description",
+            "type": "string"
+          },
+          "repo_full_name": {
+            "description": "Devin's identifier for the repository, used as repository_path by the indexing and blueprint endpoints: the path for github.com (e.g. 'org/repo'), host-prefixed for other git hosts (e.g. 'gitlab.example.com/group/repo'), or a perforce:// URI.",
+            "title": "Repo Full Name",
+            "type": "string"
+          },
+          "repo_language": {
+            "nullable": true,
+            "title": "Repo Language",
+            "type": "string"
+          },
+          "repo_name": {
+            "title": "Repo Name",
+            "type": "string"
+          },
+          "repo_path": {
+            "title": "Repo Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider_repository_id",
+          "git_connection_id",
+          "git_connection_host",
+          "repo_name",
+          "repo_path",
+          "repo_full_name",
+          "repo_description",
+          "last_updated_at",
+          "repo_language",
+          "indexing_status"
+        ],
+        "title": "RepositoryResponse",
         "type": "object"
       },
       "Role": {
@@ -4142,6 +4894,15 @@
             "title": "Scheduled At",
             "type": "string"
           },
+          "skill_ref": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SkillReference"
+              }
+            ],
+            "description": "Exact skill the sessions run with. Use instead of playbook_id for new configurations.",
+            "nullable": true
+          },
           "slack_channel_id": {
             "nullable": true,
             "title": "Slack Channel Id",
@@ -4291,6 +5052,15 @@
             "title": "Scheduled Session Id",
             "type": "string"
           },
+          "skill_ref": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SkillReference"
+              }
+            ],
+            "description": "Exact skill the sessions run with. Use instead of playbook_id for new configurations.",
+            "nullable": true
+          },
           "slack_channel_id": {
             "nullable": true,
             "title": "Slack Channel Id",
@@ -4423,6 +5193,15 @@
             "nullable": true,
             "title": "Scheduled At",
             "type": "string"
+          },
+          "skill_ref": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SkillReference"
+              }
+            ],
+            "description": "Exact skill the sessions run with. Use instead of playbook_id for new configurations.",
+            "nullable": true
           },
           "slack_channel_id": {
             "nullable": true,
@@ -4609,6 +5388,31 @@
         "title": "ServiceUserUpdateRoleRequest",
         "type": "object"
       },
+      "SkillReference": {
+        "description": "One exact skill: the plugin that ships it plus the skill's name.",
+        "properties": {
+          "plugin_identity": {
+            "description": "The plugin that ships the skill: the id of a bundle uploaded by the organization, e.g. 'org-playbooks', or the URL of a git plugin, e.g. 'https://github.com/acme/tools'.",
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Plugin Identity",
+            "type": "string"
+          },
+          "skill_name": {
+            "description": "Name of the skill inside that plugin.",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Skill Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "plugin_identity",
+          "skill_name"
+        ],
+        "title": "SkillReference",
+        "type": "object"
+      },
       "TagsCreateRequest": {
         "properties": {
           "tags": {
@@ -4641,6 +5445,12 @@
         "title": "TagsResponse",
         "type": "object"
       },
+      "TriggerBuildBody": {
+        "description": "``POST /builds`` body. Empty per spec; reserved for future fields.",
+        "properties": {},
+        "title": "TriggerBuildBody",
+        "type": "object"
+      },
       "UpdateACULimitRequest": {
         "properties": {
           "cycle_acu_limit": {
@@ -4653,6 +5463,61 @@
           "cycle_acu_limit"
         ],
         "title": "UpdateACULimitRequest",
+        "type": "object"
+      },
+      "UpdateBlueprintContentsBody": {
+        "properties": {
+          "contents": {
+            "description": "New YAML body for the blueprint.",
+            "title": "Contents",
+            "type": "string"
+          }
+        },
+        "required": [
+          "contents"
+        ],
+        "title": "UpdateBlueprintContentsBody",
+        "type": "object"
+      },
+      "UpdateOrgBlueprintBody": {
+        "description": "Partial update for an org- or repo-tier blueprint.\n\nAny subset of fields may be provided. Fields not set are left alone.\nProviding ``position``, ``source`` or a commit-build setting on an\norg-tier blueprint returns ``400`` \u2014 only repo-tier blueprints have them.\nDoes NOT trigger a build.",
+        "properties": {
+          "build_on_default_branch_commit": {
+            "description": "If set, turns building the environment on each push to the default branch on or off. Only accepted on the root blueprint of a github.com repo. Every such push queues a build.",
+            "nullable": true,
+            "title": "Build On Default Branch Commit",
+            "type": "boolean"
+          },
+          "contents": {
+            "description": "If set, replaces the blueprint's YAML body with a new version.",
+            "nullable": true,
+            "title": "Contents",
+            "type": "string"
+          },
+          "position": {
+            "description": "If set, updates the execution position of this repo-tier blueprint. Positions are not required to be unique; ties are broken arbitrarily by the server when sorting for execution.",
+            "nullable": true,
+            "title": "Position",
+            "type": "integer"
+          },
+          "report_check_runs": {
+            "description": "If set, turns reporting each commit build as a GitHub check run on or off. Enabling it requires 'build_on_default_branch_commit' to be on.",
+            "nullable": true,
+            "title": "Report Check Runs",
+            "type": "boolean"
+          },
+          "source": {
+            "description": "If set, switches the repo's blueprint source. Only accepted on the repo's root blueprint (scoped blueprints inherit it). 'git' pulls .devin/blueprint.yaml from the default branch (404 if absent) and cannot be combined with 'contents'; 'database' keeps the current YAML (or 'contents', if given) and stops syncing from the repo. No-op when the blueprint is already in that mode.",
+            "enum": [
+              "git",
+              "database"
+            ],
+            "nullable": true,
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "title": "UpdateOrgBlueprintBody",
         "type": "object"
       },
       "User": {
@@ -11104,6 +11969,7 @@
     },
     "/v3/enterprise/playbooks": {
       "get": {
+        "deprecated": true,
         "operationId": "handle_list_playbooks_v3_enterprise_playbooks_get",
         "parameters": [
           {
@@ -11197,6 +12063,7 @@
         ]
       },
       "post": {
+        "deprecated": true,
         "operationId": "handle_create_playbook_v3_enterprise_playbooks_post",
         "requestBody": {
           "content": {
@@ -11278,6 +12145,7 @@
     },
     "/v3/enterprise/playbooks/{playbook_id}": {
       "delete": {
+        "deprecated": true,
         "operationId": "handle_delete_playbook_v3_enterprise_playbooks__playbook_id__delete",
         "parameters": [
           {
@@ -11360,6 +12228,7 @@
         ]
       },
       "get": {
+        "deprecated": true,
         "description": "Get a specific playbook by ID.",
         "operationId": "handle_get_playbook_v3_enterprise_playbooks__playbook_id__get",
         "parameters": [
@@ -11443,6 +12312,7 @@
         ]
       },
       "put": {
+        "deprecated": true,
         "operationId": "handle_update_playbook_v3_enterprise_playbooks__playbook_id__put",
         "parameters": [
           {
@@ -11711,6 +12581,750 @@
         "summary": "Get Role",
         "tags": [
           "roles"
+        ]
+      }
+    },
+    "/v3/enterprise/snapshot-setup/blueprints": {
+      "get": {
+        "operationId": "list_enterprise_blueprints_v3_enterprise_snapshot_setup_blueprints_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlueprintList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "List enterprise-tier blueprints",
+        "tags": [
+          "snapshot_setup"
+        ]
+      },
+      "post": {
+        "description": "Create the single enterprise-tier blueprint.\n\nReturns 409 if a blueprint already exists for this enterprise.",
+        "operationId": "create_enterprise_blueprint_endpoint_v3_enterprise_snapshot_setup_blueprints_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEnterpriseBlueprintBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Blueprint"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Create the enterprise-tier blueprint",
+        "tags": [
+          "snapshot_setup"
+        ]
+      }
+    },
+    "/v3/enterprise/snapshot-setup/blueprints/{blueprint_id}": {
+      "delete": {
+        "operationId": "delete_enterprise_blueprint_endpoint_v3_enterprise_snapshot_setup_blueprints__blueprint_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blueprint_id",
+            "required": true,
+            "schema": {
+              "title": "Blueprint Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Delete the enterprise blueprint (soft-delete)",
+        "tags": [
+          "snapshot_setup"
+        ]
+      },
+      "get": {
+        "operationId": "get_enterprise_blueprint_endpoint_v3_enterprise_snapshot_setup_blueprints__blueprint_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blueprint_id",
+            "required": true,
+            "schema": {
+              "title": "Blueprint Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Blueprint"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Get the enterprise blueprint",
+        "tags": [
+          "snapshot_setup"
+        ]
+      },
+      "put": {
+        "operationId": "update_enterprise_blueprint_endpoint_v3_enterprise_snapshot_setup_blueprints__blueprint_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blueprint_id",
+            "required": true,
+            "schema": {
+              "title": "Blueprint Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBlueprintContentsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Blueprint"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Replace the enterprise blueprint's YAML contents",
+        "tags": [
+          "snapshot_setup"
+        ]
+      }
+    },
+    "/v3/enterprise/snapshot-setup/blueprints/{blueprint_id}/contents": {
+      "get": {
+        "operationId": "get_enterprise_blueprint_contents_v3_enterprise_snapshot_setup_blueprints__blueprint_id__contents_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blueprint_id",
+            "required": true,
+            "schema": {
+              "title": "Blueprint Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignedDownload"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Presigned URL for the enterprise blueprint YAML",
+        "tags": [
+          "snapshot_setup"
+        ]
+      }
+    },
+    "/v3/enterprise/snapshot-setup/blueprints/{blueprint_id}/files": {
+      "get": {
+        "operationId": "list_enterprise_blueprint_files_v3_enterprise_snapshot_setup_blueprints__blueprint_id__files_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blueprint_id",
+            "required": true,
+            "schema": {
+              "title": "Blueprint Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlueprintFileList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "List enterprise blueprint files",
+        "tags": [
+          "snapshot_setup"
+        ]
+      },
+      "post": {
+        "description": "Upload a file attachment (env-var substitution material) to the blueprint.\n\nReturns 409 if the derived env-var name collides with another active file.",
+        "operationId": "upload_enterprise_blueprint_file_endpoint_v3_enterprise_snapshot_setup_blueprints__blueprint_id__files_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blueprint_id",
+            "required": true,
+            "schema": {
+              "title": "Blueprint Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "title": "Name",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_enterprise_blueprint_file_endpoint_v3_enterprise_snapshot_setup_blueprints__blueprint_id__files_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlueprintFile"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Upload an enterprise blueprint file",
+        "tags": [
+          "snapshot_setup"
+        ]
+      }
+    },
+    "/v3/enterprise/snapshot-setup/blueprints/{blueprint_id}/files/{file_id}": {
+      "delete": {
+        "operationId": "delete_enterprise_blueprint_file_v3_enterprise_snapshot_setup_blueprints__blueprint_id__files__file_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blueprint_id",
+            "required": true,
+            "schema": {
+              "title": "Blueprint Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "file_id",
+            "required": true,
+            "schema": {
+              "title": "File Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Delete an enterprise blueprint file",
+        "tags": [
+          "snapshot_setup"
         ]
       }
     },
@@ -13058,6 +14672,7 @@
     },
     "/v3/organizations/{org_id}/playbooks": {
       "get": {
+        "deprecated": true,
         "description": "List playbooks for an organization.",
         "operationId": "handle_list_playbooks_v3_organizations__org_id__playbooks_get",
         "parameters": [
@@ -13092,6 +14707,18 @@
               "minimum": 1,
               "title": "First",
               "type": "integer"
+            }
+          },
+          {
+            "description": "Also return the enterprise-level playbooks shared with this organization (`access_type: enterprise`). They are read-only through the organization API.",
+            "in": "query",
+            "name": "include_enterprise",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "Also return the enterprise-level playbooks shared with this organization (`access_type: enterprise`). They are read-only through the organization API.",
+              "title": "Include Enterprise",
+              "type": "boolean"
             }
           }
         ],
@@ -13163,6 +14790,7 @@
         ]
       },
       "post": {
+        "deprecated": true,
         "description": "Create a playbook for an organization.",
         "operationId": "handle_create_playbook_v3_organizations__org_id__playbooks_post",
         "parameters": [
@@ -13258,6 +14886,7 @@
     },
     "/v3/organizations/{org_id}/playbooks/{playbook_id}": {
       "delete": {
+        "deprecated": true,
         "description": "Delete a playbook for an organization.",
         "operationId": "handle_delete_playbook_v3_organizations__org_id__playbooks__playbook_id__delete",
         "parameters": [
@@ -13352,7 +14981,8 @@
         ]
       },
       "get": {
-        "description": "Get a specific playbook by ID for an organization.",
+        "deprecated": true,
+        "description": "Get a specific organization- or enterprise-level playbook.",
         "operationId": "handle_get_playbook_v3_organizations__org_id__playbooks__playbook_id__get",
         "parameters": [
           {
@@ -13440,12 +15070,13 @@
             "description": "Too Many Requests"
           }
         },
-        "summary": "Get an org-level playbook by ID",
+        "summary": "Get an organization- or enterprise-level playbook by ID",
         "tags": [
           "playbooks"
         ]
       },
       "put": {
+        "deprecated": true,
         "description": "Update a playbook for an organization.",
         "operationId": "handle_update_playbook_v3_organizations__org_id__playbooks__playbook_id__put",
         "parameters": [
@@ -13547,6 +15178,864 @@
         "summary": "Update an org-level playbook",
         "tags": [
           "playbooks"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/repositories": {
+      "get": {
+        "operationId": "handle_list_repositories_v3_organizations__org_id__repositories_get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "filter_name",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "Filter Name",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "only_repo_paths",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "nullable": true,
+              "title": "Only Repo Paths",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "exclude_repo_paths",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "nullable": true,
+              "title": "Exclude Repo Paths",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "load_indexing_status",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Load Indexing Status",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_RepositoryResponse_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "List repositories available to an organization",
+        "tags": [
+          "repositories"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/repositories/indexing": {
+      "delete": {
+        "description": "Disables indexing and clears configured branches for a batch of repositories.",
+        "operationId": "handle_bulk_remove_repositories_from_indexing_v3_organizations__org_id__repositories_indexing_delete",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveRepositoriesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RepositoryIndexingResponse"
+                  },
+                  "title": "Response Handle Bulk Remove Repositories From Indexing V3 Organizations  Org Id  Repositories Indexing Delete",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Bulk remove repositories from indexing",
+        "tags": [
+          "repositories"
+        ]
+      },
+      "get": {
+        "operationId": "handle_list_indexed_repositories_v3_organizations__org_id__repositories_indexing_get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Case-insensitive substring filter on the repository path.",
+            "in": "query",
+            "name": "filter_name",
+            "required": false,
+            "schema": {
+              "description": "Case-insensitive substring filter on the repository path.",
+              "nullable": true,
+              "title": "Filter Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_RepositoryIndexingResponse_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "List indexed repositories",
+        "tags": [
+          "repositories"
+        ]
+      },
+      "put": {
+        "description": "Idempotently enables indexing for a batch of repositories and triggers indexing jobs.",
+        "operationId": "handle_bulk_index_repositories_v3_organizations__org_id__repositories_indexing_put",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkIndexRepositoriesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RepositoryIndexingResponse"
+                  },
+                  "title": "Response Handle Bulk Index Repositories V3 Organizations  Org Id  Repositories Indexing Put",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Bulk index repositories",
+        "tags": [
+          "repositories"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/repositories/{repository_path}/indexing": {
+      "delete": {
+        "description": "Disables indexing and clears configured branches for a single repository.",
+        "operationId": "handle_remove_single_repository_from_indexing_v3_organizations__org_id__repositories__repository_path__indexing_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "repository_path",
+            "required": true,
+            "schema": {
+              "title": "Repository Path",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryIndexingResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Remove a repository from indexing",
+        "tags": [
+          "repositories"
+        ]
+      },
+      "get": {
+        "operationId": "handle_get_repository_indexing_status_v3_organizations__org_id__repositories__repository_path__indexing_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "repository_path",
+            "required": true,
+            "schema": {
+              "title": "Repository Path",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepoIndexingStatusResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Get indexing status for a repository",
+        "tags": [
+          "repositories"
+        ]
+      },
+      "put": {
+        "description": "Idempotently enables indexing for a single repository and triggers indexing jobs.",
+        "operationId": "handle_index_single_repository_v3_organizations__org_id__repositories__repository_path__indexing_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "repository_path",
+            "required": true,
+            "schema": {
+              "title": "Repository Path",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/IndexRepositoryRequest"
+                  }
+                ],
+                "nullable": true,
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryIndexingResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Index a repository",
+        "tags": [
+          "repositories"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/repositories/{repository_path}/indexing/branches/{branch_name}": {
+      "delete": {
+        "operationId": "handle_remove_branch_v3_organizations__org_id__repositories__repository_path__indexing_branches__branch_name__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "repository_path",
+            "required": true,
+            "schema": {
+              "title": "Repository Path",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "branch_name",
+            "required": true,
+            "schema": {
+              "title": "Branch Name",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryIndexingResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Remove a branch from indexing",
+        "tags": [
+          "repositories"
         ]
       }
     },
@@ -14343,6 +16832,1563 @@
         "summary": "Delete an org-level secret",
         "tags": [
           "secrets"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/snapshot-setup/blueprints": {
+      "get": {
+        "operationId": "list_org_blueprints_v3_organizations__org_id__snapshot_setup_blueprints_get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter to a specific repository (e.g. 'org/repo').",
+            "in": "query",
+            "name": "repo_name",
+            "required": false,
+            "schema": {
+              "description": "Filter to a specific repository (e.g. 'org/repo').",
+              "nullable": true,
+              "title": "Repo Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlueprintList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "List org- and repo-tier blueprints",
+        "tags": [
+          "snapshot_setup"
+        ]
+      },
+      "post": {
+        "description": "Create a blueprint.  ``type`` is inferred from ``repo_name``.\n\n``source`` defaults to ``database``.  With ``source='git'`` the YAML\n(and any ``includes``) is read from ``.devin/blueprint.yaml`` on the\nrepo's default branch \u2014 404 when the file is absent, 422 when it is\ninvalid, 502 when the git provider is unreachable.\n\nPer spec, this never auto-triggers a build \u2014 callers must\n``POST /builds`` explicitly.",
+        "operationId": "create_org_blueprint_v3_organizations__org_id__snapshot_setup_blueprints_post",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrgBlueprintBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Blueprint"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Create an org- or repo-tier blueprint",
+        "tags": [
+          "snapshot_setup"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/snapshot-setup/blueprints/{blueprint_id}": {
+      "delete": {
+        "operationId": "delete_org_blueprint_v3_organizations__org_id__snapshot_setup_blueprints__blueprint_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blueprint_id",
+            "required": true,
+            "schema": {
+              "title": "Blueprint Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Soft-delete a blueprint",
+        "tags": [
+          "snapshot_setup"
+        ]
+      },
+      "get": {
+        "operationId": "get_org_blueprint_v3_organizations__org_id__snapshot_setup_blueprints__blueprint_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blueprint_id",
+            "required": true,
+            "schema": {
+              "title": "Blueprint Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Blueprint"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Get a single blueprint",
+        "tags": [
+          "snapshot_setup"
+        ]
+      },
+      "patch": {
+        "description": "Partial update for a single blueprint. Does NOT auto-trigger a build.\n\nFields honored:\n\n- ``contents`` \u2014 writes a new YAML version for the blueprint.\n- ``position`` \u2014 sets the repo-tier blueprint's execution position.\n  Returns ``400`` on an org-tier blueprint (those have no position).\n- ``source`` \u2014 switches the repo between ``git`` and ``database`` mode.\n  Root repo-tier blueprints only. ``{\"source\": \"database\", \"contents\":\n  ...}`` detaches with ``contents`` as the new (single) version.\n- ``build_on_default_branch_commit`` / ``report_check_runs`` \u2014 per-repo\n  commit builds and their GitHub check runs. Root blueprints of\n  github.com repos only.\n\nReturns ``400`` when the body is empty.",
+        "operationId": "update_org_blueprint_v3_organizations__org_id__snapshot_setup_blueprints__blueprint_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blueprint_id",
+            "required": true,
+            "schema": {
+              "title": "Blueprint Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrgBlueprintBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Blueprint"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Update a blueprint's contents, position, source and/or commit-build settings",
+        "tags": [
+          "snapshot_setup"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/snapshot-setup/blueprints/{blueprint_id}/contents": {
+      "get": {
+        "operationId": "get_org_blueprint_contents_v3_organizations__org_id__snapshot_setup_blueprints__blueprint_id__contents_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blueprint_id",
+            "required": true,
+            "schema": {
+              "title": "Blueprint Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignedDownload"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Presigned URL for the blueprint's YAML",
+        "tags": [
+          "snapshot_setup"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/snapshot-setup/blueprints/{blueprint_id}/files": {
+      "get": {
+        "operationId": "list_org_blueprint_files_v3_organizations__org_id__snapshot_setup_blueprints__blueprint_id__files_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blueprint_id",
+            "required": true,
+            "schema": {
+              "title": "Blueprint Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlueprintFileList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "List blueprint files",
+        "tags": [
+          "snapshot_setup"
+        ]
+      },
+      "post": {
+        "operationId": "upload_org_blueprint_file_v3_organizations__org_id__snapshot_setup_blueprints__blueprint_id__files_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blueprint_id",
+            "required": true,
+            "schema": {
+              "title": "Blueprint Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "title": "Name",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_org_blueprint_file_v3_organizations__org_id__snapshot_setup_blueprints__blueprint_id__files_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlueprintFile"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Upload a blueprint file",
+        "tags": [
+          "snapshot_setup"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/snapshot-setup/blueprints/{blueprint_id}/files/{file_id}": {
+      "delete": {
+        "operationId": "delete_org_blueprint_file_v3_organizations__org_id__snapshot_setup_blueprints__blueprint_id__files__file_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blueprint_id",
+            "required": true,
+            "schema": {
+              "title": "Blueprint Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "file_id",
+            "required": true,
+            "schema": {
+              "title": "File Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Delete a blueprint file",
+        "tags": [
+          "snapshot_setup"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/snapshot-setup/builds": {
+      "get": {
+        "operationId": "list_org_builds_v3_organizations__org_id__snapshot_setup_builds_get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Filter by spec status.",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "description": "Filter by spec status.",
+              "enum": [
+                "pending",
+                "running",
+                "succeeded",
+                "failed",
+                "cancelled"
+              ],
+              "nullable": true,
+              "title": "Status",
+              "type": "string"
+            }
+          },
+          {
+            "description": "If true, returns 0 or 1 items: the build whose image is currently used by new sessions.",
+            "in": "query",
+            "name": "active",
+            "required": false,
+            "schema": {
+              "description": "If true, returns 0 or 1 items: the build whose image is currently used by new sessions.",
+              "nullable": true,
+              "title": "Active",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_Build_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "List builds for the org",
+        "tags": [
+          "snapshot_setup"
+        ]
+      },
+      "post": {
+        "description": "Manually trigger a snapshot build using the org's current blueprints.",
+        "operationId": "trigger_org_build_v3_organizations__org_id__snapshot_setup_builds_post",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TriggerBuildBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Build"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Trigger a manual build",
+        "tags": [
+          "snapshot_setup"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/snapshot-setup/builds/{build_id}": {
+      "get": {
+        "operationId": "get_org_build_v3_organizations__org_id__snapshot_setup_builds__build_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "build_id",
+            "required": true,
+            "schema": {
+              "title": "Build Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Build"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Get a single build",
+        "tags": [
+          "snapshot_setup"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/snapshot-setup/builds/{build_id}/cancel": {
+      "post": {
+        "operationId": "cancel_org_build_v3_organizations__org_id__snapshot_setup_builds__build_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "build_id",
+            "required": true,
+            "schema": {
+              "title": "Build Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Build"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Cancel an in-flight build",
+        "tags": [
+          "snapshot_setup"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/snapshot-setup/builds/{build_id}/logs": {
+      "get": {
+        "operationId": "get_org_build_logs_v3_organizations__org_id__snapshot_setup_builds__build_id__logs_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "build_id",
+            "required": true,
+            "schema": {
+              "title": "Build Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignedDownload"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Presigned URL for the build's log file",
+        "tags": [
+          "snapshot_setup"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/snapshot-setup/builds/{build_id}/pin": {
+      "delete": {
+        "description": "Unpin the org if and only if it is currently pinned to ``build_id``.\n\nNo-op (still 204) when the org is not pinned to this build.",
+        "operationId": "unpin_org_build_v3_organizations__org_id__snapshot_setup_builds__build_id__pin_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "build_id",
+            "required": true,
+            "schema": {
+              "title": "Build Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Unpin a build (no-op if not pinned)",
+        "tags": [
+          "snapshot_setup"
+        ]
+      },
+      "post": {
+        "description": "Pin a successful build (less than 7 days old).\n\nTranslates the SDK's 400 errors into 409 (per spec: \"409 if the\nbuild is not succeeded, or older than 7 days\").",
+        "operationId": "pin_org_build_v3_organizations__org_id__snapshot_setup_builds__build_id__pin_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "build_id",
+            "required": true,
+            "schema": {
+              "title": "Build Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinBuildBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Build"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Pin the org to a specific successful build",
+        "tags": [
+          "snapshot_setup"
         ]
       }
     }

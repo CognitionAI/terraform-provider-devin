@@ -203,3 +203,43 @@ func gitPermissionIdentitySchema() identityschema.Schema {
 		},
 	}
 }
+
+type blueprintIdentityModel struct {
+	OrgID       types.String `tfsdk:"org_id"`
+	BlueprintID types.String `tfsdk:"blueprint_id"`
+}
+
+func blueprintIdentitySchema() identityschema.Schema {
+	return identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"org_id":       identityAttribute("Organization ID that owns the blueprint."),
+			"blueprint_id": identityAttribute("Blueprint ID."),
+		},
+	}
+}
+
+type enterpriseBlueprintIdentityModel struct {
+	BlueprintID types.String `tfsdk:"blueprint_id"`
+}
+
+func enterpriseBlueprintIdentitySchema() identityschema.Schema {
+	return identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"blueprint_id": identityAttribute("Enterprise blueprint ID."),
+		},
+	}
+}
+
+type repositoryIndexingIdentityModel struct {
+	OrgID          types.String `tfsdk:"org_id"`
+	RepositoryPath types.String `tfsdk:"repository_path"`
+}
+
+func repositoryIndexingIdentitySchema() identityschema.Schema {
+	return identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"org_id":          identityAttribute("Organization ID the repository is indexed in."),
+			"repository_path": identityAttribute("Repository path, e.g. owner/repo."),
+		},
+	}
+}

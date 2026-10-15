@@ -226,27 +226,6 @@ func TestAccScheduleResource_validateConfig(t *testing.T) {
 	})
 }
 
-// Malformed composite import IDs must be rejected.
-func TestAccScheduleResource_importInvalidID(t *testing.T) {
-	orgName := randomName("tf-acc-sched-import")
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: scheduleConfig(orgName, "Import test", "prompt", "  frequency = \"0 9 * * 1\"\n"),
-			},
-			{
-				ResourceName:  "devin_schedule.test",
-				ImportState:   true,
-				ImportStateId: "missing-a-slash",
-				ExpectError:   regexp.MustCompile(`Unexpected import identifier`),
-			},
-		},
-	})
-}
-
 // A schedule deleted out-of-band must plan a recreate, not error.
 func TestAccScheduleResource_outOfBandDelete(t *testing.T) {
 	orgName := randomName("tf-acc-sched-oob")

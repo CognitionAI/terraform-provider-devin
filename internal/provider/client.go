@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"strings"
 	"time"
@@ -80,14 +81,19 @@ func (e *APIError) Error() string {
 
 func (c *Client) do(ctx context.Context, method, path string, body any, result any) error {
 	var reqBody io.Reader
+	contentType := ""
 	if body != nil {
 		b, err := json.Marshal(body)
 		if err != nil {
 			return fmt.Errorf("marshaling request: %w", err)
 		}
 		reqBody = bytes.NewReader(b)
+		contentType = "application/json"
 	}
+	return c.send(ctx, method, path, reqBody, contentType, result)
+}
 
+func (c *Client) send(ctx context.Context, method, path string, reqBody io.Reader, contentType string, result any) error {
 	req, err := http.NewRequestWithContext(ctx, method, strings.TrimRight(c.BaseURL, "/")+path, reqBody)
 	if err != nil {
 		return fmt.Errorf("creating request: %w", err)
@@ -97,8 +103,8 @@ func (c *Client) do(ctx context.Context, method, path string, body any, result a
 	if c.UserAgent != "" {
 		req.Header.Set("User-Agent", c.UserAgent)
 	}
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
 	}
 
 	// POST/PATCH use MutatingHTTPClient (429-only retries) because they are
@@ -157,6 +163,23 @@ func (c *Client) Put(ctx context.Context, path string, body any, result any) err
 	return c.do(ctx, http.MethodPut, path, body, result)
 }
 
+// PostFile uploads content as the multipart form field "file".
+func (c *Client) PostFile(ctx context.Context, path, filename string, content []byte, result any) error {
+	var buf bytes.Buffer
+	writer := multipart.NewWriter(&buf)
+	part, err := writer.CreateFormFile("file", filename)
+	if err != nil {
+		return fmt.Errorf("creating multipart body: %w", err)
+	}
+	if _, err := part.Write(content); err != nil {
+		return fmt.Errorf("writing multipart body: %w", err)
+	}
+	if err := writer.Close(); err != nil {
+		return fmt.Errorf("closing multipart body: %w", err)
+	}
+	return c.send(ctx, http.MethodPost, path, bytes.NewReader(buf.Bytes()), writer.FormDataContentType(), result)
+}
+
 func (c *Client) Delete(ctx context.Context, path string, result any) error {
 	return c.do(ctx, http.MethodDelete, path, nil, result)
 }
@@ -164,4 +187,26 @@ func (c *Client) Delete(ctx context.Context, path string, result any) error {
 func IsNotFound(err error) bool {
 	var apiErr *APIError
 	return errors.As(err, &apiErr) && apiErr.StatusCode == 404
+}
+
+// Download fetches an absolute URL without the API bearer token, for
+// presigned object-storage URLs returned by the API.
+func (c *Client) Download(ctx context.Context, rawURL string) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
+	if err != nil {
+		return "", fmt.Errorf("creating request: %w", err)
+	}
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("executing request: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("reading response: %w", err)
+	}
+	if resp.StatusCode >= 400 {
+		return "", &APIError{StatusCode: resp.StatusCode, Detail: string(body)}
+	}
+	return string(body), nil
 }

@@ -197,6 +197,27 @@ const (
 	AutomationSchemaFieldDefTypeTeamsTeam               AutomationSchemaFieldDefType = "teams_team"
 )
 
+// Defines values for AutomationSchemasResponseAvailableDevinModes.
+const (
+	AutomationSchemasResponseAvailableDevinModesFast       AutomationSchemasResponseAvailableDevinModes = "fast"
+	AutomationSchemasResponseAvailableDevinModesFusion     AutomationSchemasResponseAvailableDevinModes = "fusion"
+	AutomationSchemasResponseAvailableDevinModesLite       AutomationSchemasResponseAvailableDevinModes = "lite"
+	AutomationSchemasResponseAvailableDevinModesNormal     AutomationSchemasResponseAvailableDevinModes = "normal"
+	AutomationSchemasResponseAvailableDevinModesSwe2High   AutomationSchemasResponseAvailableDevinModes = "swe-2-high"
+	AutomationSchemasResponseAvailableDevinModesSwe2Max    AutomationSchemasResponseAvailableDevinModes = "swe-2-max"
+	AutomationSchemasResponseAvailableDevinModesSwe2Medium AutomationSchemasResponseAvailableDevinModes = "swe-2-medium"
+	AutomationSchemasResponseAvailableDevinModesUltra      AutomationSchemasResponseAvailableDevinModes = "ultra"
+)
+
+// Defines values for AutomationSchemasResponseDefaultFallbackDevinMode.
+const (
+	AutomationSchemasResponseDefaultFallbackDevinModeFast   AutomationSchemasResponseDefaultFallbackDevinMode = "fast"
+	AutomationSchemasResponseDefaultFallbackDevinModeFusion AutomationSchemasResponseDefaultFallbackDevinMode = "fusion"
+	AutomationSchemasResponseDefaultFallbackDevinModeLite   AutomationSchemasResponseDefaultFallbackDevinMode = "lite"
+	AutomationSchemasResponseDefaultFallbackDevinModeNormal AutomationSchemasResponseDefaultFallbackDevinMode = "normal"
+	AutomationSchemasResponseDefaultFallbackDevinModeUltra  AutomationSchemasResponseDefaultFallbackDevinMode = "ultra"
+)
+
 // Defines values for AutomationSecurityProfileResponseSelection.
 const (
 	Inherit AutomationSecurityProfileResponseSelection = "inherit"
@@ -204,22 +225,22 @@ const (
 	Profile AutomationSecurityProfileResponseSelection = "profile"
 )
 
-// Defines values for AutomationSessionSettingsInputDevinMode.
+// Defines values for AutomationSessionSettingsInputFallbackDevinMode.
 const (
-	AutomationSessionSettingsInputDevinModeFast   AutomationSessionSettingsInputDevinMode = "fast"
-	AutomationSessionSettingsInputDevinModeFusion AutomationSessionSettingsInputDevinMode = "fusion"
-	AutomationSessionSettingsInputDevinModeLite   AutomationSessionSettingsInputDevinMode = "lite"
-	AutomationSessionSettingsInputDevinModeNormal AutomationSessionSettingsInputDevinMode = "normal"
-	AutomationSessionSettingsInputDevinModeUltra  AutomationSessionSettingsInputDevinMode = "ultra"
+	AutomationSessionSettingsInputFallbackDevinModeFast   AutomationSessionSettingsInputFallbackDevinMode = "fast"
+	AutomationSessionSettingsInputFallbackDevinModeFusion AutomationSessionSettingsInputFallbackDevinMode = "fusion"
+	AutomationSessionSettingsInputFallbackDevinModeLite   AutomationSessionSettingsInputFallbackDevinMode = "lite"
+	AutomationSessionSettingsInputFallbackDevinModeNormal AutomationSessionSettingsInputFallbackDevinMode = "normal"
+	AutomationSessionSettingsInputFallbackDevinModeUltra  AutomationSessionSettingsInputFallbackDevinMode = "ultra"
 )
 
-// Defines values for AutomationSessionSettingsOutputDevinMode.
+// Defines values for AutomationSessionSettingsOutputFallbackDevinMode.
 const (
-	AutomationSessionSettingsOutputDevinModeFast   AutomationSessionSettingsOutputDevinMode = "fast"
-	AutomationSessionSettingsOutputDevinModeFusion AutomationSessionSettingsOutputDevinMode = "fusion"
-	AutomationSessionSettingsOutputDevinModeLite   AutomationSessionSettingsOutputDevinMode = "lite"
-	AutomationSessionSettingsOutputDevinModeNormal AutomationSessionSettingsOutputDevinMode = "normal"
-	AutomationSessionSettingsOutputDevinModeUltra  AutomationSessionSettingsOutputDevinMode = "ultra"
+	AutomationSessionSettingsOutputFallbackDevinModeFast   AutomationSessionSettingsOutputFallbackDevinMode = "fast"
+	AutomationSessionSettingsOutputFallbackDevinModeFusion AutomationSessionSettingsOutputFallbackDevinMode = "fusion"
+	AutomationSessionSettingsOutputFallbackDevinModeLite   AutomationSessionSettingsOutputFallbackDevinMode = "lite"
+	AutomationSessionSettingsOutputFallbackDevinModeNormal AutomationSessionSettingsOutputFallbackDevinMode = "normal"
+	AutomationSessionSettingsOutputFallbackDevinModeUltra  AutomationSessionSettingsOutputFallbackDevinMode = "ultra"
 )
 
 // Defines values for AutomationSessionSlackConfigMode.
@@ -265,6 +286,11 @@ const (
 const (
 	OrgMembers AutomationToolsSlackDmScope = "org_members"
 	Workspace  AutomationToolsSlackDmScope = "workspace"
+)
+
+// Defines values for AutomationToolsTeamsDmScope.
+const (
+	InstalledUsers AutomationToolsTeamsDmScope = "installed_users"
 )
 
 // Defines values for AutomationTriggerRequestInputEventType.
@@ -388,16 +414,52 @@ const (
 	AutomationUpdateRequestTeamsReplyAccessTeamsUsers AutomationUpdateRequestTeamsReplyAccess = "teams_users"
 )
 
+// Defines values for BlueprintSource.
+const (
+	BlueprintSourceDatabase BlueprintSource = "database"
+	BlueprintSourceGit      BlueprintSource = "git"
+)
+
+// Defines values for BlueprintType.
+const (
+	BlueprintTypeEnterprise BlueprintType = "enterprise"
+	BlueprintTypeOrg        BlueprintType = "org"
+	BlueprintTypeRepo       BlueprintType = "repo"
+)
+
+// Defines values for BuildStatus.
+const (
+	BuildStatusCancelled BuildStatus = "cancelled"
+	BuildStatusFailed    BuildStatus = "failed"
+	BuildStatusPending   BuildStatus = "pending"
+	BuildStatusRunning   BuildStatus = "running"
+	BuildStatusSucceeded BuildStatus = "succeeded"
+)
+
+// Defines values for BuildTrigger.
+const (
+	Auto   BuildTrigger = "auto"
+	Manual BuildTrigger = "manual"
+)
+
+// Defines values for CreateOrgBlueprintBodySource.
+const (
+	CreateOrgBlueprintBodySourceDatabase CreateOrgBlueprintBodySource = "database"
+	CreateOrgBlueprintBodySourceGit      CreateOrgBlueprintBodySource = "git"
+)
+
 // Defines values for GitConnectionResponseGitProviderType.
 const (
 	AzureDevopsOauth      GitConnectionResponseGitProviderType = "azure_devops_oauth"
 	AzureDevopsToken      GitConnectionResponseGitProviderType = "azure_devops_token"
+	BitbucketCloudToken   GitConnectionResponseGitProviderType = "bitbucket_cloud_token"
 	BitbucketOauth        GitConnectionResponseGitProviderType = "bitbucket_oauth"
 	BitbucketToken        GitConnectionResponseGitProviderType = "bitbucket_token"
 	GithubApp             GitConnectionResponseGitProviderType = "github_app"
 	GithubIndividualToken GitConnectionResponseGitProviderType = "github_individual_token"
 	GithubToken           GitConnectionResponseGitProviderType = "github_token"
 	GitlabOauth           GitConnectionResponseGitProviderType = "gitlab_oauth"
+	GitlabProjectToken    GitConnectionResponseGitProviderType = "gitlab_project_token"
 	GitlabToken           GitConnectionResponseGitProviderType = "gitlab_token"
 	Perforce              GitConnectionResponseGitProviderType = "perforce"
 )
@@ -412,6 +474,13 @@ const (
 const (
 	PlaybookResponseAccessTypeEnterprise PlaybookResponseAccessType = "enterprise"
 	PlaybookResponseAccessTypeOrg        PlaybookResponseAccessType = "org"
+)
+
+// Defines values for RepoIndexJobResponseStatus.
+const (
+	RepoIndexJobResponseStatusCompleted  RepoIndexJobResponseStatus = "completed"
+	RepoIndexJobResponseStatusFailed     RepoIndexJobResponseStatus = "failed"
+	RepoIndexJobResponseStatusInProgress RepoIndexJobResponseStatus = "in_progress"
 )
 
 // Defines values for RoleRoleType.
@@ -503,10 +572,16 @@ const (
 	SecretResponseSecretTypeTotp     SecretResponseSecretType = "totp"
 )
 
+// Defines values for UpdateOrgBlueprintBodySource.
+const (
+	Database UpdateOrgBlueprintBodySource = "database"
+	Git      UpdateOrgBlueprintBodySource = "git"
+)
+
 // Defines values for HandleListNotesV3EnterpriseKnowledgeNotesGetParamsAccessType.
 const (
-	HandleListNotesV3EnterpriseKnowledgeNotesGetParamsAccessTypeEnterprise HandleListNotesV3EnterpriseKnowledgeNotesGetParamsAccessType = "enterprise"
-	HandleListNotesV3EnterpriseKnowledgeNotesGetParamsAccessTypeOrg        HandleListNotesV3EnterpriseKnowledgeNotesGetParamsAccessType = "org"
+	Enterprise HandleListNotesV3EnterpriseKnowledgeNotesGetParamsAccessType = "enterprise"
+	Org        HandleListNotesV3EnterpriseKnowledgeNotesGetParamsAccessType = "org"
 )
 
 // Defines values for HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes.
@@ -519,6 +594,15 @@ const (
 	NewSession       HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes = "new_session"
 	RemediateFinding HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes = "remediate_finding"
 	TriageSession    HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes = "triage_session"
+)
+
+// Defines values for ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGetParamsStatus.
+const (
+	Cancelled ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGetParamsStatus = "cancelled"
+	Failed    ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGetParamsStatus = "failed"
+	Pending   ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGetParamsStatus = "pending"
+	Running   ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGetParamsStatus = "running"
+	Succeeded ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGetParamsStatus = "succeeded"
 )
 
 // ACULimitResponse defines model for ACULimitResponse.
@@ -909,7 +993,7 @@ type AutomationResponse struct {
 	NextRunAt     nullable.Nullable[int]                     `json:"next_run_at,omitempty"`
 	Notifications nullable.Nullable[AutomationNotifications] `json:"notifications,omitempty"`
 
-	// RunAs Identity the spawned sessions run under. organization: the org's automation identity (the System User in the app) — sessions use system permissions, so MCP servers installed with a personal (user-scoped) connection cannot be selected, and switching an automation to organization removes them from its selection. creator: personal automation — runs with the creator's own permissions and is visible only to the creator and org admins; rejected for service-user-created automations. service_user: runs as the given service user, with its roles, grants and ACU limits; requires permission to manage that service user. Required on create; null on update resets to organization.
+	// RunAs Identity the spawned sessions run under. organization: the org's automation identity. When the organization has a default service user for automations, sessions run as that service user and the response returns run_as service_user with its id; saving requires every permission that service user holds. Otherwise it is the System User in the app — sessions use system permissions, so MCP servers installed with a personal (user-scoped) connection cannot be selected, and switching an automation to organization removes them from its selection. creator: personal automation — runs with the creator's own permissions and is visible only to the creator and org admins; rejected for service-user-created automations. service_user: runs as the given service user, with its roles, grants and ACU limits; requires permission to manage that service user. Required on create; null on update resets to organization.
 	RunAs *AutomationResponse_RunAs `json:"run_as,omitempty"`
 
 	// SecurityProfile The automation's security-profile binding and the resolved governing profiles. null when security profiles are not enabled for the organization.
@@ -932,7 +1016,7 @@ type AutomationResponse_Actions_Item struct {
 	union json.RawMessage
 }
 
-// AutomationResponse_RunAs Identity the spawned sessions run under. organization: the org's automation identity (the System User in the app) — sessions use system permissions, so MCP servers installed with a personal (user-scoped) connection cannot be selected, and switching an automation to organization removes them from its selection. creator: personal automation — runs with the creator's own permissions and is visible only to the creator and org admins; rejected for service-user-created automations. service_user: runs as the given service user, with its roles, grants and ACU limits; requires permission to manage that service user. Required on create; null on update resets to organization.
+// AutomationResponse_RunAs Identity the spawned sessions run under. organization: the org's automation identity. When the organization has a default service user for automations, sessions run as that service user and the response returns run_as service_user with its id; saving requires every permission that service user holds. Otherwise it is the System User in the app — sessions use system permissions, so MCP servers installed with a personal (user-scoped) connection cannot be selected, and switching an automation to organization removes them from its selection. creator: personal automation — runs with the creator's own permissions and is visible only to the creator and org admins; rejected for service-user-created automations. service_user: runs as the given service user, with its roles, grants and ACU limits; requires permission to manage that service user. Required on create; null on update resets to organization.
 type AutomationResponse_RunAs struct {
 	union json.RawMessage
 }
@@ -1002,6 +1086,12 @@ type AutomationSchemaSelectOption struct {
 
 // AutomationSchemasResponse defines model for AutomationSchemasResponse.
 type AutomationSchemasResponse struct {
+	// AvailableDevinModes Modes session_settings.devin_mode accepts for a new selection right now, as the organization's automation identity: the stable modes it can spawn plus, when the organization's preview rollout allows, the research previews. A stored mode outside this list is preserved by edits that do not change it.
+	AvailableDevinModes *[]AutomationSchemasResponseAvailableDevinModes `json:"available_devin_modes,omitempty"`
+
+	// DefaultFallbackDevinMode Stable mode to prefill session_settings.fallback_devin_mode with when a research preview is selected: the organization's default mode when it is stable and available, else the first available stable mode; null when none is available.
+	DefaultFallbackDevinMode nullable.Nullable[AutomationSchemasResponseDefaultFallbackDevinMode] `json:"default_fallback_devin_mode,omitempty"`
+
 	// DefaultNetPolicy Network policy clients should start new automations from: the deployment's Git Manager-only policy (add only the destinations the task requires), or null when the governing security profile (see security_profile) has a network policy. In that case sessions use the profile's policy; omit session_settings.net_policy unless the task must restrict further.
 	DefaultNetPolicy nullable.Nullable[AutomationNetPolicy] `json:"default_net_policy"`
 
@@ -1014,6 +1104,12 @@ type AutomationSchemasResponse struct {
 	// UpdateSemantics PATCH semantics active for this organization: 'replace_groups' (a config group present in the request replaces the stored group wholesale) or 'merge_patch' (RFC 7396 for objects: omitted members of a present group keep their stored values, explicit nulls clear; list membership still replaces wholesale — deletion is resending the list without the element — but each sent element merges onto the stored element of the same type when that type appears exactly once on both sides; repeated types must be restated fully). Open enum — clients must tolerate new values.
 	UpdateSemantics string `json:"update_semantics"`
 }
+
+// AutomationSchemasResponseAvailableDevinModes defines model for AutomationSchemasResponse.AvailableDevinModes.
+type AutomationSchemasResponseAvailableDevinModes string
+
+// AutomationSchemasResponseDefaultFallbackDevinMode Stable mode to prefill session_settings.fallback_devin_mode with when a research preview is selected: the organization's default mode when it is stable and available, else the first available stable mode; null when none is available.
+type AutomationSchemasResponseDefaultFallbackDevinMode string
 
 // AutomationSchemasSecurityProfile The security profile that governs this organization's automation
 // sessions (enterprise, organization, or automations default binding).
@@ -1103,24 +1199,30 @@ type AutomationSessionNotificationsConfig struct {
 // AutomationSessionSettingsInput Applied to every session this automation spawns (including monitor
 // sessions).
 type AutomationSessionSettingsInput struct {
-	// DevinMode null = org default.
-	DevinMode nullable.Nullable[AutomationSessionSettingsInputDevinMode] `json:"devin_mode,omitempty"`
-	NetPolicy nullable.Nullable[AutomationNetPolicy]                     `json:"net_policy,omitempty"`
+	// DevinMode null = org default. One of normal, fast, lite, ultra, fusion, or a research preview the organization can use (see schemas.available_devin_modes). Research previews require fallback_devin_mode; a stored preview the organization can no longer use stays stored (unrelated edits preserve it) and its sessions start on fallback_devin_mode.
+	DevinMode nullable.Nullable[string] `json:"devin_mode,omitempty"`
+
+	// FallbackDevinMode Stable mode sessions start in when devin_mode is a research preview that is unavailable at run time. Required with a preview devin_mode (see schemas.default_fallback_devin_mode), rejected with a stable or null devin_mode; cleared with devin_mode.
+	FallbackDevinMode nullable.Nullable[AutomationSessionSettingsInputFallbackDevinMode] `json:"fallback_devin_mode,omitempty"`
+	NetPolicy         nullable.Nullable[AutomationNetPolicy]                             `json:"net_policy,omitempty"`
 }
 
-// AutomationSessionSettingsInputDevinMode null = org default.
-type AutomationSessionSettingsInputDevinMode string
+// AutomationSessionSettingsInputFallbackDevinMode Stable mode sessions start in when devin_mode is a research preview that is unavailable at run time. Required with a preview devin_mode (see schemas.default_fallback_devin_mode), rejected with a stable or null devin_mode; cleared with devin_mode.
+type AutomationSessionSettingsInputFallbackDevinMode string
 
 // AutomationSessionSettingsOutput Applied to every session this automation spawns (including monitor
 // sessions).
 type AutomationSessionSettingsOutput struct {
-	// DevinMode null = org default.
-	DevinMode nullable.Nullable[AutomationSessionSettingsOutputDevinMode] `json:"devin_mode,omitempty"`
-	NetPolicy nullable.Nullable[AutomationNetPolicy]                      `json:"net_policy,omitempty"`
+	// DevinMode null = org default. One of normal, fast, lite, ultra, fusion, or a research preview the organization can use (see schemas.available_devin_modes). Research previews require fallback_devin_mode; a stored preview the organization can no longer use stays stored (unrelated edits preserve it) and its sessions start on fallback_devin_mode.
+	DevinMode nullable.Nullable[string] `json:"devin_mode,omitempty"`
+
+	// FallbackDevinMode Stable mode sessions start in when devin_mode is a research preview that is unavailable at run time. Required with a preview devin_mode (see schemas.default_fallback_devin_mode), rejected with a stable or null devin_mode; cleared with devin_mode.
+	FallbackDevinMode nullable.Nullable[AutomationSessionSettingsOutputFallbackDevinMode] `json:"fallback_devin_mode,omitempty"`
+	NetPolicy         nullable.Nullable[AutomationNetPolicy]                              `json:"net_policy,omitempty"`
 }
 
-// AutomationSessionSettingsOutputDevinMode null = org default.
-type AutomationSessionSettingsOutputDevinMode string
+// AutomationSessionSettingsOutputFallbackDevinMode Stable mode sessions start in when devin_mode is a research preview that is unavailable at run time. Required with a preview devin_mode (see schemas.default_fallback_devin_mode), rejected with a stable or null devin_mode; cleared with devin_mode.
+type AutomationSessionSettingsOutputFallbackDevinMode string
 
 // AutomationSessionSlackConfig defines model for AutomationSessionSlackConfig.
 type AutomationSessionSlackConfig struct {
@@ -1258,10 +1360,16 @@ type AutomationTools struct {
 
 	// TeamsChannels Microsoft Teams channels the session's Teams tool may read and post to. Teams must have the Devin app installed. A single {team_id: '*', channel_id: '*'} entry grants every channel of every team the Devin app is installed in. The grant is capped by the organization's Teams Default Access; the channel of a teams:message trigger is always granted.
 	TeamsChannels *[]AutomationTeamsChannel `json:"teams_channels,omitempty"`
+
+	// TeamsDmScope Allow spawned sessions to open 1:1 Microsoft Teams DMs. DMs only reach users who installed the Devin app in Teams personally. Capped by Teams Default Access and the governing security profile.
+	TeamsDmScope nullable.Nullable[AutomationToolsTeamsDmScope] `json:"teams_dm_scope,omitempty"`
 }
 
 // AutomationToolsSlackDmScope Allow spawned sessions to open 1:1 Slack DMs in the organization's connected workspaces. 'org_members' (enterprise accounts only) restricts DM targets to members of the organization; 'workspace' (non-enterprise accounts only) allows any eligible workspace member. Omit or null to disable DMs.
 type AutomationToolsSlackDmScope string
+
+// AutomationToolsTeamsDmScope Allow spawned sessions to open 1:1 Microsoft Teams DMs. DMs only reach users who installed the Devin app in Teams personally. Capped by Teams Default Access and the governing security profile.
+type AutomationToolsTeamsDmScope string
 
 // AutomationTriggerRequestInput defines model for AutomationTriggerRequest-Input.
 type AutomationTriggerRequestInput struct {
@@ -1365,6 +1473,113 @@ type AutomationWebhookResponse struct {
 	URL string `json:"url"`
 }
 
+// Blueprint Public “Blueprint“ resource shape.
+//
+// Note: the “type“ enum may grow in the future; clients MUST gracefully
+// handle unknown values.  YAML contents are fetched separately via
+// “GET /blueprints/{id}/contents“.
+type Blueprint struct {
+	BlueprintID string `json:"blueprint_id"`
+
+	// BuildOnDefaultBranchCommit Whether each push to the repo's default branch builds the environment. Null unless this is a repo's root blueprint.
+	BuildOnDefaultBranchCommit nullable.Nullable[bool]   `json:"build_on_default_branch_commit,omitempty"`
+	CreatedAt                  int                       `json:"created_at"`
+	RepoName                   nullable.Nullable[string] `json:"repo_name"`
+
+	// ReportCheckRuns Whether each commit build is reported as a GitHub check run on the commit. Null unless this is a repo's root blueprint.
+	ReportCheckRuns nullable.Nullable[bool] `json:"report_check_runs,omitempty"`
+
+	// Source Where the YAML is authored: 'git' (synced from .devin/blueprint.yaml in the repo) or 'database' (edited via the API/UI). Always null for enterprise- and org-tier blueprints.
+	Source    nullable.Nullable[BlueprintSource] `json:"source,omitempty"`
+	Type      BlueprintType                      `json:"type"`
+	UpdatedAt int                                `json:"updated_at"`
+}
+
+// BlueprintSource Where the YAML is authored: 'git' (synced from .devin/blueprint.yaml in the repo) or 'database' (edited via the API/UI). Always null for enterprise- and org-tier blueprints.
+type BlueprintSource string
+
+// BlueprintType defines model for Blueprint.Type.
+type BlueprintType string
+
+// BlueprintFile Public “BlueprintFile“ resource shape.
+type BlueprintFile struct {
+	BlueprintID string `json:"blueprint_id"`
+	CreatedAt   int    `json:"created_at"`
+	EnvVarName  string `json:"env_var_name"`
+	FileID      string `json:"file_id"`
+	Name        string `json:"name"`
+	SizeBytes   int    `json:"size_bytes"`
+	UpdatedAt   int    `json:"updated_at"`
+}
+
+// BlueprintFileList List envelope for blueprint files.
+type BlueprintFileList struct {
+	Data []BlueprintFile `json:"data"`
+}
+
+// BlueprintList List envelope for blueprints (returned in execution order).
+type BlueprintList struct {
+	Data []Blueprint `json:"data"`
+}
+
+// BodyUploadEnterpriseBlueprintFileEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDFilesPost defines model for Body_upload_enterprise_blueprint_file_endpoint_v3_enterprise_snapshot_setup_blueprints__blueprint_id__files_post.
+type BodyUploadEnterpriseBlueprintFileEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDFilesPost struct {
+	File string `json:"file"`
+}
+
+// BodyUploadOrgBlueprintFileV3OrganizationsOrgIDSnapshotSetupBlueprintsBlueprintIDFilesPost defines model for Body_upload_org_blueprint_file_v3_organizations__org_id__snapshot_setup_blueprints__blueprint_id__files_post.
+type BodyUploadOrgBlueprintFileV3OrganizationsOrgIDSnapshotSetupBlueprintsBlueprintIDFilesPost struct {
+	File string `json:"file"`
+}
+
+// Build Public “Build“ resource shape — opaque "did this succeed yet?" view.
+//
+// Per spec, no platform/snapshot/per-job introspection is exposed.  Future
+// additions (“triggered_by_repo“, build metadata, etc.) are additive.
+type Build struct {
+	BuildID           string                          `json:"build_id"`
+	CompletedAt       nullable.Nullable[int]          `json:"completed_at"`
+	CreatedAt         int                             `json:"created_at"`
+	Pinned            bool                            `json:"pinned"`
+	StartedAt         nullable.Nullable[int]          `json:"started_at"`
+	Status            BuildStatus                     `json:"status"`
+	Trigger           nullable.Nullable[BuildTrigger] `json:"trigger"`
+	TriggeredByUserID nullable.Nullable[string]       `json:"triggered_by_user_id"`
+	UpdatedAt         int                             `json:"updated_at"`
+}
+
+// BuildStatus defines model for Build.Status.
+type BuildStatus string
+
+// BuildTrigger defines model for Build.Trigger.
+type BuildTrigger string
+
+// BulkIndexRepositoriesRequest defines model for BulkIndexRepositoriesRequest.
+type BulkIndexRepositoriesRequest struct {
+	Repositories []RepositoryIndexingItem `json:"repositories"`
+}
+
+// CreateEnterpriseBlueprintBody defines model for CreateEnterpriseBlueprintBody.
+type CreateEnterpriseBlueprintBody struct {
+	// Contents YAML body for the new blueprint. Omit to create an empty blueprint.
+	Contents nullable.Nullable[string] `json:"contents,omitempty"`
+}
+
+// CreateOrgBlueprintBody defines model for CreateOrgBlueprintBody.
+type CreateOrgBlueprintBody struct {
+	// Contents Optional initial YAML body for the blueprint. Not allowed with source='git' (contents come from the repo).
+	Contents nullable.Nullable[string] `json:"contents,omitempty"`
+
+	// RepoName If set, creates a repo-tier blueprint for that repository. If omitted, creates an org-wide (org-tier) blueprint.
+	RepoName nullable.Nullable[string] `json:"repo_name,omitempty"`
+
+	// Source Repo-tier only. 'git' reads .devin/blueprint.yaml (and its includes) from the repo's default branch and keeps the blueprint in sync with it; 'database' stores the YAML in Devin. Defaults to 'database' when omitted.
+	Source nullable.Nullable[CreateOrgBlueprintBodySource] `json:"source,omitempty"`
+}
+
+// CreateOrgBlueprintBodySource Repo-tier only. 'git' reads .devin/blueprint.yaml (and its includes) from the repo's default branch and keeps the blueprint in sync with it; 'database' stores the YAML in Devin. Defaults to 'database' when omitted.
+type CreateOrgBlueprintBodySource string
+
 // DefaultTagRequest defines model for DefaultTagRequest.
 type DefaultTagRequest struct {
 	Tag string `json:"tag"`
@@ -1380,10 +1595,13 @@ type EnterpriseUser struct {
 	Email nullable.Nullable[string] `json:"email"`
 
 	// EnterpriseJoinedAt When the user was added to this enterprise.
-	EnterpriseJoinedAt nullable.Nullable[int]    `json:"enterprise_joined_at,omitempty"`
-	Name               nullable.Nullable[string] `json:"name"`
-	RoleAssignments    []RoleAssignment          `json:"role_assignments"`
-	UserID             string                    `json:"user_id"`
+	EnterpriseJoinedAt nullable.Nullable[int] `json:"enterprise_joined_at,omitempty"`
+
+	// IdpIdentities The user's identities on the enterprise's SSO connections. Only returned when enabled for the enterprise.
+	IdpIdentities   nullable.Nullable[[]IdpIdentity] `json:"idp_identities,omitempty"`
+	Name            nullable.Nullable[string]        `json:"name"`
+	RoleAssignments []RoleAssignment                 `json:"role_assignments"`
+	UserID          string                           `json:"user_id"`
 }
 
 // EnterpriseUserWithIdpRoles defines model for EnterpriseUserWithIdpRoles.
@@ -1391,11 +1609,14 @@ type EnterpriseUserWithIdpRoles struct {
 	Email nullable.Nullable[string] `json:"email"`
 
 	// EnterpriseJoinedAt When the user was added to this enterprise.
-	EnterpriseJoinedAt nullable.Nullable[int]    `json:"enterprise_joined_at,omitempty"`
-	IdpRoleAssignments *[]IdpRoleAssignment      `json:"idp_role_assignments,omitempty"`
-	Name               nullable.Nullable[string] `json:"name"`
-	RoleAssignments    []RoleAssignment          `json:"role_assignments"`
-	UserID             string                    `json:"user_id"`
+	EnterpriseJoinedAt nullable.Nullable[int] `json:"enterprise_joined_at,omitempty"`
+
+	// IdpIdentities The user's identities on the enterprise's SSO connections. Only returned when enabled for the enterprise.
+	IdpIdentities      nullable.Nullable[[]IdpIdentity] `json:"idp_identities,omitempty"`
+	IdpRoleAssignments *[]IdpRoleAssignment             `json:"idp_role_assignments,omitempty"`
+	Name               nullable.Nullable[string]        `json:"name"`
+	RoleAssignments    []RoleAssignment                 `json:"role_assignments"`
+	UserID             string                           `json:"user_id"`
 }
 
 // FolderSummary One folder in the knowledge folder tree.
@@ -1420,9 +1641,12 @@ type GitConnectionRepositoryResponse struct {
 	LastUpdatedAt        nullable.Nullable[int]    `json:"last_updated_at"`
 	ProviderRepositoryID string                    `json:"provider_repository_id"`
 	RepoDescription      nullable.Nullable[string] `json:"repo_description"`
-	RepoLanguage         nullable.Nullable[string] `json:"repo_language"`
-	RepoName             string                    `json:"repo_name"`
-	RepoPath             string                    `json:"repo_path"`
+
+	// RepoFullName Devin's identifier for the repository, used as repository_path by the indexing and blueprint endpoints: the path for github.com (e.g. 'org/repo'), host-prefixed for other git hosts (e.g. 'gitlab.example.com/group/repo'), or a perforce:// URI.
+	RepoFullName string                    `json:"repo_full_name"`
+	RepoLanguage nullable.Nullable[string] `json:"repo_language"`
+	RepoName     string                    `json:"repo_name"`
+	RepoPath     string                    `json:"repo_path"`
 }
 
 // GitConnectionResponse defines model for GitConnectionResponse.
@@ -1504,11 +1728,25 @@ type IdpGroupsBulkCreateRequest struct {
 	IdpGroupNames []string `json:"idp_group_names"`
 }
 
+// IdpIdentity defines model for IdpIdentity.
+type IdpIdentity struct {
+	// ConnectionName Name of the SSO connection.
+	ConnectionName string `json:"connection_name"`
+
+	// Subject The user's subject identifier at the connection's identity provider (SAML NameID or OIDC `sub`).
+	Subject string `json:"subject"`
+}
+
 // IdpRoleAssignment A role assignment inherited via IDP group membership.
 type IdpRoleAssignment struct {
 	IdpGroupName string                    `json:"idp_group_name"`
 	OrgID        nullable.Nullable[string] `json:"org_id,omitempty"`
 	Role         Role                      `json:"role"`
+}
+
+// IndexRepositoryRequest defines model for IndexRepositoryRequest.
+type IndexRepositoryRequest struct {
+	BranchNames *[]string `json:"branch_names,omitempty"`
 }
 
 // IPAccessListAddRequest defines model for IpAccessListAddRequest.
@@ -1612,6 +1850,19 @@ type PaginatedResponseAutomationResponse struct {
 	// HasNextPage Whether there are more items available after this page.
 	HasNextPage *bool                `json:"has_next_page,omitempty"`
 	Items       []AutomationResponse `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
+// PaginatedResponseBuild defines model for PaginatedResponse_Build_.
+type PaginatedResponseBuild struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool   `json:"has_next_page,omitempty"`
+	Items       []Build `json:"items"`
 
 	// Total Optional total count (can be omitted for performance).
 	Total nullable.Nullable[int] `json:"total,omitempty"`
@@ -1747,6 +1998,32 @@ type PaginatedResponsePlaybookResponse struct {
 	Total nullable.Nullable[int] `json:"total,omitempty"`
 }
 
+// PaginatedResponseRepositoryIndexingResponse defines model for PaginatedResponse_RepositoryIndexingResponse_.
+type PaginatedResponseRepositoryIndexingResponse struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool                        `json:"has_next_page,omitempty"`
+	Items       []RepositoryIndexingResponse `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
+// PaginatedResponseRepositoryResponse defines model for PaginatedResponse_RepositoryResponse_.
+type PaginatedResponseRepositoryResponse struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool                `json:"has_next_page,omitempty"`
+	Items       []RepositoryResponse `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
 // PaginatedResponseRole defines model for PaginatedResponse_Role_.
 type PaginatedResponseRole struct {
 	// EndCursor Cursor to fetch the next page, or None if this is the last page.
@@ -1812,6 +2089,9 @@ type PaginatedResponseUser struct {
 	Total nullable.Nullable[int] `json:"total,omitempty"`
 }
 
+// PinBuildBody “POST /builds/{id}/pin“ body. Empty per spec.
+type PinBuildBody = map[string]interface{}
+
 // PlaybookCreateRequest defines model for PlaybookCreateRequest.
 type PlaybookCreateRequest struct {
 	Body string `json:"body"`
@@ -1848,6 +2128,15 @@ type PlaybookResponse struct {
 // PlaybookResponseAccessType defines model for PlaybookResponse.AccessType.
 type PlaybookResponseAccessType string
 
+// PresignedDownload Reusable presigned-URL response (10-minute TTL).
+type PresignedDownload struct {
+	// ExpiresAt Unix timestamp at which the URL expires.
+	ExpiresAt int `json:"expires_at"`
+
+	// URL Presigned GET URL (HTTPS).
+	URL string `json:"url"`
+}
+
 // ProblemDetail RFC 9457 application/problem+json error body for the v3 API.
 //
 // detail is retained from the legacy {"detail": ...} body for back-compat; the
@@ -1874,6 +2163,63 @@ type ProblemDetail struct {
 
 	// Type A URI reference identifying the problem type.
 	Type *string `json:"type,omitempty"`
+}
+
+// RemoveRepositoriesRequest defines model for RemoveRepositoriesRequest.
+type RemoveRepositoriesRequest struct {
+	RepositoryPaths []string `json:"repository_paths"`
+}
+
+// RepoIndexJobResponse defines model for RepoIndexJobResponse.
+type RepoIndexJobResponse struct {
+	BranchName nullable.Nullable[string]  `json:"branch_name"`
+	Commit     string                     `json:"commit"`
+	CreatedAt  int                        `json:"created_at"`
+	JobID      string                     `json:"job_id"`
+	Status     RepoIndexJobResponseStatus `json:"status"`
+}
+
+// RepoIndexJobResponseStatus defines model for RepoIndexJobResponse.Status.
+type RepoIndexJobResponseStatus string
+
+// RepoIndexingStatusResponse defines model for RepoIndexingStatusResponse.
+type RepoIndexingStatusResponse struct {
+	IndexingEnabled               bool                                    `json:"indexing_enabled"`
+	LatestCompletedSearchIndexJob nullable.Nullable[RepoIndexJobResponse] `json:"latest_completed_search_index_job"`
+	LatestCompletedWikiIndexJob   nullable.Nullable[RepoIndexJobResponse] `json:"latest_completed_wiki_index_job"`
+	LatestIndexes                 []RepoIndexJobResponse                  `json:"latest_indexes"`
+}
+
+// RepositoryIndexingItem defines model for RepositoryIndexingItem.
+type RepositoryIndexingItem struct {
+	BranchNames *[]string `json:"branch_names,omitempty"`
+
+	// RepositoryPath e.g., 'org/repo-name'
+	RepositoryPath string `json:"repository_path"`
+}
+
+// RepositoryIndexingResponse defines model for RepositoryIndexingResponse.
+type RepositoryIndexingResponse struct {
+	Branches        []string                                      `json:"branches"`
+	IndexingEnabled bool                                          `json:"indexing_enabled"`
+	IndexingStatus  nullable.Nullable[RepoIndexingStatusResponse] `json:"indexing_status,omitempty"`
+	RepositoryPath  string                                        `json:"repository_path"`
+}
+
+// RepositoryResponse defines model for RepositoryResponse.
+type RepositoryResponse struct {
+	GitConnectionHost    string                                        `json:"git_connection_host"`
+	GitConnectionID      string                                        `json:"git_connection_id"`
+	IndexingStatus       nullable.Nullable[RepoIndexingStatusResponse] `json:"indexing_status"`
+	LastUpdatedAt        nullable.Nullable[int]                        `json:"last_updated_at"`
+	ProviderRepositoryID string                                        `json:"provider_repository_id"`
+	RepoDescription      nullable.Nullable[string]                     `json:"repo_description"`
+
+	// RepoFullName Devin's identifier for the repository, used as repository_path by the indexing and blueprint endpoints: the path for github.com (e.g. 'org/repo'), host-prefixed for other git hosts (e.g. 'gitlab.example.com/group/repo'), or a perforce:// URI.
+	RepoFullName string                    `json:"repo_full_name"`
+	RepoLanguage nullable.Nullable[string] `json:"repo_language"`
+	RepoName     string                    `json:"repo_name"`
+	RepoPath     string                    `json:"repo_path"`
 }
 
 // Role defines model for Role.
@@ -1915,15 +2261,18 @@ type ScheduleCreateRequest struct {
 	NotifyOn       *ScheduleCreateRequestNotifyOn `json:"notify_on,omitempty"`
 
 	// Platform VM platform for sessions spawned by this schedule (e.g. 'windows'). When omitted, sessions fall back to the org's default platform at trigger time. Value must match a platform configured for the organization (case-insensitive); unknown values are rejected with a 400 that lists the available platform labels.
-	Platform       nullable.Nullable[string]          `json:"platform,omitempty"`
-	PlaybookID     nullable.Nullable[string]          `json:"playbook_id,omitempty"`
-	Prompt         string                             `json:"prompt"`
-	ScheduleType   *ScheduleCreateRequestScheduleType `json:"schedule_type,omitempty"`
-	ScheduledAt    nullable.Nullable[time.Time]       `json:"scheduled_at,omitempty"`
-	SlackChannelID nullable.Nullable[string]          `json:"slack_channel_id,omitempty"`
-	SlackTeamID    nullable.Nullable[string]          `json:"slack_team_id,omitempty"`
-	Tags           nullable.Nullable[[]string]        `json:"tags,omitempty"`
-	TargetDevinID  nullable.Nullable[string]          `json:"target_devin_id,omitempty"`
+	Platform     nullable.Nullable[string]          `json:"platform,omitempty"`
+	PlaybookID   nullable.Nullable[string]          `json:"playbook_id,omitempty"`
+	Prompt       string                             `json:"prompt"`
+	ScheduleType *ScheduleCreateRequestScheduleType `json:"schedule_type,omitempty"`
+	ScheduledAt  nullable.Nullable[time.Time]       `json:"scheduled_at,omitempty"`
+
+	// SkillRef Exact skill the sessions run with. Use instead of playbook_id for new configurations.
+	SkillRef       nullable.Nullable[SkillReference] `json:"skill_ref,omitempty"`
+	SlackChannelID nullable.Nullable[string]         `json:"slack_channel_id,omitempty"`
+	SlackTeamID    nullable.Nullable[string]         `json:"slack_team_id,omitempty"`
+	Tags           nullable.Nullable[[]string]       `json:"tags,omitempty"`
+	TargetDevinID  nullable.Nullable[string]         `json:"target_devin_id,omitempty"`
 }
 
 // ScheduleCreateRequestAgent defines model for ScheduleCreateRequest.Agent.
@@ -1958,11 +2307,14 @@ type ScheduleResponse struct {
 	ScheduleType        *ScheduleResponseScheduleType   `json:"schedule_type,omitempty"`
 	ScheduledAt         nullable.Nullable[time.Time]    `json:"scheduled_at,omitempty"`
 	ScheduledSessionID  string                          `json:"scheduled_session_id"`
-	SlackChannelID      nullable.Nullable[string]       `json:"slack_channel_id,omitempty"`
-	SlackTeamID         nullable.Nullable[string]       `json:"slack_team_id,omitempty"`
-	Tags                nullable.Nullable[[]string]     `json:"tags,omitempty"`
-	TargetDevinID       nullable.Nullable[string]       `json:"target_devin_id,omitempty"`
-	UpdatedAt           time.Time                       `json:"updated_at"`
+
+	// SkillRef Exact skill the sessions run with. Use instead of playbook_id for new configurations.
+	SkillRef       nullable.Nullable[SkillReference] `json:"skill_ref,omitempty"`
+	SlackChannelID nullable.Nullable[string]         `json:"slack_channel_id,omitempty"`
+	SlackTeamID    nullable.Nullable[string]         `json:"slack_team_id,omitempty"`
+	Tags           nullable.Nullable[[]string]       `json:"tags,omitempty"`
+	TargetDevinID  nullable.Nullable[string]         `json:"target_devin_id,omitempty"`
+	UpdatedAt      time.Time                         `json:"updated_at"`
 }
 
 // ScheduleResponseAgent defines model for ScheduleResponse.Agent.
@@ -1990,13 +2342,16 @@ type ScheduleUpdateRequest struct {
 	Prompt     nullable.Nullable[string] `json:"prompt,omitempty"`
 
 	// RunAsUserID Set the user ID that this schedule will run as. Requires ImpersonateOrgSessions permission. Setting to null reverts to the default bot user. Omitting the field leaves the current identity unchanged.
-	RunAsUserID    nullable.Nullable[string]                            `json:"run_as_user_id,omitempty"`
-	ScheduleType   nullable.Nullable[ScheduleUpdateRequestScheduleType] `json:"schedule_type,omitempty"`
-	ScheduledAt    nullable.Nullable[time.Time]                         `json:"scheduled_at,omitempty"`
-	SlackChannelID nullable.Nullable[string]                            `json:"slack_channel_id,omitempty"`
-	SlackTeamID    nullable.Nullable[string]                            `json:"slack_team_id,omitempty"`
-	Tags           nullable.Nullable[[]string]                          `json:"tags,omitempty"`
-	TargetDevinID  nullable.Nullable[string]                            `json:"target_devin_id,omitempty"`
+	RunAsUserID  nullable.Nullable[string]                            `json:"run_as_user_id,omitempty"`
+	ScheduleType nullable.Nullable[ScheduleUpdateRequestScheduleType] `json:"schedule_type,omitempty"`
+	ScheduledAt  nullable.Nullable[time.Time]                         `json:"scheduled_at,omitempty"`
+
+	// SkillRef Exact skill the sessions run with. Use instead of playbook_id for new configurations.
+	SkillRef       nullable.Nullable[SkillReference] `json:"skill_ref,omitempty"`
+	SlackChannelID nullable.Nullable[string]         `json:"slack_channel_id,omitempty"`
+	SlackTeamID    nullable.Nullable[string]         `json:"slack_team_id,omitempty"`
+	Tags           nullable.Nullable[[]string]       `json:"tags,omitempty"`
+	TargetDevinID  nullable.Nullable[string]         `json:"target_devin_id,omitempty"`
 }
 
 // ScheduleUpdateRequestAgent defines model for ScheduleUpdateRequest.Agent.
@@ -2054,6 +2409,15 @@ type ServiceUserUpdateRoleRequest struct {
 	RoleID string `json:"role_id"`
 }
 
+// SkillReference One exact skill: the plugin that ships it plus the skill's name.
+type SkillReference struct {
+	// PluginIdentity The plugin that ships the skill: the id of a bundle uploaded by the organization, e.g. 'org-playbooks', or the URL of a git plugin, e.g. 'https://github.com/acme/tools'.
+	PluginIdentity string `json:"plugin_identity"`
+
+	// SkillName Name of the skill inside that plugin.
+	SkillName string `json:"skill_name"`
+}
+
 // TagsCreateRequest defines model for TagsCreateRequest.
 type TagsCreateRequest struct {
 	Tags []string `json:"tags"`
@@ -2064,10 +2428,45 @@ type TagsResponse struct {
 	Tags []string `json:"tags"`
 }
 
+// TriggerBuildBody “POST /builds“ body. Empty per spec; reserved for future fields.
+type TriggerBuildBody = map[string]interface{}
+
 // UpdateACULimitRequest defines model for UpdateACULimitRequest.
 type UpdateACULimitRequest struct {
 	CycleAcuLimit int `json:"cycle_acu_limit"`
 }
+
+// UpdateBlueprintContentsBody defines model for UpdateBlueprintContentsBody.
+type UpdateBlueprintContentsBody struct {
+	// Contents New YAML body for the blueprint.
+	Contents string `json:"contents"`
+}
+
+// UpdateOrgBlueprintBody Partial update for an org- or repo-tier blueprint.
+//
+// Any subset of fields may be provided. Fields not set are left alone.
+// Providing “position“, “source“ or a commit-build setting on an
+// org-tier blueprint returns “400“ — only repo-tier blueprints have them.
+// Does NOT trigger a build.
+type UpdateOrgBlueprintBody struct {
+	// BuildOnDefaultBranchCommit If set, turns building the environment on each push to the default branch on or off. Only accepted on the root blueprint of a github.com repo. Every such push queues a build.
+	BuildOnDefaultBranchCommit nullable.Nullable[bool] `json:"build_on_default_branch_commit,omitempty"`
+
+	// Contents If set, replaces the blueprint's YAML body with a new version.
+	Contents nullable.Nullable[string] `json:"contents,omitempty"`
+
+	// Position If set, updates the execution position of this repo-tier blueprint. Positions are not required to be unique; ties are broken arbitrarily by the server when sorting for execution.
+	Position nullable.Nullable[int] `json:"position,omitempty"`
+
+	// ReportCheckRuns If set, turns reporting each commit build as a GitHub check run on or off. Enabling it requires 'build_on_default_branch_commit' to be on.
+	ReportCheckRuns nullable.Nullable[bool] `json:"report_check_runs,omitempty"`
+
+	// Source If set, switches the repo's blueprint source. Only accepted on the repo's root blueprint (scoped blueprints inherit it). 'git' pulls .devin/blueprint.yaml from the default branch (404 if absent) and cannot be combined with 'contents'; 'database' keeps the current YAML (or 'contents', if given) and stops syncing from the repo. No-op when the blueprint is already in that mode.
+	Source nullable.Nullable[UpdateOrgBlueprintBodySource] `json:"source,omitempty"`
+}
+
+// UpdateOrgBlueprintBodySource If set, switches the repo's blueprint source. Only accepted on the repo's root blueprint (scoped blueprints inherit it). 'git' pulls .devin/blueprint.yaml from the default branch (404 if absent) and cannot be combined with 'contents'; 'database' keeps the current YAML (or 'contents', if given) and stops syncing from the repo. No-op when the blueprint is already in that mode.
+type UpdateOrgBlueprintBodySource string
 
 // User defines model for User.
 type User struct {
@@ -2216,6 +2615,11 @@ type HandleGetRolesV3EnterpriseRolesGetParams struct {
 	First *int    `form:"first,omitempty" json:"first,omitempty"`
 }
 
+// UploadEnterpriseBlueprintFileEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDFilesPostParams defines parameters for UploadEnterpriseBlueprintFileEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDFilesPost.
+type UploadEnterpriseBlueprintFileEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDFilesPostParams struct {
+	Name string `form:"name" json:"name"`
+}
+
 // HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParams defines parameters for HandleListAutomationsV3OrganizationsOrgIDAutomationsGet.
 type HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParams struct {
 	After      *string                                                                    `form:"after,omitempty" json:"after,omitempty"`
@@ -2249,7 +2653,32 @@ type HandleListNotesV3OrganizationsOrgIDKnowledgeNotesGetParams struct {
 type HandleListPlaybooksV3OrganizationsOrgIDPlaybooksGetParams struct {
 	After *string `form:"after,omitempty" json:"after,omitempty"`
 	First *int    `form:"first,omitempty" json:"first,omitempty"`
+
+	// IncludeEnterprise Also return the enterprise-level playbooks shared with this organization (`access_type: enterprise`). They are read-only through the organization API.
+	IncludeEnterprise *bool `form:"include_enterprise,omitempty" json:"include_enterprise,omitempty"`
 }
+
+// HandleListRepositoriesV3OrganizationsOrgIDRepositoriesGetParams defines parameters for HandleListRepositoriesV3OrganizationsOrgIDRepositoriesGet.
+type HandleListRepositoriesV3OrganizationsOrgIDRepositoriesGetParams struct {
+	After              *string   `form:"after,omitempty" json:"after,omitempty"`
+	First              *int      `form:"first,omitempty" json:"first,omitempty"`
+	FilterName         *string   `form:"filter_name,omitempty" json:"filter_name,omitempty"`
+	OnlyRepoPaths      *[]string `form:"only_repo_paths,omitempty" json:"only_repo_paths,omitempty"`
+	ExcludeRepoPaths   *[]string `form:"exclude_repo_paths,omitempty" json:"exclude_repo_paths,omitempty"`
+	LoadIndexingStatus *bool     `form:"load_indexing_status,omitempty" json:"load_indexing_status,omitempty"`
+}
+
+// HandleListIndexedRepositoriesV3OrganizationsOrgIDRepositoriesIndexingGetParams defines parameters for HandleListIndexedRepositoriesV3OrganizationsOrgIDRepositoriesIndexingGet.
+type HandleListIndexedRepositoriesV3OrganizationsOrgIDRepositoriesIndexingGetParams struct {
+	After *string `form:"after,omitempty" json:"after,omitempty"`
+	First *int    `form:"first,omitempty" json:"first,omitempty"`
+
+	// FilterName Case-insensitive substring filter on the repository path.
+	FilterName *string `form:"filter_name,omitempty" json:"filter_name,omitempty"`
+}
+
+// HandleIndexSingleRepositoryV3OrganizationsOrgIDRepositoriesRepositoryPathIndexingPutJSONBody defines parameters for HandleIndexSingleRepositoryV3OrganizationsOrgIDRepositoriesRepositoryPathIndexingPut.
+type HandleIndexSingleRepositoryV3OrganizationsOrgIDRepositoriesRepositoryPathIndexingPutJSONBody = IndexRepositoryRequest
 
 // HandleListSchedulesV3OrganizationsOrgIDSchedulesGetParams defines parameters for HandleListSchedulesV3OrganizationsOrgIDSchedulesGet.
 type HandleListSchedulesV3OrganizationsOrgIDSchedulesGetParams struct {
@@ -2262,6 +2691,32 @@ type HandleListSecretsV3OrganizationsOrgIDSecretsGetParams struct {
 	After *string `form:"after,omitempty" json:"after,omitempty"`
 	First *int    `form:"first,omitempty" json:"first,omitempty"`
 }
+
+// ListOrgBlueprintsV3OrganizationsOrgIDSnapshotSetupBlueprintsGetParams defines parameters for ListOrgBlueprintsV3OrganizationsOrgIDSnapshotSetupBlueprintsGet.
+type ListOrgBlueprintsV3OrganizationsOrgIDSnapshotSetupBlueprintsGetParams struct {
+	// RepoName Filter to a specific repository (e.g. 'org/repo').
+	RepoName *string `form:"repo_name,omitempty" json:"repo_name,omitempty"`
+}
+
+// UploadOrgBlueprintFileV3OrganizationsOrgIDSnapshotSetupBlueprintsBlueprintIDFilesPostParams defines parameters for UploadOrgBlueprintFileV3OrganizationsOrgIDSnapshotSetupBlueprintsBlueprintIDFilesPost.
+type UploadOrgBlueprintFileV3OrganizationsOrgIDSnapshotSetupBlueprintsBlueprintIDFilesPostParams struct {
+	Name string `form:"name" json:"name"`
+}
+
+// ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGetParams defines parameters for ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGet.
+type ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGetParams struct {
+	After *string `form:"after,omitempty" json:"after,omitempty"`
+	First *int    `form:"first,omitempty" json:"first,omitempty"`
+
+	// Status Filter by spec status.
+	Status *ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGetParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// Active If true, returns 0 or 1 items: the build whose image is currently used by new sessions.
+	Active *bool `form:"active,omitempty" json:"active,omitempty"`
+}
+
+// ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGetParamsStatus defines parameters for ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGet.
+type ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGetParamsStatus string
 
 // HandleSetOrgDevinAcuLimitV3EnterpriseConsumptionAcuLimitsDevinOrganizationsOrgIDPutJSONRequestBody defines body for HandleSetOrgDevinAcuLimitV3EnterpriseConsumptionAcuLimitsDevinOrganizationsOrgIDPut for application/json ContentType.
 type HandleSetOrgDevinAcuLimitV3EnterpriseConsumptionAcuLimitsDevinOrganizationsOrgIDPutJSONRequestBody = UpdateACULimitRequest
@@ -2350,6 +2805,15 @@ type HandleCreatePlaybookV3EnterprisePlaybooksPostJSONRequestBody = PlaybookCrea
 // HandleUpdatePlaybookV3EnterprisePlaybooksPlaybookIDPutJSONRequestBody defines body for HandleUpdatePlaybookV3EnterprisePlaybooksPlaybookIDPut for application/json ContentType.
 type HandleUpdatePlaybookV3EnterprisePlaybooksPlaybookIDPutJSONRequestBody = PlaybookCreateRequest
 
+// CreateEnterpriseBlueprintEndpointV3EnterpriseSnapshotSetupBlueprintsPostJSONRequestBody defines body for CreateEnterpriseBlueprintEndpointV3EnterpriseSnapshotSetupBlueprintsPost for application/json ContentType.
+type CreateEnterpriseBlueprintEndpointV3EnterpriseSnapshotSetupBlueprintsPostJSONRequestBody = CreateEnterpriseBlueprintBody
+
+// UpdateEnterpriseBlueprintEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDPutJSONRequestBody defines body for UpdateEnterpriseBlueprintEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDPut for application/json ContentType.
+type UpdateEnterpriseBlueprintEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDPutJSONRequestBody = UpdateBlueprintContentsBody
+
+// UploadEnterpriseBlueprintFileEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDFilesPostMultipartRequestBody defines body for UploadEnterpriseBlueprintFileEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDFilesPost for multipart/form-data ContentType.
+type UploadEnterpriseBlueprintFileEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDFilesPostMultipartRequestBody = BodyUploadEnterpriseBlueprintFileEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDFilesPost
+
 // HandleCreateAutomationV3OrganizationsOrgIDAutomationsPostJSONRequestBody defines body for HandleCreateAutomationV3OrganizationsOrgIDAutomationsPost for application/json ContentType.
 type HandleCreateAutomationV3OrganizationsOrgIDAutomationsPostJSONRequestBody = AutomationCreateRequest
 
@@ -2368,6 +2832,15 @@ type HandleCreatePlaybookV3OrganizationsOrgIDPlaybooksPostJSONRequestBody = Play
 // HandleUpdatePlaybookV3OrganizationsOrgIDPlaybooksPlaybookIDPutJSONRequestBody defines body for HandleUpdatePlaybookV3OrganizationsOrgIDPlaybooksPlaybookIDPut for application/json ContentType.
 type HandleUpdatePlaybookV3OrganizationsOrgIDPlaybooksPlaybookIDPutJSONRequestBody = PlaybookCreateRequest
 
+// HandleBulkRemoveRepositoriesFromIndexingV3OrganizationsOrgIDRepositoriesIndexingDeleteJSONRequestBody defines body for HandleBulkRemoveRepositoriesFromIndexingV3OrganizationsOrgIDRepositoriesIndexingDelete for application/json ContentType.
+type HandleBulkRemoveRepositoriesFromIndexingV3OrganizationsOrgIDRepositoriesIndexingDeleteJSONRequestBody = RemoveRepositoriesRequest
+
+// HandleBulkIndexRepositoriesV3OrganizationsOrgIDRepositoriesIndexingPutJSONRequestBody defines body for HandleBulkIndexRepositoriesV3OrganizationsOrgIDRepositoriesIndexingPut for application/json ContentType.
+type HandleBulkIndexRepositoriesV3OrganizationsOrgIDRepositoriesIndexingPutJSONRequestBody = BulkIndexRepositoriesRequest
+
+// HandleIndexSingleRepositoryV3OrganizationsOrgIDRepositoriesRepositoryPathIndexingPutJSONRequestBody defines body for HandleIndexSingleRepositoryV3OrganizationsOrgIDRepositoriesRepositoryPathIndexingPut for application/json ContentType.
+type HandleIndexSingleRepositoryV3OrganizationsOrgIDRepositoriesRepositoryPathIndexingPutJSONRequestBody = HandleIndexSingleRepositoryV3OrganizationsOrgIDRepositoriesRepositoryPathIndexingPutJSONBody
+
 // HandleCreateScheduleV3OrganizationsOrgIDSchedulesPostJSONRequestBody defines body for HandleCreateScheduleV3OrganizationsOrgIDSchedulesPost for application/json ContentType.
 type HandleCreateScheduleV3OrganizationsOrgIDSchedulesPostJSONRequestBody = ScheduleCreateRequest
 
@@ -2376,6 +2849,21 @@ type HandleUpdateScheduleV3OrganizationsOrgIDSchedulesScheduleIDPatchJSONRequest
 
 // HandleCreateSecretV3OrganizationsOrgIDSecretsPostJSONRequestBody defines body for HandleCreateSecretV3OrganizationsOrgIDSecretsPost for application/json ContentType.
 type HandleCreateSecretV3OrganizationsOrgIDSecretsPostJSONRequestBody = SecretCreateRequest
+
+// CreateOrgBlueprintV3OrganizationsOrgIDSnapshotSetupBlueprintsPostJSONRequestBody defines body for CreateOrgBlueprintV3OrganizationsOrgIDSnapshotSetupBlueprintsPost for application/json ContentType.
+type CreateOrgBlueprintV3OrganizationsOrgIDSnapshotSetupBlueprintsPostJSONRequestBody = CreateOrgBlueprintBody
+
+// UpdateOrgBlueprintV3OrganizationsOrgIDSnapshotSetupBlueprintsBlueprintIDPatchJSONRequestBody defines body for UpdateOrgBlueprintV3OrganizationsOrgIDSnapshotSetupBlueprintsBlueprintIDPatch for application/json ContentType.
+type UpdateOrgBlueprintV3OrganizationsOrgIDSnapshotSetupBlueprintsBlueprintIDPatchJSONRequestBody = UpdateOrgBlueprintBody
+
+// UploadOrgBlueprintFileV3OrganizationsOrgIDSnapshotSetupBlueprintsBlueprintIDFilesPostMultipartRequestBody defines body for UploadOrgBlueprintFileV3OrganizationsOrgIDSnapshotSetupBlueprintsBlueprintIDFilesPost for multipart/form-data ContentType.
+type UploadOrgBlueprintFileV3OrganizationsOrgIDSnapshotSetupBlueprintsBlueprintIDFilesPostMultipartRequestBody = BodyUploadOrgBlueprintFileV3OrganizationsOrgIDSnapshotSetupBlueprintsBlueprintIDFilesPost
+
+// TriggerOrgBuildV3OrganizationsOrgIDSnapshotSetupBuildsPostJSONRequestBody defines body for TriggerOrgBuildV3OrganizationsOrgIDSnapshotSetupBuildsPost for application/json ContentType.
+type TriggerOrgBuildV3OrganizationsOrgIDSnapshotSetupBuildsPostJSONRequestBody = TriggerBuildBody
+
+// PinOrgBuildV3OrganizationsOrgIDSnapshotSetupBuildsBuildIDPinPostJSONRequestBody defines body for PinOrgBuildV3OrganizationsOrgIDSnapshotSetupBuildsBuildIDPinPost for application/json ContentType.
+type PinOrgBuildV3OrganizationsOrgIDSnapshotSetupBuildsBuildIDPinPostJSONRequestBody = PinBuildBody
 
 // AsAutomationComparisonConditionValue0 returns the union data inside the AutomationComparisonCondition_Value as a AutomationComparisonConditionValue0
 func (t AutomationComparisonCondition_Value) AsAutomationComparisonConditionValue0() (AutomationComparisonConditionValue0, error) {

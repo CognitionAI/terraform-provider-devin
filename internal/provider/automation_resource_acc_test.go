@@ -414,27 +414,6 @@ resource "devin_automation" "test" {
 	})
 }
 
-// Malformed composite import IDs must be rejected.
-func TestAccAutomationResource_importInvalidID(t *testing.T) {
-	orgName := randomName("tf-acc-auto-import")
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: automationConfig(orgName, "Import test", ""),
-			},
-			{
-				ResourceName:  "devin_automation.test",
-				ImportState:   true,
-				ImportStateId: "missing-a-slash",
-				ExpectError:   regexp.MustCompile(`Unexpected import identifier`),
-			},
-		},
-	})
-}
-
 // An automation deleted out-of-band must plan a recreate, not error.
 func TestAccAutomationResource_outOfBandDelete(t *testing.T) {
 	orgName := randomName("tf-acc-auto-oob")

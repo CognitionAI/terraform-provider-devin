@@ -101,6 +101,15 @@ var ignoredFields = map[string]map[string]string{
 	"org_tags_resource.go": {
 		"tag": "exposed via the 'default_tag' attribute",
 	},
+	"repository_indexing_resource.go": {
+		"indexing_enabled": "the resource exists only while indexing is enabled; a disabled repository reads as deleted",
+		"indexing_status":  "server-managed runtime status",
+		"repository_path":  "request path parameter; exposed via the 'repository_path' attribute",
+		"end_cursor":       paginationReason,
+		"has_next_page":    paginationReason,
+		"items":            paginationReason,
+		"total":            paginationReason,
+	},
 	"automation_resource.go": {
 		"template_id":     "create-only provenance marker for template attribution; not managed config",
 		"created_at":      "server-managed read-only metadata",
@@ -116,9 +125,11 @@ var ignoredFields = map[string]map[string]string{
 		// create_as_user_id / run_as_user_id are impersonation inputs gated by
 		// the ImpersonateOrgSessions permission and have no read-back in
 		// ScheduleResponse, so they are intentionally not exposed as config.
-		"create_as_user_id":    "impersonation input (ImpersonateOrgSessions); write-only, no read-back",
-		"run_as_user_id":       "impersonation input (ImpersonateOrgSessions); write-only, no read-back",
-		"playbook":             "embedded playbook summary; exposed via the 'playbook_id' attribute",
+		"create_as_user_id": "impersonation input (ImpersonateOrgSessions); write-only, no read-back",
+		"run_as_user_id":    "impersonation input (ImpersonateOrgSessions); write-only, no read-back",
+		"playbook":          "embedded playbook summary; exposed via the 'playbook_id' attribute",
+		"skill_ref": "Skill successor to playbook_id; not exposed as an attribute because " +
+			"devin_schedule is deprecated in favor of devin_automation",
 		"consecutive_failures": "server-managed runtime status",
 		"created_at":           "server-managed read-only metadata",
 		"created_by":           "server-managed read-only metadata",
@@ -135,7 +146,10 @@ var ignoredFields = map[string]map[string]string{
 		"perforce_depot_paths": "Perforce MVP field; not yet exposed in the provider",
 		"web_viewer_url":       "Perforce MVP field; not yet exposed in the provider",
 	}),
-	"idp_groups_data_source.go":    paginationOnly,
+	"idp_groups_data_source.go": paginationOnly,
+	"repositories_data_source.go": mergeIgnored(paginationOnly, map[string]string{
+		"indexing_status": "exposed as the 'indexing_enabled' flag; job details are runtime status",
+	}),
 	"organizations_data_source.go": paginationOnly,
 }
 

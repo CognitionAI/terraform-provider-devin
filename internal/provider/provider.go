@@ -121,6 +121,10 @@ func (p *DevinProvider) Resources(_ context.Context) []func() resource.Resource 
 		NewEnterpriseServiceUserRoleResource,
 		NewOrgServiceUserRoleResource,
 		NewOrgUserRoleResource,
+		NewRepositoryIndexingResource,
+		NewBlueprintResource,
+		NewEnterpriseBlueprintResource,
+		NewBlueprintFileResource,
 	}
 }
 
@@ -133,6 +137,7 @@ func (p *DevinProvider) DataSources(_ context.Context) []func() datasource.DataS
 		NewServiceUsersDataSource,
 		NewIdpGroupsDataSource,
 		NewKnowledgeFoldersDataSource,
+		NewRepositoriesDataSource,
 	}
 }
 

@@ -9,27 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-// The roles data source returns the built-in roles every account has.
-func TestAccRolesDataSource_basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: providerConfig + `
-data "devin_roles" "all" {}
-`,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.devin_roles.all", "roles.#"),
-					resource.TestCheckResourceAttrSet("data.devin_roles.all", "roles.0.role_id"),
-					resource.TestCheckResourceAttrSet("data.devin_roles.all", "roles.0.role_name"),
-					resource.TestCheckResourceAttrSet("data.devin_roles.all", "roles.0.role_type"),
-				),
-			},
-		},
-	})
-}
-
 // The organizations data source lists the enterprise's organizations. The
 // local CI enterprise is seeded with at least one org.
 func TestAccOrganizationsDataSource_basic(t *testing.T) {

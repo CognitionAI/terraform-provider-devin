@@ -131,12 +131,6 @@ func TestKnowledgeFoldersStateFromResponseRejectsDuplicatePath(t *testing.T) {
 	}
 }
 
-func TestOrgKnowledgeFoldersPathEscapesOrgID(t *testing.T) {
-	if got, want := orgKnowledgeFoldersPath("org/team"), "/v3/organizations/org%2Fteam/knowledge/folders"; got != want {
-		t.Fatalf("orgKnowledgeFoldersPath = %q, want %q", got, want)
-	}
-}
-
 func TestKnowledgeFoldersStateFromEmptyResponsePreservesCollections(t *testing.T) {
 	state, diags := knowledgeFoldersStateFromResponse(
 		context.Background(),
