@@ -3,12 +3,12 @@
 page_title: "devin_automation Resource - devin"
 subcategory: ""
 description: |-
-  Manages a Devin automation within an organization. Automations run Devin in response to events (GitHub/GitLab activity, Slack messages, Jira/Linear updates, schedules, incoming webhooks). The triggers/actions/notifications/limits/concurrency/tools/session_settings groups are JSON-encoded (use jsonencode(...)); their configured values are authoritative and out-of-band edits to them are not detected as drift. The organization's automation event schemas endpoint (GET /v3/organizations/{org_id}/automations/schemas) documents the supported trigger event types, condition fields, and reply verbs.
+  Manages a Devin automation within an organization. Automations run Devin in response to events (GitHub/GitLab activity, Slack messages, Jira/Linear updates, schedules, incoming webhooks). The triggers/actions/notifications/limits/concurrency/tools/session_settings/llm_check groups are JSON-encoded (use jsonencode(...)); their configured values are authoritative and out-of-band edits to them are not detected as drift. The organization's automation event schemas endpoint (GET /v3/organizations/{org_id}/automations/schemas) documents the supported trigger event types, condition fields, and reply verbs.
 ---
 
 # devin_automation (Resource)
 
-Manages a Devin automation within an organization. Automations run Devin in response to events (GitHub/GitLab activity, Slack messages, Jira/Linear updates, schedules, incoming webhooks). The triggers/actions/notifications/limits/concurrency/tools/session_settings groups are JSON-encoded (use jsonencode(...)); their configured values are authoritative and out-of-band edits to them are not detected as drift. The organization's automation event schemas endpoint (GET /v3/organizations/{org_id}/automations/schemas) documents the supported trigger event types, condition fields, and reply verbs.
+Manages a Devin automation within an organization. Automations run Devin in response to events (GitHub/GitLab activity, Slack messages, Jira/Linear updates, schedules, incoming webhooks). The triggers/actions/notifications/limits/concurrency/tools/session_settings/llm_check groups are JSON-encoded (use jsonencode(...)); their configured values are authoritative and out-of-band edits to them are not detected as drift. The organization's automation event schemas endpoint (GET /v3/organizations/{org_id}/automations/schemas) documents the supported trigger event types, condition fields, and reply verbs.
 
 ## Example Usage
 
@@ -58,6 +58,11 @@ resource "devin_automation" "dependency_prs" {
     type   = "start_session"
     prompt = "Review this dependency bump for breaking changes."
   }])
+  # Optional LLM check: a fast model skips trigger events that do not match
+  # the filter prompt.
+  llm_check = jsonencode({
+    filter_prompt = "Only major or minor version bumps; skip patch releases."
+  })
 }
 
 # A webhook-triggered automation: external systems POST to webhook_url with
@@ -92,6 +97,7 @@ output "incident_hook_url" {
 - `concurrency` (String) JSON-encoded concurrency object (use jsonencode(...)): max_concurrent_runs (>= 1; further triggered events wait in the automation's queue) and/or max_queue_depth (>= 0; further events are dropped). Null members mean unlimited.
 - `enabled` (Boolean) Whether the automation fires on matching events. Defaults to true.
 - `limits` (String) JSON-encoded limits object (use jsonencode(...)): max_acu_limit (1-1000) and/or invocations ({max_per_window >= 1, window_seconds >= 60}).
+- `llm_check` (String) JSON-encoded LLM check object (use jsonencode(...)): a fast model that decides per trigger event whether the automation runs. Members: filter_prompt (plain-language description of the events that should run the automation; required) and enabled (defaults to true). Requires the LLM check feature to be enabled for the organization, and cannot be combined with an enabled Preflight script. The API has no way to delete a configured check, so removing this attribute disables it (enabled=false) with the last configured filter_prompt.
 - `metadata` (Map of String) Org-visible key/value labels for organizing/filtering automations. At most 16 pairs; keys at most 32 chars; values at most 128.
 - `notifications` (String) JSON-encoded notifications object (use jsonencode(...)), e.g. {email = {when = "always"}}.
 - `run_as` (String) Identity the spawned sessions run under: 'organization', 'creator' (personal automation, visible only to the creator and org admins; rejected for service-user-created automations) or 'service_user' (the service user named by run_as_service_user_id; requires permission to manage that service user). The API requires an explicit choice on create, so the provider sends 'organization' when this is not set.

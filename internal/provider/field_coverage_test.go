@@ -120,6 +120,21 @@ var ignoredFields = map[string]map[string]string{
 		"next_run_at":     "server-managed runtime status",
 		"security_profile": "security-profile binding is managed via the security-profile " +
 			"permission flow, not yet modeled as provider config",
+		"filter_prompt": "member of AutomationLlmCheckRequest, carried inside the JSON-encoded " +
+			"'llm_check' attribute",
+	},
+	"oncall_responder_resource.go": {
+		"id":         "exposed as the 'responder_id' attribute",
+		"webhook":    "exposed as the 'webhook_url' / 'webhook_secret' attributes",
+		"event_type": "member of the JSON-encoded 'triggers' attribute",
+		"conditions": "member of the JSON-encoded 'triggers' attribute",
+		"replies":    "member of the JSON-encoded 'triggers' attribute; responders manage their own replies",
+		"created_at": "server-managed read-only metadata",
+		"created_by": "server-managed read-only metadata",
+		"updated_at": "server-managed read-only metadata",
+	},
+	"oncall_schemas_data_source.go": {
+		"update_semantics": "constant PATCH-semantics note for API clients; the provider handles merge-patch internally",
 	},
 	"schedule_resource.go": {
 		// create_as_user_id / run_as_user_id are impersonation inputs gated by

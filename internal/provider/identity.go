@@ -112,6 +112,20 @@ func automationIdentitySchema() identityschema.Schema {
 	}
 }
 
+type oncallResponderIdentityModel struct {
+	OrgID       types.String `tfsdk:"org_id"`
+	ResponderID types.String `tfsdk:"responder_id"`
+}
+
+func oncallResponderIdentitySchema() identityschema.Schema {
+	return identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"org_id":       identityAttribute("Organization ID that owns the Oncall responder."),
+			"responder_id": identityAttribute("Oncall responder ID."),
+		},
+	}
+}
+
 type enterprisePlaybookIdentityModel struct {
 	PlaybookID types.String `tfsdk:"playbook_id"`
 }

@@ -411,7 +411,7 @@ func TestAutomationRunAsFromResponse(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, gotServiceUser := automationRunAsFromResponse(runAsResponse(t, tc.raw), types.StringValue(tc.want))
+			got, gotServiceUser := runAsFromResponse(runAsResponse(t, tc.raw).RunAs, types.StringValue(tc.want))
 			if got.ValueString() != tc.want || !gotServiceUser.Equal(tc.wantServiceUser) {
 				t.Errorf("got (%v, %v), want (%q, %v)", got, gotServiceUser, tc.want, tc.wantServiceUser)
 			}

@@ -161,6 +161,7 @@ const (
 const (
 	AutomationSchemaFieldDefTypeAzureDevopsRepo         AutomationSchemaFieldDefType = "azure_devops_repo"
 	AutomationSchemaFieldDefTypeBitbucketDataCenterRepo AutomationSchemaFieldDefType = "bitbucket_data_center_repo"
+	AutomationSchemaFieldDefTypeBoard                   AutomationSchemaFieldDefType = "board"
 	AutomationSchemaFieldDefTypeBoolean                 AutomationSchemaFieldDefType = "boolean"
 	AutomationSchemaFieldDefTypeDate                    AutomationSchemaFieldDefType = "date"
 	AutomationSchemaFieldDefTypeFilePaths               AutomationSchemaFieldDefType = "file_paths"
@@ -174,6 +175,7 @@ const (
 	AutomationSchemaFieldDefTypeJiraEpic                AutomationSchemaFieldDefType = "jira_epic"
 	AutomationSchemaFieldDefTypeJiraLabel               AutomationSchemaFieldDefType = "jira_label"
 	AutomationSchemaFieldDefTypeJiraProject             AutomationSchemaFieldDefType = "jira_project"
+	AutomationSchemaFieldDefTypeJiraSite                AutomationSchemaFieldDefType = "jira_site"
 	AutomationSchemaFieldDefTypeJiraStatus              AutomationSchemaFieldDefType = "jira_status"
 	AutomationSchemaFieldDefTypeLinearAssignee          AutomationSchemaFieldDefType = "linear_assignee"
 	AutomationSchemaFieldDefTypeLinearLabel             AutomationSchemaFieldDefType = "linear_label"
@@ -302,6 +304,7 @@ const (
 	AutomationTriggerRequestInputEventTypeBitbucketDataCenterPullRequest        AutomationTriggerRequestInputEventType = "bitbucket_data_center:pull_request"
 	AutomationTriggerRequestInputEventTypeBitbucketDataCenterPullRequestComment AutomationTriggerRequestInputEventType = "bitbucket_data_center:pull_request_comment"
 	AutomationTriggerRequestInputEventTypeBitbucketDataCenterPush               AutomationTriggerRequestInputEventType = "bitbucket_data_center:push"
+	AutomationTriggerRequestInputEventTypeBoardTicketUpdated                    AutomationTriggerRequestInputEventType = "board:ticket_updated"
 	AutomationTriggerRequestInputEventTypeGithubCheckRun                        AutomationTriggerRequestInputEventType = "github:check_run"
 	AutomationTriggerRequestInputEventTypeGithubIssueComment                    AutomationTriggerRequestInputEventType = "github:issue_comment"
 	AutomationTriggerRequestInputEventTypeGithubIssues                          AutomationTriggerRequestInputEventType = "github:issues"
@@ -356,6 +359,7 @@ const (
 	AutomationTriggerRequestOutputEventTypeBitbucketDataCenterPullRequest        AutomationTriggerRequestOutputEventType = "bitbucket_data_center:pull_request"
 	AutomationTriggerRequestOutputEventTypeBitbucketDataCenterPullRequestComment AutomationTriggerRequestOutputEventType = "bitbucket_data_center:pull_request_comment"
 	AutomationTriggerRequestOutputEventTypeBitbucketDataCenterPush               AutomationTriggerRequestOutputEventType = "bitbucket_data_center:push"
+	AutomationTriggerRequestOutputEventTypeBoardTicketUpdated                    AutomationTriggerRequestOutputEventType = "board:ticket_updated"
 	AutomationTriggerRequestOutputEventTypeGithubCheckRun                        AutomationTriggerRequestOutputEventType = "github:check_run"
 	AutomationTriggerRequestOutputEventTypeGithubIssueComment                    AutomationTriggerRequestOutputEventType = "github:issue_comment"
 	AutomationTriggerRequestOutputEventTypeGithubIssues                          AutomationTriggerRequestOutputEventType = "github:issues"
@@ -458,6 +462,7 @@ const (
 	GithubApp             GitConnectionResponseGitProviderType = "github_app"
 	GithubIndividualToken GitConnectionResponseGitProviderType = "github_individual_token"
 	GithubToken           GitConnectionResponseGitProviderType = "github_token"
+	GitlabGroupToken      GitConnectionResponseGitProviderType = "gitlab_group_token"
 	GitlabOauth           GitConnectionResponseGitProviderType = "gitlab_oauth"
 	GitlabProjectToken    GitConnectionResponseGitProviderType = "gitlab_project_token"
 	GitlabToken           GitConnectionResponseGitProviderType = "gitlab_token"
@@ -468,6 +473,144 @@ const (
 const (
 	KnowledgeNoteResponseAccessTypeEnterprise KnowledgeNoteResponseAccessType = "enterprise"
 	KnowledgeNoteResponseAccessTypeOrg        KnowledgeNoteResponseAccessType = "org"
+)
+
+// Defines values for OncallResponderCreateRequestSlackReplyAccess.
+const (
+	OncallResponderCreateRequestSlackReplyAccessDevinUsers         OncallResponderCreateRequestSlackReplyAccess = "devin_users"
+	OncallResponderCreateRequestSlackReplyAccessExternalSlackUsers OncallResponderCreateRequestSlackReplyAccess = "external_slack_users"
+	OncallResponderCreateRequestSlackReplyAccessSlackUsers         OncallResponderCreateRequestSlackReplyAccess = "slack_users"
+)
+
+// Defines values for OncallResponderCreateRequestTeamsReplyAccess.
+const (
+	OncallResponderCreateRequestTeamsReplyAccessDevinUsers OncallResponderCreateRequestTeamsReplyAccess = "devin_users"
+	OncallResponderCreateRequestTeamsReplyAccessTeamsUsers OncallResponderCreateRequestTeamsReplyAccess = "teams_users"
+)
+
+// Defines values for OncallResponderCreateRequestTriageIssueType.
+const (
+	OncallResponderCreateRequestTriageIssueTypeAlerts OncallResponderCreateRequestTriageIssueType = "alerts"
+	OncallResponderCreateRequestTriageIssueTypeBugs   OncallResponderCreateRequestTriageIssueType = "bugs"
+)
+
+// Defines values for OncallResponderResponseSlackReplyAccess.
+const (
+	OncallResponderResponseSlackReplyAccessDevinUsers         OncallResponderResponseSlackReplyAccess = "devin_users"
+	OncallResponderResponseSlackReplyAccessExternalSlackUsers OncallResponderResponseSlackReplyAccess = "external_slack_users"
+	OncallResponderResponseSlackReplyAccessSlackUsers         OncallResponderResponseSlackReplyAccess = "slack_users"
+)
+
+// Defines values for OncallResponderResponseSource.
+const (
+	Jira      OncallResponderResponseSource = "jira"
+	Linear    OncallResponderResponseSource = "linear"
+	Pagerduty OncallResponderResponseSource = "pagerduty"
+	Pylon     OncallResponderResponseSource = "pylon"
+	Slack     OncallResponderResponseSource = "slack"
+	Teams     OncallResponderResponseSource = "teams"
+	Webhook   OncallResponderResponseSource = "webhook"
+)
+
+// Defines values for OncallResponderResponseTeamsReplyAccess.
+const (
+	OncallResponderResponseTeamsReplyAccessDevinUsers OncallResponderResponseTeamsReplyAccess = "devin_users"
+	OncallResponderResponseTeamsReplyAccessTeamsUsers OncallResponderResponseTeamsReplyAccess = "teams_users"
+)
+
+// Defines values for OncallResponderResponseTriageIssueType.
+const (
+	OncallResponderResponseTriageIssueTypeAlerts OncallResponderResponseTriageIssueType = "alerts"
+	OncallResponderResponseTriageIssueTypeBugs   OncallResponderResponseTriageIssueType = "bugs"
+)
+
+// Defines values for OncallResponderUpdateRequestSlackReplyAccess.
+const (
+	OncallResponderUpdateRequestSlackReplyAccessDevinUsers         OncallResponderUpdateRequestSlackReplyAccess = "devin_users"
+	OncallResponderUpdateRequestSlackReplyAccessExternalSlackUsers OncallResponderUpdateRequestSlackReplyAccess = "external_slack_users"
+	OncallResponderUpdateRequestSlackReplyAccessSlackUsers         OncallResponderUpdateRequestSlackReplyAccess = "slack_users"
+)
+
+// Defines values for OncallResponderUpdateRequestTeamsReplyAccess.
+const (
+	OncallResponderUpdateRequestTeamsReplyAccessDevinUsers OncallResponderUpdateRequestTeamsReplyAccess = "devin_users"
+	OncallResponderUpdateRequestTeamsReplyAccessTeamsUsers OncallResponderUpdateRequestTeamsReplyAccess = "teams_users"
+)
+
+// Defines values for OncallSchemasResponseAvailableDevinModes.
+const (
+	OncallSchemasResponseAvailableDevinModesFast   OncallSchemasResponseAvailableDevinModes = "fast"
+	OncallSchemasResponseAvailableDevinModesFusion OncallSchemasResponseAvailableDevinModes = "fusion"
+	OncallSchemasResponseAvailableDevinModesLite   OncallSchemasResponseAvailableDevinModes = "lite"
+	OncallSchemasResponseAvailableDevinModesNormal OncallSchemasResponseAvailableDevinModes = "normal"
+	OncallSchemasResponseAvailableDevinModesUltra  OncallSchemasResponseAvailableDevinModes = "ultra"
+)
+
+// Defines values for OncallSchemasResponseDefaultDevinMode.
+const (
+	OncallSchemasResponseDefaultDevinModeFast   OncallSchemasResponseDefaultDevinMode = "fast"
+	OncallSchemasResponseDefaultDevinModeFusion OncallSchemasResponseDefaultDevinMode = "fusion"
+	OncallSchemasResponseDefaultDevinModeLite   OncallSchemasResponseDefaultDevinMode = "lite"
+	OncallSchemasResponseDefaultDevinModeNormal OncallSchemasResponseDefaultDevinMode = "normal"
+	OncallSchemasResponseDefaultDevinModeUltra  OncallSchemasResponseDefaultDevinMode = "ultra"
+)
+
+// Defines values for OncallSchemasResponseUpdateSemantics.
+const (
+	MergePatch OncallSchemasResponseUpdateSemantics = "merge_patch"
+)
+
+// Defines values for OncallSessionSettingsInputDevinMode.
+const (
+	OncallSessionSettingsInputDevinModeFast   OncallSessionSettingsInputDevinMode = "fast"
+	OncallSessionSettingsInputDevinModeFusion OncallSessionSettingsInputDevinMode = "fusion"
+	OncallSessionSettingsInputDevinModeLite   OncallSessionSettingsInputDevinMode = "lite"
+	OncallSessionSettingsInputDevinModeNormal OncallSessionSettingsInputDevinMode = "normal"
+	OncallSessionSettingsInputDevinModeUltra  OncallSessionSettingsInputDevinMode = "ultra"
+)
+
+// Defines values for OncallSessionSettingsOutputDevinMode.
+const (
+	OncallSessionSettingsOutputDevinModeFast   OncallSessionSettingsOutputDevinMode = "fast"
+	OncallSessionSettingsOutputDevinModeFusion OncallSessionSettingsOutputDevinMode = "fusion"
+	OncallSessionSettingsOutputDevinModeLite   OncallSessionSettingsOutputDevinMode = "lite"
+	OncallSessionSettingsOutputDevinModeNormal OncallSessionSettingsOutputDevinMode = "normal"
+	OncallSessionSettingsOutputDevinModeUltra  OncallSessionSettingsOutputDevinMode = "ultra"
+)
+
+// Defines values for OncallSessionSettingsPatchDevinMode.
+const (
+	Fast   OncallSessionSettingsPatchDevinMode = "fast"
+	Fusion OncallSessionSettingsPatchDevinMode = "fusion"
+	Lite   OncallSessionSettingsPatchDevinMode = "lite"
+	Normal OncallSessionSettingsPatchDevinMode = "normal"
+	Ultra  OncallSessionSettingsPatchDevinMode = "ultra"
+)
+
+// Defines values for OncallTriggerRequestEventType.
+const (
+	JiraAssigned                  OncallTriggerRequestEventType = "jira:assigned"
+	JiraIssueCreated              OncallTriggerRequestEventType = "jira:issue_created"
+	JiraIssueUpdated              OncallTriggerRequestEventType = "jira:issue_updated"
+	JiraLabelAdded                OncallTriggerRequestEventType = "jira:label_added"
+	JiraStatusChanged             OncallTriggerRequestEventType = "jira:status_changed"
+	LinearAssigned                OncallTriggerRequestEventType = "linear:assigned"
+	LinearCreate                  OncallTriggerRequestEventType = "linear:create"
+	LinearLabelAdded              OncallTriggerRequestEventType = "linear:label_added"
+	LinearMoved                   OncallTriggerRequestEventType = "linear:moved"
+	LinearPriorityChanged         OncallTriggerRequestEventType = "linear:priority_changed"
+	LinearStatusChanged           OncallTriggerRequestEventType = "linear:status_changed"
+	PagerdutyIncidentAcknowledged OncallTriggerRequestEventType = "pagerduty:incident_acknowledged"
+	PagerdutyIncidentResolved     OncallTriggerRequestEventType = "pagerduty:incident_resolved"
+	PagerdutyIncidentTriggered    OncallTriggerRequestEventType = "pagerduty:incident_triggered"
+	PagerdutyIncidentUpdated      OncallTriggerRequestEventType = "pagerduty:incident_updated"
+	PylonIssueCreated             OncallTriggerRequestEventType = "pylon:issue_created"
+	PylonIssueStatusChanged       OncallTriggerRequestEventType = "pylon:issue_status_changed"
+	PylonIssueTagAdded            OncallTriggerRequestEventType = "pylon:issue_tag_added"
+	SlackMessage                  OncallTriggerRequestEventType = "slack:message"
+	SlackUsergroupMentioned       OncallTriggerRequestEventType = "slack:usergroup_mentioned"
+	TeamsMessage                  OncallTriggerRequestEventType = "teams:message"
+	WebhookIncoming               OncallTriggerRequestEventType = "webhook:incoming"
 )
 
 // Defines values for PlaybookResponseAccessType.
@@ -698,6 +841,9 @@ type AutomationCreateRequest struct {
 	Enabled     *bool                                    `json:"enabled,omitempty"`
 	Limits      nullable.Nullable[AutomationLimits]      `json:"limits,omitempty"`
 
+	// LlmCheck Optional LLM check: a fast model that decides per trigger event whether the automation runs.
+	LlmCheck nullable.Nullable[AutomationLlmCheckRequest] `json:"llm_check,omitempty"`
+
 	// Metadata Org-visible key/value labels for organizing/filtering automations. At most 16 pairs; keys at most 32 chars; values at most 128.
 	Metadata      *map[string]string                         `json:"metadata,omitempty"`
 	Name          string                                     `json:"name"`
@@ -834,6 +980,16 @@ type AutomationListCondition struct {
 
 // AutomationListConditionOperator defines model for AutomationListCondition.Operator.
 type AutomationListConditionOperator string
+
+// AutomationLlmCheckRequest The automation's LLM check configuration. On update the filter prompt is
+// replaced; “enabled“ alone may be omitted to keep its state.
+type AutomationLlmCheckRequest struct {
+	// Enabled Whether the check gates the automation's runs. Omitted keeps the current state; a new configuration starts enabled.
+	Enabled nullable.Nullable[bool] `json:"enabled,omitempty"`
+
+	// FilterPrompt Plain-language description of which trigger events should run the automation. Events that do not match it are skipped.
+	FilterPrompt string `json:"filter_prompt"`
+}
 
 // AutomationMatchCondition defines model for AutomationMatchCondition.
 type AutomationMatchCondition struct {
@@ -1424,13 +1580,17 @@ type AutomationTriggerResponse struct {
 // omitted when a counterpart exists — they carry like any other member;
 // explicit null is rejected.
 type AutomationUpdateRequest struct {
-	Actions       nullable.Nullable[[]AutomationUpdateRequest_Actions_Item] `json:"actions,omitempty"`
-	Concurrency   nullable.Nullable[AutomationConcurrency]                  `json:"concurrency,omitempty"`
-	Enabled       nullable.Nullable[bool]                                   `json:"enabled,omitempty"`
-	Limits        nullable.Nullable[AutomationLimits]                       `json:"limits,omitempty"`
-	Metadata      nullable.Nullable[map[string]*string]                     `json:"metadata,omitempty"`
-	Name          nullable.Nullable[string]                                 `json:"name,omitempty"`
-	Notifications nullable.Nullable[AutomationNotifications]                `json:"notifications,omitempty"`
+	Actions     nullable.Nullable[[]AutomationUpdateRequest_Actions_Item] `json:"actions,omitempty"`
+	Concurrency nullable.Nullable[AutomationConcurrency]                  `json:"concurrency,omitempty"`
+	Enabled     nullable.Nullable[bool]                                   `json:"enabled,omitempty"`
+	Limits      nullable.Nullable[AutomationLimits]                       `json:"limits,omitempty"`
+
+	// LlmCheck The automation's LLM check configuration. On update the filter prompt is
+	// replaced; ``enabled`` alone may be omitted to keep its state.
+	LlmCheck      *AutomationLlmCheckRequest                 `json:"llm_check,omitempty"`
+	Metadata      nullable.Nullable[map[string]*string]      `json:"metadata,omitempty"`
+	Name          nullable.Nullable[string]                  `json:"name,omitempty"`
+	Notifications nullable.Nullable[AutomationNotifications] `json:"notifications,omitempty"`
 
 	// RunAs null resets to organization.
 	RunAs nullable.Nullable[AutomationUpdateRequest_RunAs] `json:"run_as,omitempty"`
@@ -1794,6 +1954,344 @@ type KnowledgeNoteResponse struct {
 // KnowledgeNoteResponseAccessType defines model for KnowledgeNoteResponse.AccessType.
 type KnowledgeNoteResponseAccessType string
 
+// OncallEventSchemaResponse defines model for OncallEventSchemaResponse.
+type OncallEventSchemaResponse struct {
+	Category  string `json:"category"`
+	EventType string `json:"event_type"`
+
+	// Fields Condition field path -> field definition.
+	Fields map[string]AutomationSchemaFieldDef `json:"fields"`
+	Name   string                              `json:"name"`
+
+	// SupportedReplies Always empty: responders manage their own replies.
+	SupportedReplies *[]string `json:"supported_replies,omitempty"`
+}
+
+// OncallLimitsInvocationsPatch defines model for OncallLimitsInvocationsPatch.
+type OncallLimitsInvocationsPatch struct {
+	MaxPerWindow  int `json:"max_per_window"`
+	WindowSeconds int `json:"window_seconds"`
+}
+
+// OncallLimitsPatch defines model for OncallLimitsPatch.
+type OncallLimitsPatch struct {
+	Invocations nullable.Nullable[OncallLimitsInvocationsPatch] `json:"invocations,omitempty"`
+	MaxAcuLimit nullable.Nullable[int]                          `json:"max_acu_limit,omitempty"`
+}
+
+// OncallResponderCreateRequest defines model for OncallResponderCreateRequest.
+type OncallResponderCreateRequest struct {
+	Enabled *bool                               `json:"enabled,omitempty"`
+	Limits  nullable.Nullable[AutomationLimits] `json:"limits,omitempty"`
+
+	// Metadata User-defined tags; 'team' (and 'service' when obvious) are recommended so reports can group responders.
+	Metadata *map[string]string `json:"metadata,omitempty"`
+	Name     string             `json:"name"`
+
+	// PagerdutyConnectionID The account's PagerDuty connection id; required with pagerduty:* triggers (Devin posts triage notes on the incident through it) and rejected with Slack triggers.
+	PagerdutyConnectionID nullable.Nullable[string] `json:"pagerduty_connection_id,omitempty"`
+
+	// RunAs Identity triage sessions run under; defaults to organization.
+	RunAs *OncallResponderCreateRequest_RunAs `json:"run_as,omitempty"`
+
+	// Runbook Investigation instructions for triage sessions. Omit (or send blank) to use the server default (`default_runbook` in the schemas response). Only supply one when the user has specific investigation steps.
+	Runbook nullable.Nullable[string]              `json:"runbook,omitempty"`
+	Session nullable.Nullable[OncallSessionConfig] `json:"session,omitempty"`
+
+	// SessionSettings Omitted net_policy defaults to the deployment default policy; omitted devin_mode inherits the org default.
+	SessionSettings nullable.Nullable[OncallSessionSettingsInput] `json:"session_settings,omitempty"`
+
+	// SlackReplyAccess Who may reply into existing triage sessions from Slack threads: devin_users, slack_users (the organization's connected Slack workspaces), or external_slack_users (also Slack Connect users). Slack responders only.
+	SlackReplyAccess *OncallResponderCreateRequestSlackReplyAccess `json:"slack_reply_access,omitempty"`
+
+	// TeamID Slack workspace id (resolved server-side if omitted); rejected with Teams triggers, which carry team_id in conditions.
+	TeamID nullable.Nullable[string] `json:"team_id,omitempty"`
+
+	// TeamsReplyAccess Teams responders: who may reply into existing triage sessions from Teams threads: devin_users or teams_users. Omitted = teams_users.
+	TeamsReplyAccess nullable.Nullable[OncallResponderCreateRequestTeamsReplyAccess] `json:"teams_reply_access,omitempty"`
+	Tools            nullable.Nullable[OncallTools]                                  `json:"tools,omitempty"`
+
+	// TriageIssueType What the responder triages, which sets its issue workflow and triage behavior: 'alerts' for monitoring alerts, incidents and pages; 'bugs' for bug reports and support questions. Set it on every new responder: the responder then keeps its issues as tickets on a triage Board the server provisions for it. Omitting it creates a legacy responder (no Board) and is kept only for existing callers.
+	TriageIssueType nullable.Nullable[OncallResponderCreateRequestTriageIssueType] `json:"triage_issue_type,omitempty"`
+
+	// Triggers Up to 10 triggers from one provider, OR'd; each has its own filter and no two may be identical. Slack: slack:message or slack:usergroup_mentioned triggers, all in one Slack workspace. Usergroup mentioned requires a usergroup eq filter with a Slack usergroup ID. Each condition group must restrict channels (eq or in) or include at least one completed filter other than is_thread_reply. PagerDuty: pagerduty:* triggers (pagerduty_connection_id required); an event type may repeat with different filters. Teams: teams:message triggers; every condition group names one team (team_id eq) and its channels (channel_id eq/in). Linear: linear:* issue triggers (team_id filters scope the watched teams; Devin comments on the issue, and replies in that thread reach the session). Jira: jira:* issue triggers (project filters scope the watched projects; Devin comments on the issue with the session link).
+	Triggers []OncallTriggerRequest `json:"triggers"`
+}
+
+// OncallResponderCreateRequest_RunAs Identity triage sessions run under; defaults to organization.
+type OncallResponderCreateRequest_RunAs struct {
+	union json.RawMessage
+}
+
+// OncallResponderCreateRequestSlackReplyAccess Who may reply into existing triage sessions from Slack threads: devin_users, slack_users (the organization's connected Slack workspaces), or external_slack_users (also Slack Connect users). Slack responders only.
+type OncallResponderCreateRequestSlackReplyAccess string
+
+// OncallResponderCreateRequestTeamsReplyAccess Teams responders: who may reply into existing triage sessions from Teams threads: devin_users or teams_users. Omitted = teams_users.
+type OncallResponderCreateRequestTeamsReplyAccess string
+
+// OncallResponderCreateRequestTriageIssueType What the responder triages, which sets its issue workflow and triage behavior: 'alerts' for monitoring alerts, incidents and pages; 'bugs' for bug reports and support questions. Set it on every new responder: the responder then keeps its issues as tickets on a triage Board the server provisions for it. Omitting it creates a legacy responder (no Board) and is kept only for existing callers.
+type OncallResponderCreateRequestTriageIssueType string
+
+// OncallResponderResponse defines model for OncallResponderResponse.
+type OncallResponderResponse struct {
+	CreatedAt nullable.Nullable[int]    `json:"created_at,omitempty"`
+	CreatedBy nullable.Nullable[string] `json:"created_by,omitempty"`
+	Enabled   bool                      `json:"enabled"`
+
+	// ID Responder (automation) id.
+	ID     string                              `json:"id"`
+	Limits nullable.Nullable[AutomationLimits] `json:"limits,omitempty"`
+
+	// Metadata User-defined key/value tags (e.g. team, service). Reserved oncall_* keys are managed by the server.
+	Metadata *map[string]string `json:"metadata,omitempty"`
+	Name     string             `json:"name"`
+
+	// PagerdutyConnectionID PagerDuty connection the responder posts incident notes through (PagerDuty responders only).
+	PagerdutyConnectionID nullable.Nullable[string] `json:"pagerduty_connection_id,omitempty"`
+
+	// RunAs Identity triage sessions run under.
+	RunAs *OncallResponderResponse_RunAs `json:"run_as,omitempty"`
+
+	// Runbook Investigation instructions for triage. Blank when the responder runs the server default runbook.
+	Runbook string `json:"runbook"`
+
+	// Session Session tags spawned sessions bill to.
+	Session         nullable.Nullable[OncallSessionConfig]         `json:"session,omitempty"`
+	SessionSettings nullable.Nullable[OncallSessionSettingsOutput] `json:"session_settings,omitempty"`
+
+	// SlackReplyAccess Who may reply into existing triage sessions from Slack threads: devin_users, slack_users (the organization's connected Slack workspaces), or external_slack_users (also Slack Connect users).
+	SlackReplyAccess *OncallResponderResponseSlackReplyAccess `json:"slack_reply_access,omitempty"`
+
+	// Source Alert provider the responder triages: slack, pagerduty, webhook, teams, linear, jira or pylon.
+	Source *OncallResponderResponseSource `json:"source,omitempty"`
+
+	// SourceChannelID First Slack or Teams channel the responder's triggers watch; empty for unscoped Slack, PagerDuty, webhook, Linear, Jira or Pylon responders.
+	SourceChannelID string `json:"source_channel_id"`
+
+	// TeamID Slack workspace id, or the Microsoft Teams team id of source_channel_id for Teams responders.
+	TeamID nullable.Nullable[string] `json:"team_id,omitempty"`
+
+	// TeamsReplyAccess Teams responders: who may reply into existing triage sessions from Teams threads: devin_users (linked Devin accounts only) or teams_users (anyone in the organization's connected Microsoft tenant; the default).
+	TeamsReplyAccess *OncallResponderResponseTeamsReplyAccess `json:"teams_reply_access,omitempty"`
+	Tools            nullable.Nullable[OncallTools]           `json:"tools,omitempty"`
+
+	// TriageIssueType What the responder triages: alerts or bugs (see OncallResponderCreateRequest.triage_issue_type). Null for a legacy responder created without one.
+	TriageIssueType nullable.Nullable[OncallResponderResponseTriageIssueType] `json:"triage_issue_type,omitempty"`
+
+	// Triggers Automation-style triggers, OR'd: the responder runs once when any trigger matches. Slack responders: slack:message / slack:usergroup_mentioned triggers. PagerDuty responders: pagerduty:* triggers. Teams responders: teams:message triggers. Linear responders: linear:* issue triggers. Jira responders: jira:* issue triggers. Pylon responders: pylon:* issue triggers. Webhook responders: one webhook:incoming trigger.
+	Triggers  []OncallTriggerResponse `json:"triggers"`
+	UpdatedAt nullable.Nullable[int]  `json:"updated_at,omitempty"`
+
+	// Webhook Webhook responders only: the inbox URL external systems POST to (header X-Webhook-Secret) and, on the response to the create or the switch that generated it only, the one-time secret. The secret is not stored in recoverable form: if that response is lost (for example the connection dropped while the create committed), list responders to find the one that was created and call POST .../responders/{id}/webhook/regenerate-secret for a new one.
+	Webhook nullable.Nullable[AutomationWebhookResponse] `json:"webhook,omitempty"`
+}
+
+// OncallResponderResponse_RunAs Identity triage sessions run under.
+type OncallResponderResponse_RunAs struct {
+	union json.RawMessage
+}
+
+// OncallResponderResponseSlackReplyAccess Who may reply into existing triage sessions from Slack threads: devin_users, slack_users (the organization's connected Slack workspaces), or external_slack_users (also Slack Connect users).
+type OncallResponderResponseSlackReplyAccess string
+
+// OncallResponderResponseSource Alert provider the responder triages: slack, pagerduty, webhook, teams, linear, jira or pylon.
+type OncallResponderResponseSource string
+
+// OncallResponderResponseTeamsReplyAccess Teams responders: who may reply into existing triage sessions from Teams threads: devin_users (linked Devin accounts only) or teams_users (anyone in the organization's connected Microsoft tenant; the default).
+type OncallResponderResponseTeamsReplyAccess string
+
+// OncallResponderResponseTriageIssueType What the responder triages: alerts or bugs (see OncallResponderCreateRequest.triage_issue_type). Null for a legacy responder created without one.
+type OncallResponderResponseTriageIssueType string
+
+// OncallResponderUpdateRequest Partial update (RFC 7396-style): omitted fields and omitted group
+// members keep their stored value; explicit nulls clear; “triggers“,
+// “tools.mcp_servers“, “tools.slack_channels“ and “session.tags“ lists
+// replace wholesale; “metadata“ merges per key (null value deletes the
+// key).
+type OncallResponderUpdateRequest struct {
+	Enabled  nullable.Nullable[bool]               `json:"enabled,omitempty"`
+	Limits   nullable.Nullable[OncallLimitsPatch]  `json:"limits,omitempty"`
+	Metadata nullable.Nullable[map[string]*string] `json:"metadata,omitempty"`
+	Name     nullable.Nullable[string]             `json:"name,omitempty"`
+
+	// PagerdutyConnectionID Omitted -> preserve; required when triggers switch the responder to PagerDuty.
+	PagerdutyConnectionID nullable.Nullable[string] `json:"pagerduty_connection_id,omitempty"`
+
+	// RunAs Omitted -> preserve the responder's existing run_as; null resets to organization.
+	RunAs nullable.Nullable[OncallResponderUpdateRequest_RunAs] `json:"run_as,omitempty"`
+
+	// Runbook Blank resets to the server default runbook.
+	Runbook         nullable.Nullable[string]                     `json:"runbook,omitempty"`
+	Session         nullable.Nullable[OncallSessionConfig]        `json:"session,omitempty"`
+	SessionSettings nullable.Nullable[OncallSessionSettingsPatch] `json:"session_settings,omitempty"`
+
+	// SlackReplyAccess Omitted -> preserve the responder's existing setting; null resets to slack_users.
+	SlackReplyAccess nullable.Nullable[OncallResponderUpdateRequestSlackReplyAccess] `json:"slack_reply_access,omitempty"`
+	TeamID           nullable.Nullable[string]                                       `json:"team_id,omitempty"`
+
+	// TeamsReplyAccess Teams responders. Omitted -> preserve; null resets to teams_users.
+	TeamsReplyAccess nullable.Nullable[OncallResponderUpdateRequestTeamsReplyAccess] `json:"teams_reply_access,omitempty"`
+	Tools            nullable.Nullable[OncallToolsPatch]                             `json:"tools,omitempty"`
+
+	// Triggers Replaces the trigger set. Switching provider (Slack, PagerDuty, Teams) rebuilds the responder's provider config from this request.
+	Triggers nullable.Nullable[[]OncallTriggerRequest] `json:"triggers,omitempty"`
+}
+
+// OncallResponderUpdateRequest_RunAs Omitted -> preserve the responder's existing run_as; null resets to organization.
+type OncallResponderUpdateRequest_RunAs struct {
+	union json.RawMessage
+}
+
+// OncallResponderUpdateRequestSlackReplyAccess Omitted -> preserve the responder's existing setting; null resets to slack_users.
+type OncallResponderUpdateRequestSlackReplyAccess string
+
+// OncallResponderUpdateRequestTeamsReplyAccess Teams responders. Omitted -> preserve; null resets to teams_users.
+type OncallResponderUpdateRequestTeamsReplyAccess string
+
+// OncallSchemasResponse defines model for OncallSchemasResponse.
+type OncallSchemasResponse struct {
+	// AvailableDevinModes Every mode the organization may set on responders / incidents (including fast and lite, which are never picked by default).
+	AvailableDevinModes []OncallSchemasResponseAvailableDevinModes `json:"available_devin_modes"`
+
+	// DefaultDevinMode Mode applied to new responders / incidents when session_settings.devin_mode is omitted: the best of ultra > fusion > normal the organization can use, or null when none of those is available and sessions inherit the organization default.
+	DefaultDevinMode nullable.Nullable[OncallSchemasResponseDefaultDevinMode] `json:"default_devin_mode"`
+
+	// DefaultNetPolicy Network policy applied to a new responder when session_settings.net_policy is omitted: the deployment's Git Manager-only policy, or null when the governing security profile (see security_profile) has a network policy, in which case the responder inherits it and its sessions use the profile's policy.
+	DefaultNetPolicy nullable.Nullable[AutomationNetPolicy] `json:"default_net_policy"`
+
+	// DefaultRunbook Runbook applied when a responder's runbook is blank.
+	DefaultRunbook string `json:"default_runbook"`
+
+	// JiraConnected Whether Jira responders (jira:* issue triggers) are available: the account has a Jira connection and the feature is enabled.
+	JiraConnected *bool `json:"jira_connected,omitempty"`
+
+	// LinearConnected Whether Linear responders (linear:* issue triggers) are available: the account has a Linear connection and the feature is enabled.
+	LinearConnected *bool `json:"linear_connected,omitempty"`
+
+	// PagerdutyConnectionID The account's PagerDuty connection id when PagerDuty responders are available to this organization (pass it as pagerduty_connection_id on a responder with pagerduty:* triggers); null when PagerDuty is not connected or the feature is not enabled.
+	PagerdutyConnectionID nullable.Nullable[string] `json:"pagerduty_connection_id,omitempty"`
+
+	// PylonConnected Whether Pylon responders (pylon:* issue triggers) are available: the account has a Pylon connection with automation triggers turned on and the feature is enabled.
+	PylonConnected *bool `json:"pylon_connected,omitempty"`
+
+	// SecurityProfile Security profile governing this organization's automation sessions (responders included), or null when none applies.
+	SecurityProfile nullable.Nullable[AutomationSchemasSecurityProfile] `json:"security_profile,omitempty"`
+
+	// SlackConnected Whether the organization has a Slack connection.
+	SlackConnected bool `json:"slack_connected"`
+
+	// Sources Event source -> event name -> schema. 'pagerduty' is present only when pagerduty_connection_id is set; 'webhook' only when webhook_responders_enabled is true; 'teams' only when teams_connected is true; 'linear' / 'jira' / 'pylon' only when linear_connected / jira_connected / pylon_connected is true.
+	Sources map[string]map[string]OncallEventSchemaResponse `json:"sources"`
+
+	// TeamsConnected Whether Microsoft Teams responders are available: the organization has a Teams connection and the feature is enabled. Teams does not count toward the Slack connection incidents require.
+	TeamsConnected *bool `json:"teams_connected,omitempty"`
+
+	// UpdateSemantics PATCH semantics: omitted fields / group members keep their stored values, explicit nulls clear, lists replace wholesale.
+	UpdateSemantics *OncallSchemasResponseUpdateSemantics `json:"update_semantics,omitempty"`
+
+	// WebhookRespondersEnabled Whether webhook responders (one webhook:incoming trigger) are available to this organization.
+	WebhookRespondersEnabled *bool `json:"webhook_responders_enabled,omitempty"`
+}
+
+// OncallSchemasResponseAvailableDevinModes defines model for OncallSchemasResponse.AvailableDevinModes.
+type OncallSchemasResponseAvailableDevinModes string
+
+// OncallSchemasResponseDefaultDevinMode Mode applied to new responders / incidents when session_settings.devin_mode is omitted: the best of ultra > fusion > normal the organization can use, or null when none of those is available and sessions inherit the organization default.
+type OncallSchemasResponseDefaultDevinMode string
+
+// OncallSchemasResponseUpdateSemantics PATCH semantics: omitted fields / group members keep their stored values, explicit nulls clear, lists replace wholesale.
+type OncallSchemasResponseUpdateSemantics string
+
+// OncallSessionConfig Session-level configuration that automations carry on their action
+// (“actions[].session“); Oncall exposes only the tags.
+type OncallSessionConfig struct {
+	// Tags Session tags (cost codes) the spawned sessions bill to. Validated as the run identity; organizations that enforce required session tags must supply exactly one allowed tag.
+	Tags nullable.Nullable[[]string] `json:"tags,omitempty"`
+}
+
+// OncallSessionSettingsInput Per-session settings for the sessions a responder / incident spawns.
+type OncallSessionSettingsInput struct {
+	// DevinMode Mode for spawned sessions: normal, fusion, fast, ultra, or lite. Omitted on create = the best mode the run identity can spawn (Ultra, else Fusion, else Normal); explicit null = org default.
+	DevinMode nullable.Nullable[OncallSessionSettingsInputDevinMode] `json:"devin_mode,omitempty"`
+
+	// NetPolicy Network policy for spawned sessions. Omitted on create = the deployment default (Git Manager-only) policy; explicit null = unrestricted.
+	NetPolicy nullable.Nullable[AutomationNetPolicy] `json:"net_policy,omitempty"`
+}
+
+// OncallSessionSettingsInputDevinMode Mode for spawned sessions: normal, fusion, fast, ultra, or lite. Omitted on create = the best mode the run identity can spawn (Ultra, else Fusion, else Normal); explicit null = org default.
+type OncallSessionSettingsInputDevinMode string
+
+// OncallSessionSettingsOutput Per-session settings for the sessions a responder / incident spawns.
+type OncallSessionSettingsOutput struct {
+	// DevinMode Mode for spawned sessions: normal, fusion, fast, ultra, or lite. Omitted on create = the best mode the run identity can spawn (Ultra, else Fusion, else Normal); explicit null = org default.
+	DevinMode nullable.Nullable[OncallSessionSettingsOutputDevinMode] `json:"devin_mode,omitempty"`
+
+	// NetPolicy Network policy for spawned sessions. Omitted on create = the deployment default (Git Manager-only) policy; explicit null = unrestricted.
+	NetPolicy nullable.Nullable[AutomationNetPolicy] `json:"net_policy,omitempty"`
+}
+
+// OncallSessionSettingsOutputDevinMode Mode for spawned sessions: normal, fusion, fast, ultra, or lite. Omitted on create = the best mode the run identity can spawn (Ultra, else Fusion, else Normal); explicit null = org default.
+type OncallSessionSettingsOutputDevinMode string
+
+// OncallSessionSettingsPatch defines model for OncallSessionSettingsPatch.
+type OncallSessionSettingsPatch struct {
+	DevinMode nullable.Nullable[OncallSessionSettingsPatchDevinMode] `json:"devin_mode,omitempty"`
+	NetPolicy nullable.Nullable[AutomationNetPolicy]                 `json:"net_policy,omitempty"`
+}
+
+// OncallSessionSettingsPatchDevinMode defines model for OncallSessionSettingsPatch.DevinMode.
+type OncallSessionSettingsPatchDevinMode string
+
+// OncallTools Tools granted to spawned sessions; mirrors Automations “tools“ minus
+// “slack_dm_scope“ (Oncall sessions never DM).
+type OncallTools struct {
+	// LinearEnabled Enable Linear tools; null = org default.
+	LinearEnabled nullable.Nullable[bool] `json:"linear_enabled,omitempty"`
+
+	// McpServers Marketplace MCP server slugs enabled for spawned sessions. Servers installed with a personal (user-scoped) connection require run_as creator.
+	McpServers *[]string `json:"mcp_servers,omitempty"`
+
+	// SlackChannels Slack channels spawned sessions may read/post in (tool grant, independent of the trigger's channel filter). Incident settings accept the wildcard pair team_id='*', channel_id='*' for all public channels.
+	SlackChannels *[]AutomationSlackChannel `json:"slack_channels,omitempty"`
+
+	// TeamsChannels Microsoft Teams channels spawned sessions may read/post in (Teams responders only). Omitted on create = the watched channels.
+	TeamsChannels *[]AutomationTeamsChannel `json:"teams_channels,omitempty"`
+}
+
+// OncallToolsPatch Merge-patch view of “tools“: only members present in the request
+// change; explicit null clears a member.
+type OncallToolsPatch struct {
+	LinearEnabled nullable.Nullable[bool]                     `json:"linear_enabled,omitempty"`
+	McpServers    nullable.Nullable[[]string]                 `json:"mcp_servers,omitempty"`
+	SlackChannels nullable.Nullable[[]AutomationSlackChannel] `json:"slack_channels,omitempty"`
+	TeamsChannels nullable.Nullable[[]AutomationTeamsChannel] `json:"teams_channels,omitempty"`
+}
+
+// OncallTriggerRequest defines model for OncallTriggerRequest.
+type OncallTriggerRequest struct {
+	// Conditions Automation-style DNF filter over the event. Every Slack AND group requires a channel restriction or at least one completed filter. is_thread_reply alone does not count. For pagerduty:* triggers the filter is optional (e.g. incident.service / incident.priority). Every teams:message AND group needs team_id eq and channel_id eq/in.
+	Conditions nullable.Nullable[AutomationConditionsInput] `json:"conditions,omitempty"`
+
+	// EventType Trigger event type: 'slack:message' or 'slack:usergroup_mentioned', a 'pagerduty:incident_*' event (requires pagerduty_connection_id), 'teams:message', or 'webhook:incoming' (exactly one, no conditions; the response's webhook field carries the inbox URL and, on create, the one-time secret). All of a responder's triggers use one provider.
+	EventType OncallTriggerRequestEventType `json:"event_type"`
+
+	// Replies Must be empty: Oncall responders manage their own thread replies.
+	Replies *[]AutomationReply `json:"replies,omitempty"`
+}
+
+// OncallTriggerRequestEventType Trigger event type: 'slack:message' or 'slack:usergroup_mentioned', a 'pagerduty:incident_*' event (requires pagerduty_connection_id), 'teams:message', or 'webhook:incoming' (exactly one, no conditions; the response's webhook field carries the inbox URL and, on create, the one-time secret). All of a responder's triggers use one provider.
+type OncallTriggerRequestEventType string
+
+// OncallTriggerResponse defines model for OncallTriggerResponse.
+type OncallTriggerResponse struct {
+	Conditions nullable.Nullable[AutomationConditionsOutput] `json:"conditions,omitempty"`
+	EventType  string                                        `json:"event_type"`
+	Replies    *[]AutomationReply                            `json:"replies,omitempty"`
+
+	// TriggerID Re-minted when triggers is replaced — not stable across edits.
+	TriggerID string `json:"trigger_id"`
+}
+
 // OrgGroupConfig defines model for OrgGroupConfig.
 type OrgGroupConfig struct {
 	MaxCycleAcus nullable.Nullable[int] `json:"max_cycle_acus,omitempty"`
@@ -1967,6 +2465,19 @@ type PaginatedResponseKnowledgeNoteResponse struct {
 	// HasNextPage Whether there are more items available after this page.
 	HasNextPage *bool                   `json:"has_next_page,omitempty"`
 	Items       []KnowledgeNoteResponse `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
+// PaginatedResponseOncallResponderResponse defines model for PaginatedResponse_OncallResponderResponse_.
+type PaginatedResponseOncallResponderResponse struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool                     `json:"has_next_page,omitempty"`
+	Items       []OncallResponderResponse `json:"items"`
 
 	// Total Optional total count (can be omitted for performance).
 	Total nullable.Nullable[int] `json:"total,omitempty"`
@@ -2397,11 +2908,32 @@ type SecretResponseSecretType string
 
 // ServiceUser defines model for ServiceUser.
 type ServiceUser struct {
-	DeletedAt       nullable.Nullable[int] `json:"deleted_at"`
-	ExpiresAt       nullable.Nullable[int] `json:"expires_at"`
-	Name            string                 `json:"name"`
+	DeletedAt nullable.Nullable[int] `json:"deleted_at"`
+	ExpiresAt nullable.Nullable[int] `json:"expires_at"`
+	Name      string                 `json:"name"`
+
+	// Preferences Per-service-user switches; a field left null means its default.
+	Preferences     ServiceUserPreferences `json:"preferences"`
 	RoleAssignments []RoleAssignment       `json:"role_assignments"`
 	ServiceUserID   string                 `json:"service_user_id"`
+}
+
+// ServiceUserPreferences Per-service-user switches; a field left null means its default.
+type ServiceUserPreferences struct {
+	// MemoryDreamingEnabled Whether the service user's memory is refined nightly from its sessions. Defaults to on when its memory is on.
+	MemoryDreamingEnabled nullable.Nullable[bool] `json:"memory_dreaming_enabled,omitempty"`
+
+	// MemoryEnabled Whether the service user's own sessions use its memory. Off until set to true; the organization's memory policy applies on top.
+	MemoryEnabled nullable.Nullable[bool] `json:"memory_enabled,omitempty"`
+}
+
+// ServiceUserUpdateRequest defines model for ServiceUserUpdateRequest.
+type ServiceUserUpdateRequest struct {
+	// Preferences Switches to change; fields left out keep their value. A service user's preferences apply across the whole enterprise.
+	Preferences nullable.Nullable[ServiceUserPreferences] `json:"preferences,omitempty"`
+
+	// RoleID Role to assign the service user at this scope.
+	RoleID nullable.Nullable[string] `json:"role_id,omitempty"`
 }
 
 // ServiceUserUpdateRoleRequest defines model for ServiceUserUpdateRoleRequest.
@@ -2649,6 +3181,12 @@ type HandleListNotesV3OrganizationsOrgIDKnowledgeNotesGetParams struct {
 	PinnedRepo *string `form:"pinned_repo,omitempty" json:"pinned_repo,omitempty"`
 }
 
+// HandleListRespondersV3OrganizationsOrgIDOncallRespondersGetParams defines parameters for HandleListRespondersV3OrganizationsOrgIDOncallRespondersGet.
+type HandleListRespondersV3OrganizationsOrgIDOncallRespondersGetParams struct {
+	After *string `form:"after,omitempty" json:"after,omitempty"`
+	First *int    `form:"first,omitempty" json:"first,omitempty"`
+}
+
 // HandleListPlaybooksV3OrganizationsOrgIDPlaybooksGetParams defines parameters for HandleListPlaybooksV3OrganizationsOrgIDPlaybooksGet.
 type HandleListPlaybooksV3OrganizationsOrgIDPlaybooksGetParams struct {
 	After *string `form:"after,omitempty" json:"after,omitempty"`
@@ -2743,7 +3281,7 @@ type HandleUpdateEnterpriseIdpGroupRoleV3EnterpriseMembersIdpGroupsIdpGroupNameP
 type HandleAssignEnterpriseIdpGroupRoleV3EnterpriseMembersIdpGroupsIdpGroupNamePostJSONRequestBody = IdpGroupUpdateRoleRequest
 
 // HandleUpdateEnterpriseServiceUserRoleV3EnterpriseMembersServiceUsersServiceUserIDPatchJSONRequestBody defines body for HandleUpdateEnterpriseServiceUserRoleV3EnterpriseMembersServiceUsersServiceUserIDPatch for application/json ContentType.
-type HandleUpdateEnterpriseServiceUserRoleV3EnterpriseMembersServiceUsersServiceUserIDPatchJSONRequestBody = ServiceUserUpdateRoleRequest
+type HandleUpdateEnterpriseServiceUserRoleV3EnterpriseMembersServiceUsersServiceUserIDPatchJSONRequestBody = ServiceUserUpdateRequest
 
 // HandleAssignEnterpriseServiceUserRoleV3EnterpriseMembersServiceUsersServiceUserIDPostJSONRequestBody defines body for HandleAssignEnterpriseServiceUserRoleV3EnterpriseMembersServiceUsersServiceUserIDPost for application/json ContentType.
 type HandleAssignEnterpriseServiceUserRoleV3EnterpriseMembersServiceUsersServiceUserIDPostJSONRequestBody = ServiceUserUpdateRoleRequest
@@ -2779,7 +3317,7 @@ type HandleUpdateOrganizationIdpGroupRoleV3EnterpriseOrganizationsOrgIDMembersId
 type HandleAssignOrganizationIdpGroupRoleV3EnterpriseOrganizationsOrgIDMembersIdpGroupsIdpGroupNamePostJSONRequestBody = IdpGroupUpdateRoleRequest
 
 // HandleUpdateOrganizationServiceUserRoleV3EnterpriseOrganizationsOrgIDMembersServiceUsersServiceUserIDPatchJSONRequestBody defines body for HandleUpdateOrganizationServiceUserRoleV3EnterpriseOrganizationsOrgIDMembersServiceUsersServiceUserIDPatch for application/json ContentType.
-type HandleUpdateOrganizationServiceUserRoleV3EnterpriseOrganizationsOrgIDMembersServiceUsersServiceUserIDPatchJSONRequestBody = ServiceUserUpdateRoleRequest
+type HandleUpdateOrganizationServiceUserRoleV3EnterpriseOrganizationsOrgIDMembersServiceUsersServiceUserIDPatchJSONRequestBody = ServiceUserUpdateRequest
 
 // HandleAssignOrganizationServiceUserRoleV3EnterpriseOrganizationsOrgIDMembersServiceUsersServiceUserIDPostJSONRequestBody defines body for HandleAssignOrganizationServiceUserRoleV3EnterpriseOrganizationsOrgIDMembersServiceUsersServiceUserIDPost for application/json ContentType.
 type HandleAssignOrganizationServiceUserRoleV3EnterpriseOrganizationsOrgIDMembersServiceUsersServiceUserIDPostJSONRequestBody = ServiceUserUpdateRoleRequest
@@ -2825,6 +3363,12 @@ type HandleCreateNoteV3OrganizationsOrgIDKnowledgeNotesPostJSONRequestBody = Kno
 
 // HandleUpdateNoteV3OrganizationsOrgIDKnowledgeNotesNoteIDPutJSONRequestBody defines body for HandleUpdateNoteV3OrganizationsOrgIDKnowledgeNotesNoteIDPut for application/json ContentType.
 type HandleUpdateNoteV3OrganizationsOrgIDKnowledgeNotesNoteIDPutJSONRequestBody = KnowledgeNoteCreateRequest
+
+// HandleCreateResponderV3OrganizationsOrgIDOncallRespondersPostJSONRequestBody defines body for HandleCreateResponderV3OrganizationsOrgIDOncallRespondersPost for application/json ContentType.
+type HandleCreateResponderV3OrganizationsOrgIDOncallRespondersPostJSONRequestBody = OncallResponderCreateRequest
+
+// HandleUpdateResponderV3OrganizationsOrgIDOncallRespondersResponderIDPatchJSONRequestBody defines body for HandleUpdateResponderV3OrganizationsOrgIDOncallRespondersResponderIDPatch for application/json ContentType.
+type HandleUpdateResponderV3OrganizationsOrgIDOncallRespondersResponderIDPatchJSONRequestBody = OncallResponderUpdateRequest
 
 // HandleCreatePlaybookV3OrganizationsOrgIDPlaybooksPostJSONRequestBody defines body for HandleCreatePlaybookV3OrganizationsOrgIDPlaybooksPost for application/json ContentType.
 type HandleCreatePlaybookV3OrganizationsOrgIDPlaybooksPostJSONRequestBody = PlaybookCreateRequest
@@ -3985,6 +4529,270 @@ func (t AutomationUpdateRequest_RunAs) MarshalJSON() ([]byte, error) {
 }
 
 func (t *AutomationUpdateRequest_RunAs) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsAutomationRunAsOrganization returns the union data inside the OncallResponderCreateRequest_RunAs as a AutomationRunAsOrganization
+func (t OncallResponderCreateRequest_RunAs) AsAutomationRunAsOrganization() (AutomationRunAsOrganization, error) {
+	var body AutomationRunAsOrganization
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRunAsOrganization overwrites any union data inside the OncallResponderCreateRequest_RunAs as the provided AutomationRunAsOrganization
+func (t *OncallResponderCreateRequest_RunAs) FromAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRunAsOrganization performs a merge with any union data inside the OncallResponderCreateRequest_RunAs, using the provided AutomationRunAsOrganization
+func (t *OncallResponderCreateRequest_RunAs) MergeAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationRunAsCreator returns the union data inside the OncallResponderCreateRequest_RunAs as a AutomationRunAsCreator
+func (t OncallResponderCreateRequest_RunAs) AsAutomationRunAsCreator() (AutomationRunAsCreator, error) {
+	var body AutomationRunAsCreator
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRunAsCreator overwrites any union data inside the OncallResponderCreateRequest_RunAs as the provided AutomationRunAsCreator
+func (t *OncallResponderCreateRequest_RunAs) FromAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRunAsCreator performs a merge with any union data inside the OncallResponderCreateRequest_RunAs, using the provided AutomationRunAsCreator
+func (t *OncallResponderCreateRequest_RunAs) MergeAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationRunAsServiceUser returns the union data inside the OncallResponderCreateRequest_RunAs as a AutomationRunAsServiceUser
+func (t OncallResponderCreateRequest_RunAs) AsAutomationRunAsServiceUser() (AutomationRunAsServiceUser, error) {
+	var body AutomationRunAsServiceUser
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRunAsServiceUser overwrites any union data inside the OncallResponderCreateRequest_RunAs as the provided AutomationRunAsServiceUser
+func (t *OncallResponderCreateRequest_RunAs) FromAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRunAsServiceUser performs a merge with any union data inside the OncallResponderCreateRequest_RunAs, using the provided AutomationRunAsServiceUser
+func (t *OncallResponderCreateRequest_RunAs) MergeAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t OncallResponderCreateRequest_RunAs) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *OncallResponderCreateRequest_RunAs) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsAutomationRunAsOrganization returns the union data inside the OncallResponderResponse_RunAs as a AutomationRunAsOrganization
+func (t OncallResponderResponse_RunAs) AsAutomationRunAsOrganization() (AutomationRunAsOrganization, error) {
+	var body AutomationRunAsOrganization
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRunAsOrganization overwrites any union data inside the OncallResponderResponse_RunAs as the provided AutomationRunAsOrganization
+func (t *OncallResponderResponse_RunAs) FromAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRunAsOrganization performs a merge with any union data inside the OncallResponderResponse_RunAs, using the provided AutomationRunAsOrganization
+func (t *OncallResponderResponse_RunAs) MergeAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationRunAsCreator returns the union data inside the OncallResponderResponse_RunAs as a AutomationRunAsCreator
+func (t OncallResponderResponse_RunAs) AsAutomationRunAsCreator() (AutomationRunAsCreator, error) {
+	var body AutomationRunAsCreator
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRunAsCreator overwrites any union data inside the OncallResponderResponse_RunAs as the provided AutomationRunAsCreator
+func (t *OncallResponderResponse_RunAs) FromAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRunAsCreator performs a merge with any union data inside the OncallResponderResponse_RunAs, using the provided AutomationRunAsCreator
+func (t *OncallResponderResponse_RunAs) MergeAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationRunAsServiceUser returns the union data inside the OncallResponderResponse_RunAs as a AutomationRunAsServiceUser
+func (t OncallResponderResponse_RunAs) AsAutomationRunAsServiceUser() (AutomationRunAsServiceUser, error) {
+	var body AutomationRunAsServiceUser
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRunAsServiceUser overwrites any union data inside the OncallResponderResponse_RunAs as the provided AutomationRunAsServiceUser
+func (t *OncallResponderResponse_RunAs) FromAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRunAsServiceUser performs a merge with any union data inside the OncallResponderResponse_RunAs, using the provided AutomationRunAsServiceUser
+func (t *OncallResponderResponse_RunAs) MergeAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t OncallResponderResponse_RunAs) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *OncallResponderResponse_RunAs) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsAutomationRunAsOrganization returns the union data inside the OncallResponderUpdateRequest_RunAs as a AutomationRunAsOrganization
+func (t OncallResponderUpdateRequest_RunAs) AsAutomationRunAsOrganization() (AutomationRunAsOrganization, error) {
+	var body AutomationRunAsOrganization
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRunAsOrganization overwrites any union data inside the OncallResponderUpdateRequest_RunAs as the provided AutomationRunAsOrganization
+func (t *OncallResponderUpdateRequest_RunAs) FromAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRunAsOrganization performs a merge with any union data inside the OncallResponderUpdateRequest_RunAs, using the provided AutomationRunAsOrganization
+func (t *OncallResponderUpdateRequest_RunAs) MergeAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationRunAsCreator returns the union data inside the OncallResponderUpdateRequest_RunAs as a AutomationRunAsCreator
+func (t OncallResponderUpdateRequest_RunAs) AsAutomationRunAsCreator() (AutomationRunAsCreator, error) {
+	var body AutomationRunAsCreator
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRunAsCreator overwrites any union data inside the OncallResponderUpdateRequest_RunAs as the provided AutomationRunAsCreator
+func (t *OncallResponderUpdateRequest_RunAs) FromAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRunAsCreator performs a merge with any union data inside the OncallResponderUpdateRequest_RunAs, using the provided AutomationRunAsCreator
+func (t *OncallResponderUpdateRequest_RunAs) MergeAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsAutomationRunAsServiceUser returns the union data inside the OncallResponderUpdateRequest_RunAs as a AutomationRunAsServiceUser
+func (t OncallResponderUpdateRequest_RunAs) AsAutomationRunAsServiceUser() (AutomationRunAsServiceUser, error) {
+	var body AutomationRunAsServiceUser
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAutomationRunAsServiceUser overwrites any union data inside the OncallResponderUpdateRequest_RunAs as the provided AutomationRunAsServiceUser
+func (t *OncallResponderUpdateRequest_RunAs) FromAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAutomationRunAsServiceUser performs a merge with any union data inside the OncallResponderUpdateRequest_RunAs, using the provided AutomationRunAsServiceUser
+func (t *OncallResponderUpdateRequest_RunAs) MergeAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t OncallResponderUpdateRequest_RunAs) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *OncallResponderUpdateRequest_RunAs) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

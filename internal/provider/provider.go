@@ -107,6 +107,7 @@ func (p *DevinProvider) Resources(_ context.Context) []func() resource.Resource 
 		NewGitPermissionResource,
 		NewPlaybookResource,
 		NewAutomationResource,
+		NewOncallResponderResource,
 		NewKnowledgeNoteResource,
 		NewSecretResource,
 		NewScheduleResource,
@@ -138,6 +139,7 @@ func (p *DevinProvider) DataSources(_ context.Context) []func() datasource.DataS
 		NewIdpGroupsDataSource,
 		NewKnowledgeFoldersDataSource,
 		NewRepositoriesDataSource,
+		NewOncallSchemasDataSource,
 	}
 }
 

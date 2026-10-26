@@ -54,6 +54,7 @@ type automationModel struct {
 	Concurrency      jsontypes.Normalized `tfsdk:"concurrency"`
 	Tools            jsontypes.Normalized `tfsdk:"tools"`
 	SessionSettings  jsontypes.Normalized `tfsdk:"session_settings"`
+	LlmCheck         jsontypes.Normalized `tfsdk:"llm_check"`
 	RunAs            types.String         `tfsdk:"run_as"`
 	RunAsServiceUser types.String         `tfsdk:"run_as_service_user_id"`
 	SlackReplyAccess types.String         `tfsdk:"slack_reply_access"`
@@ -76,7 +77,7 @@ func (r *automationResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			"response to events (GitHub/GitLab activity, Slack messages, Jira/Linear updates, " +
 			"schedules, incoming webhooks). The triggers/actions/notifications/limits/" +
 			"concurrency/tools/" +
-			"session_settings groups are JSON-encoded (use jsonencode(...)); their configured " +
+			"session_settings/llm_check groups are JSON-encoded (use jsonencode(...)); their configured " +
 			"values are authoritative and out-of-band edits to them are not detected as drift. " +
 			"The organization's automation event schemas endpoint " +
 			"(GET /v3/organizations/{org_id}/automations/schemas) documents the supported trigger " +
@@ -173,6 +174,18 @@ func (r *automationResource) Schema(_ context.Context, _ resource.SchemaRequest,
 					"scalars can be changed but cannot be cleared through PATCH.",
 				Optional: true,
 			},
+			"llm_check": schema.StringAttribute{
+				CustomType: jsontypes.NormalizedType{},
+				Description: "JSON-encoded LLM check object (use jsonencode(...)): a fast model " +
+					"that decides per trigger event whether the automation runs. Members: " +
+					"filter_prompt (plain-language description of the events that should run " +
+					"the automation; required) and enabled (defaults to true). Requires the " +
+					"LLM check feature to be enabled for the organization, and cannot be " +
+					"combined with an enabled Preflight script. The API has no way to delete a " +
+					"configured check, so removing this attribute disables it (enabled=false) " +
+					"with the last configured filter_prompt.",
+				Optional: true,
+			},
 			"run_as": schema.StringAttribute{
 				Description: "Identity the spawned sessions run under: 'organization', 'creator' " +
 					"(personal automation, visible only to the creator and org admins; rejected for " +
@@ -264,6 +277,7 @@ func (r *automationResource) Create(ctx context.Context, req resource.CreateRequ
 		Concurrency:     optionalGroupFrom[api.AutomationConcurrency](plan.Concurrency, "concurrency", &resp.Diagnostics),
 		Tools:           optionalGroupFrom[api.AutomationTools](plan.Tools, "tools", &resp.Diagnostics),
 		SessionSettings: optionalGroupFrom[api.AutomationSessionSettingsInput](plan.SessionSettings, "session_settings", &resp.Diagnostics),
+		LlmCheck:        optionalGroupFrom[api.AutomationLlmCheckRequest](plan.LlmCheck, "llm_check", &resp.Diagnostics),
 	}
 	// The API requires an explicit run-as choice on create; an unset
 	// attribute means the organization identity.
@@ -322,7 +336,7 @@ func (r *automationResource) Read(ctx context.Context, req resource.ReadRequest,
 	if result.Metadata != nil && len(*result.Metadata) == 0 && priorMetadata.IsNull() {
 		state.Metadata = types.MapNull(types.StringType)
 	}
-	state.RunAs, state.RunAsServiceUser = automationRunAsFromResponse(&result, state.RunAs)
+	state.RunAs, state.RunAsServiceUser = runAsFromResponse(result.RunAs, state.RunAs)
 	state.SlackReplyAccess = automationSlackReplyAccessFromResponse(&result)
 	state.TeamsReplyAccess = automationTeamsReplyAccessFromResponse(&result)
 	state.WebhookURL, state.WebhookSecret = automationWebhook(&result, state.WebhookSecret)
@@ -378,6 +392,9 @@ func (r *automationResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 	if normalizedJSONChanged(ctx, plan.SessionSettings, state.SessionSettings, &resp.Diagnostics) {
 		body.SessionSettings = nullableGroupFromJSON[api.AutomationSessionSettingsInput](plan.SessionSettings, "session_settings", &resp.Diagnostics)
+	}
+	if normalizedJSONChanged(ctx, plan.LlmCheck, state.LlmCheck, &resp.Diagnostics) {
+		body.LlmCheck = llmCheckPatch(plan.LlmCheck, state.LlmCheck, &resp.Diagnostics)
 	}
 	validateRunAs(plan, &resp.Diagnostics)
 	if plan.RunAs.IsNull() {
@@ -473,6 +490,27 @@ func optionalGroupFrom[T any](value jsontypes.Normalized, attribute string, diag
 	}
 	result.Set(decodeJSONAttribute[T](value, attribute, diags))
 	return result
+}
+
+// llmCheckPatch builds the llm_check member of an update. The API replaces
+// the check with the sent value and rejects null, so clearing the attribute
+// disables the previously configured check instead of deleting it.
+func llmCheckPatch(plan, state jsontypes.Normalized, diags *diag.Diagnostics) *api.AutomationLlmCheckRequest {
+	if !plan.IsNull() && !plan.IsUnknown() && strings.TrimSpace(plan.ValueString()) != "null" {
+		check := decodeJSONAttribute[api.AutomationLlmCheckRequest](plan, "llm_check", diags)
+		if check.Enabled.IsNull() || !check.Enabled.IsSpecified() {
+			check.Enabled = nullable.NewNullableWithValue(true)
+		}
+		return &check
+	}
+	if state.IsNull() || state.IsUnknown() || strings.TrimSpace(state.ValueString()) == "null" {
+		return nil
+	}
+	previous := decodeJSONAttribute[api.AutomationLlmCheckRequest](state, "llm_check", diags)
+	return &api.AutomationLlmCheckRequest{
+		FilterPrompt: previous.FilterPrompt,
+		Enabled:      nullable.NewNullableWithValue(false),
+	}
 }
 
 func nullableGroupFromJSON[T any](value jsontypes.Normalized, attribute string, diags *diag.Diagnostics) nullable.Nullable[T] {
@@ -933,8 +971,9 @@ func (webhookRecomputeModifier) MarkdownDescription(context.Context) string {
 }
 
 func (webhookRecomputeModifier) PlanModifyString(ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
-	if req.State.Raw.IsNull() || req.Plan.Raw.IsNull() {
-		// Create and destroy plans need no recompute marker.
+	if req.State.Raw.IsNull() || req.Plan.Raw.IsNull() || !req.ConfigValue.IsNull() {
+		// Create and destroy plans need no recompute marker, and configured
+		// values are kept as planned.
 		return
 	}
 	var planTriggers, stateTriggers jsontypes.Normalized
@@ -948,17 +987,17 @@ func (webhookRecomputeModifier) PlanModifyString(ctx context.Context, req planmo
 	}
 }
 
-// automationRunAsFromResponse extracts the run-as identity and, for
-// 'service_user', the service user id from the response union; a missing or
+// runAsFromResponse extracts the run-as identity and, for 'service_user',
+// the service user id from a response's run_as union; a missing or
 // unrecognized value means the organization default. The type is passed
 // through normalizeRunAsState against the prior run_as state.
-func automationRunAsFromResponse(result *api.AutomationResponse, prior types.String) (types.String, types.String) {
+func runAsFromResponse(union any, prior types.String) (types.String, types.String) {
 	var runAs struct {
 		Type          string `json:"type"`
 		ServiceUserID string `json:"service_user_id"`
 	}
-	if result.RunAs != nil {
-		if raw, err := json.Marshal(result.RunAs); err == nil {
+	if union != nil {
+		if raw, err := json.Marshal(union); err == nil {
 			_ = json.Unmarshal(raw, &runAs)
 		}
 	}

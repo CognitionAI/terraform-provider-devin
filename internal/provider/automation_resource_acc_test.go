@@ -87,7 +87,7 @@ resource "devin_automation" "test" {
 // fresh import cannot recover them.
 var automationImportVerifyIgnore = []string{
 	"triggers", "actions", "notifications", "limits", "concurrency", "tools",
-	"session_settings", "run_as", "webhook_secret",
+	"session_settings", "llm_check", "run_as", "webhook_secret",
 }
 
 // Create with a schedule trigger, validate against the API, import with the
@@ -328,6 +328,48 @@ func TestAccAutomationResource_triggerConditionsRemoval(t *testing.T) {
 
 // A webhook:incoming trigger mints an inbox URL and secret on create; the
 // secret is never returned again, so updates must preserve it in state.
+// Configure an LLM check on create, replace its prompt and disable it on
+// update, then drop the attribute and verify the API side keeps the last
+// prompt disabled (the API cannot delete a configured check).
+func TestAccAutomationResource_llmCheck(t *testing.T) {
+	orgName := randomName("tf-acc-llm-org")
+	name := randomName("tf-acc-llm-check")
+	initial := "  llm_check = jsonencode({ filter_prompt = \"Only pull requests that touch the billing service\" })\n"
+	updated := "  llm_check = jsonencode({ filter_prompt = \"Only pull requests that touch the payments service\", enabled = false })\n"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: automationConfigWithPrompt(orgName, name, "Review the PR.", initial),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("devin_automation.test", "llm_check"),
+					checkAutomationLlmCheck("devin_automation.test", "Only pull requests that touch the billing service", true),
+				),
+			},
+			{
+				Config: automationConfigWithPrompt(orgName, name, "Review the PR.", updated),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkAutomationLlmCheck("devin_automation.test", "Only pull requests that touch the payments service", false),
+				),
+			},
+			{
+				Config: automationConfigWithPrompt(orgName, name, "Review the PR.", initial),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkAutomationLlmCheck("devin_automation.test", "Only pull requests that touch the billing service", true),
+				),
+			},
+			{
+				Config: automationConfigWithPrompt(orgName, name, "Review the PR.", ""),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("devin_automation.test", "llm_check"),
+					checkAutomationLlmCheck("devin_automation.test", "Only pull requests that touch the billing service", false),
+				),
+			},
+		},
+	})
+}
+
 func TestAccAutomationResource_webhook(t *testing.T) {
 	orgName := randomName("tf-acc-auto-wh-org")
 	var webhookSecret string
@@ -588,41 +630,68 @@ func checkAutomationTriggerID(resourceName string, expected *string) resource.Te
 	})
 }
 
-func checkAutomationAPIField(resourceName, apiField string, verify func(value any) error) resource.TestCheckFunc {
-	return func(s *terraform.State) (retErr error) {
-		orgID, err := stateAttr(s, resourceName, "org_id")
-		if err != nil {
+// checkAutomationLlmCheck reads the automation's LLM check through the
+// dedicated GET endpoint (the automation response does not carry it). The
+// endpoint is served on the beta mount only.
+func checkAutomationLlmCheck(resourceName, expectedPrompt string, expectedEnabled bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		var parsed struct {
+			Enabled      bool   `json:"enabled"`
+			FilterPrompt string `json:"filter_prompt"`
+		}
+		if err := getAutomationJSON(s, resourceName, "/v3beta1/organizations/%s/automations/%s/llm-check", &parsed); err != nil {
 			return err
 		}
-		automationID, err := stateAttr(s, resourceName, "automation_id")
-		if err != nil {
-			return err
+		if parsed.FilterPrompt != expectedPrompt {
+			return fmt.Errorf("llm_check.filter_prompt = %q, want %q", parsed.FilterPrompt, expectedPrompt)
 		}
-		path := fmt.Sprintf("/v3/organizations/%s/automations/%s", orgID, automationID)
+		if parsed.Enabled != expectedEnabled {
+			return fmt.Errorf("llm_check.enabled = %t, want %t", parsed.Enabled, expectedEnabled)
+		}
+		return nil
+	}
+}
 
-		url := strings.TrimRight(os.Getenv("DEVIN_API_URL"), "/") + path
-		req, err := http.NewRequest(http.MethodGet, url, nil)
-		if err != nil {
-			return err
-		}
-		req.Header.Set("Authorization", "Bearer "+os.Getenv("DEVIN_TOKEN"))
-		httpClient := &http.Client{Timeout: 30 * time.Second}
-		resp, err := httpClient.Do(req)
-		if err != nil {
-			return err
-		}
-		defer func() {
-			if closeErr := resp.Body.Close(); closeErr != nil && retErr == nil {
-				retErr = closeErr
-			}
-		}()
-		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("GET %s returned %d", path, resp.StatusCode)
-		}
+func checkAutomationAPIField(resourceName, apiField string, verify func(value any) error) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
 		var parsed map[string]any
-		if err := json.NewDecoder(resp.Body).Decode(&parsed); err != nil {
+		if err := getAutomationJSON(s, resourceName, "/v3/organizations/%s/automations/%s", &parsed); err != nil {
 			return err
 		}
 		return verify(parsed[apiField])
 	}
+}
+
+// getAutomationJSON GETs pathFormat (an org id and automation id template)
+// for the automation in state and decodes the 200 body into out.
+func getAutomationJSON(s *terraform.State, resourceName, pathFormat string, out any) (retErr error) {
+	orgID, err := stateAttr(s, resourceName, "org_id")
+	if err != nil {
+		return err
+	}
+	automationID, err := stateAttr(s, resourceName, "automation_id")
+	if err != nil {
+		return err
+	}
+	path := fmt.Sprintf(pathFormat, orgID, automationID)
+	url := strings.TrimRight(os.Getenv("DEVIN_API_URL"), "/") + path
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", "Bearer "+os.Getenv("DEVIN_TOKEN"))
+	httpClient := &http.Client{Timeout: 30 * time.Second}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil && retErr == nil {
+			retErr = closeErr
+		}
+	}()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("GET %s returned %d", path, resp.StatusCode)
+	}
+	return json.NewDecoder(resp.Body).Decode(out)
 }

@@ -43,6 +43,11 @@ resource "devin_automation" "dependency_prs" {
     type   = "start_session"
     prompt = "Review this dependency bump for breaking changes."
   }])
+  # Optional LLM check: a fast model skips trigger events that do not match
+  # the filter prompt.
+  llm_check = jsonencode({
+    filter_prompt = "Only major or minor version bumps; skip patch releases."
+  })
 }
 
 # A webhook-triggered automation: external systems POST to webhook_url with

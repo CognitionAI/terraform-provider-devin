@@ -251,6 +251,15 @@
             ],
             "nullable": true
           },
+          "llm_check": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutomationLlmCheckRequest"
+              }
+            ],
+            "description": "Optional LLM check: a fast model that decides per trigger event whether the automation runs.",
+            "nullable": true
+          },
           "metadata": {
             "additionalProperties": {
               "type": "string"
@@ -626,6 +635,30 @@
           "value"
         ],
         "title": "AutomationListCondition",
+        "type": "object"
+      },
+      "AutomationLlmCheckRequest": {
+        "additionalProperties": false,
+        "description": "The automation's LLM check configuration. On update the filter prompt is\nreplaced; ``enabled`` alone may be omitted to keep its state.",
+        "properties": {
+          "enabled": {
+            "description": "Whether the check gates the automation's runs. Omitted keeps the current state; a new configuration starts enabled.",
+            "nullable": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "filter_prompt": {
+            "description": "Plain-language description of which trigger events should run the automation. Events that do not match it are skipped.",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Filter Prompt",
+            "type": "string"
+          }
+        },
+        "required": [
+          "filter_prompt"
+        ],
+        "title": "AutomationLlmCheckRequest",
         "type": "object"
       },
       "AutomationMatchCondition": {
@@ -1292,6 +1325,7 @@
               "linear_assignee",
               "linear_project",
               "jira_project",
+              "jira_site",
               "jira_label",
               "jira_status",
               "jira_assignee",
@@ -1301,6 +1335,7 @@
               "slack_usergroup",
               "pylon_tag",
               "pylon_status",
+              "board",
               "teams_team",
               "teams_channel",
               "file_paths"
@@ -2168,7 +2203,8 @@
               "pagerduty:incident_resolved",
               "pagerduty:incident_updated",
               "webhook:incoming",
-              "snapshot_build:completed"
+              "snapshot_build:completed",
+              "board:ticket_updated"
             ],
             "title": "Event Type",
             "type": "string"
@@ -2253,7 +2289,8 @@
               "pagerduty:incident_resolved",
               "pagerduty:incident_updated",
               "webhook:incoming",
-              "snapshot_build:completed"
+              "snapshot_build:completed",
+              "board:ticket_updated"
             ],
             "title": "Event Type",
             "type": "string"
@@ -2361,6 +2398,11 @@
               }
             ],
             "nullable": true
+          },
+          "llm_check": {
+            "$ref": "#/components/schemas/AutomationLlmCheckRequest",
+            "description": "Replace the automation's LLM check (filter prompt and enabled state). Omitted keeps the current one; null is rejected, disable it with enabled=false instead.",
+            "title": "Llm Check"
           },
           "metadata": {
             "additionalProperties": {
@@ -3036,6 +3078,7 @@
               "github_app",
               "gitlab_token",
               "gitlab_project_token",
+              "gitlab_group_token",
               "gitlab_oauth",
               "azure_devops_oauth",
               "azure_devops_token",
@@ -3516,6 +3559,946 @@
           "pinned_repo"
         ],
         "title": "KnowledgeNoteResponse",
+        "type": "object"
+      },
+      "OncallEventSchemaResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "event_type": {
+            "title": "Event Type",
+            "type": "string"
+          },
+          "fields": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/AutomationSchemaFieldDef"
+            },
+            "description": "Condition field path -> field definition.",
+            "title": "Fields",
+            "type": "object"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "supported_replies": {
+            "default": [],
+            "description": "Always empty: responders manage their own replies.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Supported Replies",
+            "type": "array"
+          }
+        },
+        "required": [
+          "event_type",
+          "name",
+          "category",
+          "fields"
+        ],
+        "title": "OncallEventSchemaResponse",
+        "type": "object"
+      },
+      "OncallLimitsInvocationsPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "max_per_window": {
+            "minimum": 1.0,
+            "title": "Max Per Window",
+            "type": "integer"
+          },
+          "window_seconds": {
+            "minimum": 60.0,
+            "title": "Window Seconds",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "max_per_window",
+          "window_seconds"
+        ],
+        "title": "OncallLimitsInvocationsPatch",
+        "type": "object"
+      },
+      "OncallLimitsPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "invocations": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OncallLimitsInvocationsPatch"
+              }
+            ],
+            "nullable": true
+          },
+          "max_acu_limit": {
+            "maximum": 1000.0,
+            "minimum": 1.0,
+            "nullable": true,
+            "title": "Max Acu Limit",
+            "type": "integer"
+          }
+        },
+        "title": "OncallLimitsPatch",
+        "type": "object"
+      },
+      "OncallResponderCreateRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "limits": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutomationLimits"
+              }
+            ],
+            "nullable": true
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "default": {},
+            "description": "User-defined tags; 'team' (and 'service' when obvious) are recommended so reports can group responders.",
+            "title": "Metadata",
+            "type": "object"
+          },
+          "name": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "pagerduty_connection_id": {
+            "description": "The account's PagerDuty connection id; required with pagerduty:* triggers (Devin posts triage notes on the incident through it) and rejected with Slack triggers.",
+            "nullable": true,
+            "title": "Pagerduty Connection Id",
+            "type": "string"
+          },
+          "run_as": {
+            "description": "Identity triage sessions run under; defaults to organization.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AutomationRunAsOrganization"
+              },
+              {
+                "$ref": "#/components/schemas/AutomationRunAsCreator"
+              },
+              {
+                "$ref": "#/components/schemas/AutomationRunAsServiceUser"
+              }
+            ],
+            "title": "Run As"
+          },
+          "runbook": {
+            "description": "Investigation instructions for triage sessions. Omit (or send blank) to use the server default (`default_runbook` in the schemas response). Only supply one when the user has specific investigation steps.",
+            "maxLength": 50000,
+            "nullable": true,
+            "title": "Runbook",
+            "type": "string"
+          },
+          "session": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OncallSessionConfig"
+              }
+            ],
+            "nullable": true
+          },
+          "session_settings": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OncallSessionSettings-Input"
+              }
+            ],
+            "description": "Omitted net_policy defaults to the deployment default policy; omitted devin_mode inherits the org default.",
+            "nullable": true
+          },
+          "slack_reply_access": {
+            "default": "slack_users",
+            "description": "Who may reply into existing triage sessions from Slack threads: devin_users, slack_users (the organization's connected Slack workspaces), or external_slack_users (also Slack Connect users). Slack responders only.",
+            "enum": [
+              "devin_users",
+              "slack_users",
+              "external_slack_users"
+            ],
+            "title": "Slack Reply Access",
+            "type": "string"
+          },
+          "team_id": {
+            "description": "Slack workspace id (resolved server-side if omitted); rejected with Teams triggers, which carry team_id in conditions.",
+            "nullable": true,
+            "title": "Team Id",
+            "type": "string"
+          },
+          "teams_reply_access": {
+            "description": "Teams responders: who may reply into existing triage sessions from Teams threads: devin_users or teams_users. Omitted = teams_users.",
+            "enum": [
+              "devin_users",
+              "teams_users"
+            ],
+            "nullable": true,
+            "title": "Teams Reply Access",
+            "type": "string"
+          },
+          "tools": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OncallTools"
+              }
+            ],
+            "nullable": true
+          },
+          "triage_issue_type": {
+            "description": "What the responder triages, which sets its issue workflow and triage behavior: 'alerts' for monitoring alerts, incidents and pages; 'bugs' for bug reports and support questions. Set it on every new responder: the responder then keeps its issues as tickets on a triage Board the server provisions for it. Omitting it creates a legacy responder (no Board) and is kept only for existing callers.",
+            "enum": [
+              "alerts",
+              "bugs"
+            ],
+            "nullable": true,
+            "title": "Triage Issue Type",
+            "type": "string"
+          },
+          "triggers": {
+            "description": "Up to 10 triggers from one provider, OR'd; each has its own filter and no two may be identical. Slack: slack:message or slack:usergroup_mentioned triggers, all in one Slack workspace. Usergroup mentioned requires a usergroup eq filter with a Slack usergroup ID. Each condition group must restrict channels (eq or in) or include at least one completed filter other than is_thread_reply. PagerDuty: pagerduty:* triggers (pagerduty_connection_id required); an event type may repeat with different filters. Teams: teams:message triggers; every condition group names one team (team_id eq) and its channels (channel_id eq/in). Linear: linear:* issue triggers (team_id filters scope the watched teams; Devin comments on the issue, and replies in that thread reach the session). Jira: jira:* issue triggers (project filters scope the watched projects; Devin comments on the issue with the session link).",
+            "items": {
+              "$ref": "#/components/schemas/OncallTriggerRequest"
+            },
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Triggers",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "triggers"
+        ],
+        "title": "OncallResponderCreateRequest",
+        "type": "object"
+      },
+      "OncallResponderResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "nullable": true,
+            "title": "Created At",
+            "type": "integer"
+          },
+          "created_by": {
+            "nullable": true,
+            "title": "Created By",
+            "type": "string"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "id": {
+            "description": "Responder (automation) id.",
+            "title": "Id",
+            "type": "string"
+          },
+          "limits": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutomationLimits"
+              }
+            ],
+            "nullable": true
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "default": {},
+            "description": "User-defined key/value tags (e.g. team, service). Reserved oncall_* keys are managed by the server.",
+            "title": "Metadata",
+            "type": "object"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "pagerduty_connection_id": {
+            "description": "PagerDuty connection the responder posts incident notes through (PagerDuty responders only).",
+            "nullable": true,
+            "title": "Pagerduty Connection Id",
+            "type": "string"
+          },
+          "run_as": {
+            "description": "Identity triage sessions run under.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AutomationRunAsOrganization"
+              },
+              {
+                "$ref": "#/components/schemas/AutomationRunAsCreator"
+              },
+              {
+                "$ref": "#/components/schemas/AutomationRunAsServiceUser"
+              }
+            ],
+            "title": "Run As"
+          },
+          "runbook": {
+            "description": "Investigation instructions for triage. Blank when the responder runs the server default runbook.",
+            "title": "Runbook",
+            "type": "string"
+          },
+          "session": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OncallSessionConfig"
+              }
+            ],
+            "description": "Session tags spawned sessions bill to.",
+            "nullable": true
+          },
+          "session_settings": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OncallSessionSettings-Output"
+              }
+            ],
+            "nullable": true
+          },
+          "slack_reply_access": {
+            "default": "slack_users",
+            "description": "Who may reply into existing triage sessions from Slack threads: devin_users, slack_users (the organization's connected Slack workspaces), or external_slack_users (also Slack Connect users).",
+            "enum": [
+              "devin_users",
+              "slack_users",
+              "external_slack_users"
+            ],
+            "title": "Slack Reply Access",
+            "type": "string"
+          },
+          "source": {
+            "default": "slack",
+            "description": "Alert provider the responder triages: slack, pagerduty, webhook, teams, linear, jira or pylon.",
+            "enum": [
+              "slack",
+              "pagerduty",
+              "webhook",
+              "teams",
+              "linear",
+              "jira",
+              "pylon"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "source_channel_id": {
+            "description": "First Slack or Teams channel the responder's triggers watch; empty for unscoped Slack, PagerDuty, webhook, Linear, Jira or Pylon responders.",
+            "title": "Source Channel Id",
+            "type": "string"
+          },
+          "team_id": {
+            "description": "Slack workspace id, or the Microsoft Teams team id of source_channel_id for Teams responders.",
+            "nullable": true,
+            "title": "Team Id",
+            "type": "string"
+          },
+          "teams_reply_access": {
+            "default": "teams_users",
+            "description": "Teams responders: who may reply into existing triage sessions from Teams threads: devin_users (linked Devin accounts only) or teams_users (anyone in the organization's connected Microsoft tenant; the default).",
+            "enum": [
+              "devin_users",
+              "teams_users"
+            ],
+            "title": "Teams Reply Access",
+            "type": "string"
+          },
+          "tools": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OncallTools"
+              }
+            ],
+            "nullable": true
+          },
+          "triage_issue_type": {
+            "description": "What the responder triages: alerts or bugs (see OncallResponderCreateRequest.triage_issue_type). Null for a legacy responder created without one.",
+            "enum": [
+              "alerts",
+              "bugs"
+            ],
+            "nullable": true,
+            "title": "Triage Issue Type",
+            "type": "string"
+          },
+          "triggers": {
+            "description": "Automation-style triggers, OR'd: the responder runs once when any trigger matches. Slack responders: slack:message / slack:usergroup_mentioned triggers. PagerDuty responders: pagerduty:* triggers. Teams responders: teams:message triggers. Linear responders: linear:* issue triggers. Jira responders: jira:* issue triggers. Pylon responders: pylon:* issue triggers. Webhook responders: one webhook:incoming trigger.",
+            "items": {
+              "$ref": "#/components/schemas/OncallTriggerResponse"
+            },
+            "title": "Triggers",
+            "type": "array"
+          },
+          "updated_at": {
+            "nullable": true,
+            "title": "Updated At",
+            "type": "integer"
+          },
+          "webhook": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutomationWebhookResponse"
+              }
+            ],
+            "description": "Webhook responders only: the inbox URL external systems POST to (header X-Webhook-Secret) and, on the response to the create or the switch that generated it only, the one-time secret. The secret is not stored in recoverable form: if that response is lost (for example the connection dropped while the create committed), list responders to find the one that was created and call POST .../responders/{id}/webhook/regenerate-secret for a new one.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "enabled",
+          "triggers",
+          "source_channel_id",
+          "runbook"
+        ],
+        "title": "OncallResponderResponse",
+        "type": "object"
+      },
+      "OncallResponderUpdateRequest": {
+        "additionalProperties": false,
+        "description": "Partial update (RFC 7396-style): omitted fields and omitted group\nmembers keep their stored value; explicit nulls clear; ``triggers``,\n``tools.mcp_servers``, ``tools.slack_channels`` and ``session.tags`` lists\nreplace wholesale; ``metadata`` merges per key (null value deletes the\nkey).",
+        "properties": {
+          "enabled": {
+            "nullable": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "limits": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OncallLimitsPatch"
+              }
+            ],
+            "nullable": true
+          },
+          "metadata": {
+            "additionalProperties": {
+              "nullable": true,
+              "type": "string"
+            },
+            "nullable": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "name": {
+            "maxLength": 500,
+            "minLength": 1,
+            "nullable": true,
+            "title": "Name",
+            "type": "string"
+          },
+          "pagerduty_connection_id": {
+            "description": "Omitted -> preserve; required when triggers switch the responder to PagerDuty.",
+            "nullable": true,
+            "title": "Pagerduty Connection Id",
+            "type": "string"
+          },
+          "run_as": {
+            "description": "Omitted -> preserve the responder's existing run_as; null resets to organization.",
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AutomationRunAsOrganization"
+              },
+              {
+                "$ref": "#/components/schemas/AutomationRunAsCreator"
+              },
+              {
+                "$ref": "#/components/schemas/AutomationRunAsServiceUser"
+              }
+            ],
+            "title": "Run As"
+          },
+          "runbook": {
+            "description": "Blank resets to the server default runbook.",
+            "maxLength": 50000,
+            "nullable": true,
+            "title": "Runbook",
+            "type": "string"
+          },
+          "session": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OncallSessionConfig"
+              }
+            ],
+            "nullable": true
+          },
+          "session_settings": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OncallSessionSettingsPatch"
+              }
+            ],
+            "nullable": true
+          },
+          "slack_reply_access": {
+            "description": "Omitted -> preserve the responder's existing setting; null resets to slack_users.",
+            "enum": [
+              "devin_users",
+              "slack_users",
+              "external_slack_users"
+            ],
+            "nullable": true,
+            "title": "Slack Reply Access",
+            "type": "string"
+          },
+          "team_id": {
+            "nullable": true,
+            "title": "Team Id",
+            "type": "string"
+          },
+          "teams_reply_access": {
+            "description": "Teams responders. Omitted -> preserve; null resets to teams_users.",
+            "enum": [
+              "devin_users",
+              "teams_users"
+            ],
+            "nullable": true,
+            "title": "Teams Reply Access",
+            "type": "string"
+          },
+          "tools": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OncallToolsPatch"
+              }
+            ],
+            "nullable": true
+          },
+          "triggers": {
+            "description": "Replaces the trigger set. Switching provider (Slack, PagerDuty, Teams) rebuilds the responder's provider config from this request.",
+            "items": {
+              "$ref": "#/components/schemas/OncallTriggerRequest"
+            },
+            "maxItems": 10,
+            "minItems": 1,
+            "nullable": true,
+            "title": "Triggers",
+            "type": "array"
+          }
+        },
+        "title": "OncallResponderUpdateRequest",
+        "type": "object"
+      },
+      "OncallSchemasResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "available_devin_modes": {
+            "description": "Every mode the organization may set on responders / incidents (including fast and lite, which are never picked by default).",
+            "items": {
+              "enum": [
+                "normal",
+                "fast",
+                "lite",
+                "ultra",
+                "fusion"
+              ],
+              "type": "string"
+            },
+            "title": "Available Devin Modes",
+            "type": "array"
+          },
+          "default_devin_mode": {
+            "description": "Mode applied to new responders / incidents when session_settings.devin_mode is omitted: the best of ultra > fusion > normal the organization can use, or null when none of those is available and sessions inherit the organization default.",
+            "enum": [
+              "normal",
+              "fast",
+              "lite",
+              "ultra",
+              "fusion"
+            ],
+            "nullable": true,
+            "title": "Default Devin Mode",
+            "type": "string"
+          },
+          "default_net_policy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutomationNetPolicy"
+              }
+            ],
+            "description": "Network policy applied to a new responder when session_settings.net_policy is omitted: the deployment's Git Manager-only policy, or null when the governing security profile (see security_profile) has a network policy, in which case the responder inherits it and its sessions use the profile's policy.",
+            "nullable": true
+          },
+          "default_runbook": {
+            "description": "Runbook applied when a responder's runbook is blank.",
+            "title": "Default Runbook",
+            "type": "string"
+          },
+          "jira_connected": {
+            "default": false,
+            "description": "Whether Jira responders (jira:* issue triggers) are available: the account has a Jira connection and the feature is enabled.",
+            "title": "Jira Connected",
+            "type": "boolean"
+          },
+          "linear_connected": {
+            "default": false,
+            "description": "Whether Linear responders (linear:* issue triggers) are available: the account has a Linear connection and the feature is enabled.",
+            "title": "Linear Connected",
+            "type": "boolean"
+          },
+          "pagerduty_connection_id": {
+            "description": "The account's PagerDuty connection id when PagerDuty responders are available to this organization (pass it as pagerduty_connection_id on a responder with pagerduty:* triggers); null when PagerDuty is not connected or the feature is not enabled.",
+            "nullable": true,
+            "title": "Pagerduty Connection Id",
+            "type": "string"
+          },
+          "pylon_connected": {
+            "default": false,
+            "description": "Whether Pylon responders (pylon:* issue triggers) are available: the account has a Pylon connection with automation triggers turned on and the feature is enabled.",
+            "title": "Pylon Connected",
+            "type": "boolean"
+          },
+          "security_profile": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutomationSchemasSecurityProfile"
+              }
+            ],
+            "description": "Security profile governing this organization's automation sessions (responders included), or null when none applies.",
+            "nullable": true
+          },
+          "slack_connected": {
+            "description": "Whether the organization has a Slack connection.",
+            "title": "Slack Connected",
+            "type": "boolean"
+          },
+          "sources": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "$ref": "#/components/schemas/OncallEventSchemaResponse"
+              },
+              "type": "object"
+            },
+            "description": "Event source -> event name -> schema. 'pagerduty' is present only when pagerduty_connection_id is set; 'webhook' only when webhook_responders_enabled is true; 'teams' only when teams_connected is true; 'linear' / 'jira' / 'pylon' only when linear_connected / jira_connected / pylon_connected is true.",
+            "title": "Sources",
+            "type": "object"
+          },
+          "teams_connected": {
+            "default": false,
+            "description": "Whether Microsoft Teams responders are available: the organization has a Teams connection and the feature is enabled. Teams does not count toward the Slack connection incidents require.",
+            "title": "Teams Connected",
+            "type": "boolean"
+          },
+          "update_semantics": {
+            "default": "merge_patch",
+            "description": "PATCH semantics: omitted fields / group members keep their stored values, explicit nulls clear, lists replace wholesale.",
+            "enum": [
+              "merge_patch"
+            ],
+            "title": "Update Semantics",
+            "type": "string"
+          },
+          "webhook_responders_enabled": {
+            "default": false,
+            "description": "Whether webhook responders (one webhook:incoming trigger) are available to this organization.",
+            "title": "Webhook Responders Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "default_net_policy",
+          "default_devin_mode",
+          "available_devin_modes",
+          "default_runbook",
+          "slack_connected",
+          "sources"
+        ],
+        "title": "OncallSchemasResponse",
+        "type": "object"
+      },
+      "OncallSessionConfig": {
+        "additionalProperties": false,
+        "description": "Session-level configuration that automations carry on their action\n(``actions[].session``); Oncall exposes only the tags.",
+        "properties": {
+          "tags": {
+            "description": "Session tags (cost codes) the spawned sessions bill to. Validated as the run identity; organizations that enforce required session tags must supply exactly one allowed tag.",
+            "items": {
+              "maxLength": 255,
+              "type": "string"
+            },
+            "maxItems": 16,
+            "nullable": true,
+            "title": "Tags",
+            "type": "array"
+          }
+        },
+        "title": "OncallSessionConfig",
+        "type": "object"
+      },
+      "OncallSessionSettings-Input": {
+        "additionalProperties": false,
+        "description": "Per-session settings for the sessions a responder / incident spawns.",
+        "properties": {
+          "devin_mode": {
+            "description": "Mode for spawned sessions: normal, fusion, fast, ultra, or lite. Omitted on create = the best mode the run identity can spawn (Ultra, else Fusion, else Normal); explicit null = org default.",
+            "enum": [
+              "normal",
+              "fast",
+              "lite",
+              "ultra",
+              "fusion"
+            ],
+            "nullable": true,
+            "title": "Devin Mode",
+            "type": "string"
+          },
+          "net_policy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutomationNetPolicy"
+              }
+            ],
+            "description": "Network policy for spawned sessions. Omitted on create = the deployment default (Git Manager-only) policy; explicit null = unrestricted.",
+            "nullable": true
+          }
+        },
+        "title": "OncallSessionSettings",
+        "type": "object"
+      },
+      "OncallSessionSettings-Output": {
+        "additionalProperties": false,
+        "description": "Per-session settings for the sessions a responder / incident spawns.",
+        "properties": {
+          "devin_mode": {
+            "description": "Mode for spawned sessions: normal, fusion, fast, ultra, or lite. Omitted on create = the best mode the run identity can spawn (Ultra, else Fusion, else Normal); explicit null = org default.",
+            "enum": [
+              "normal",
+              "fast",
+              "lite",
+              "ultra",
+              "fusion"
+            ],
+            "nullable": true,
+            "title": "Devin Mode",
+            "type": "string"
+          },
+          "net_policy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutomationNetPolicy"
+              }
+            ],
+            "description": "Network policy for spawned sessions. Omitted on create = the deployment default (Git Manager-only) policy; explicit null = unrestricted.",
+            "nullable": true
+          }
+        },
+        "title": "OncallSessionSettings",
+        "type": "object"
+      },
+      "OncallSessionSettingsPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "devin_mode": {
+            "enum": [
+              "normal",
+              "fast",
+              "lite",
+              "ultra",
+              "fusion"
+            ],
+            "nullable": true,
+            "title": "Devin Mode",
+            "type": "string"
+          },
+          "net_policy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutomationNetPolicy"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "title": "OncallSessionSettingsPatch",
+        "type": "object"
+      },
+      "OncallTools": {
+        "additionalProperties": false,
+        "description": "Tools granted to spawned sessions; mirrors Automations ``tools`` minus\n``slack_dm_scope`` (Oncall sessions never DM).",
+        "properties": {
+          "linear_enabled": {
+            "description": "Enable Linear tools; null = org default.",
+            "nullable": true,
+            "title": "Linear Enabled",
+            "type": "boolean"
+          },
+          "mcp_servers": {
+            "default": [],
+            "description": "Marketplace MCP server slugs enabled for spawned sessions. Servers installed with a personal (user-scoped) connection require run_as creator.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Mcp Servers",
+            "type": "array"
+          },
+          "slack_channels": {
+            "default": [],
+            "description": "Slack channels spawned sessions may read/post in (tool grant, independent of the trigger's channel filter). Incident settings accept the wildcard pair team_id='*', channel_id='*' for all public channels.",
+            "items": {
+              "$ref": "#/components/schemas/AutomationSlackChannel"
+            },
+            "title": "Slack Channels",
+            "type": "array"
+          },
+          "teams_channels": {
+            "default": [],
+            "description": "Microsoft Teams channels spawned sessions may read/post in (Teams responders only). Omitted on create = the watched channels.",
+            "items": {
+              "$ref": "#/components/schemas/AutomationTeamsChannel"
+            },
+            "title": "Teams Channels",
+            "type": "array"
+          }
+        },
+        "title": "OncallTools",
+        "type": "object"
+      },
+      "OncallToolsPatch": {
+        "additionalProperties": false,
+        "description": "Merge-patch view of ``tools``: only members present in the request\nchange; explicit null clears a member.",
+        "properties": {
+          "linear_enabled": {
+            "nullable": true,
+            "title": "Linear Enabled",
+            "type": "boolean"
+          },
+          "mcp_servers": {
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "title": "Mcp Servers",
+            "type": "array"
+          },
+          "slack_channels": {
+            "items": {
+              "$ref": "#/components/schemas/AutomationSlackChannel"
+            },
+            "nullable": true,
+            "title": "Slack Channels",
+            "type": "array"
+          },
+          "teams_channels": {
+            "items": {
+              "$ref": "#/components/schemas/AutomationTeamsChannel"
+            },
+            "nullable": true,
+            "title": "Teams Channels",
+            "type": "array"
+          }
+        },
+        "title": "OncallToolsPatch",
+        "type": "object"
+      },
+      "OncallTriggerRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "conditions": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutomationConditions-Input"
+              }
+            ],
+            "description": "Automation-style DNF filter over the event. Every Slack AND group requires a channel restriction or at least one completed filter. is_thread_reply alone does not count. For pagerduty:* triggers the filter is optional (e.g. incident.service / incident.priority). Every teams:message AND group needs team_id eq and channel_id eq/in.",
+            "nullable": true
+          },
+          "event_type": {
+            "description": "Trigger event type: 'slack:message' or 'slack:usergroup_mentioned', a 'pagerduty:incident_*' event (requires pagerduty_connection_id), 'teams:message', or 'webhook:incoming' (exactly one, no conditions; the response's webhook field carries the inbox URL and, on create, the one-time secret). All of a responder's triggers use one provider.",
+            "enum": [
+              "slack:message",
+              "slack:usergroup_mentioned",
+              "pagerduty:incident_triggered",
+              "pagerduty:incident_acknowledged",
+              "pagerduty:incident_resolved",
+              "pagerduty:incident_updated",
+              "teams:message",
+              "webhook:incoming",
+              "linear:create",
+              "linear:label_added",
+              "linear:status_changed",
+              "linear:assigned",
+              "linear:priority_changed",
+              "linear:moved",
+              "jira:issue_created",
+              "jira:issue_updated",
+              "jira:label_added",
+              "jira:status_changed",
+              "jira:assigned",
+              "pylon:issue_created",
+              "pylon:issue_tag_added",
+              "pylon:issue_status_changed"
+            ],
+            "title": "Event Type",
+            "type": "string"
+          },
+          "replies": {
+            "default": [],
+            "description": "Must be empty: Oncall responders manage their own thread replies.",
+            "items": {
+              "$ref": "#/components/schemas/AutomationReply"
+            },
+            "title": "Replies",
+            "type": "array"
+          }
+        },
+        "required": [
+          "event_type"
+        ],
+        "title": "OncallTriggerRequest",
+        "type": "object"
+      },
+      "OncallTriggerResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "conditions": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutomationConditions-Output"
+              }
+            ],
+            "nullable": true
+          },
+          "event_type": {
+            "title": "Event Type",
+            "type": "string"
+          },
+          "replies": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/AutomationReply"
+            },
+            "title": "Replies",
+            "type": "array"
+          },
+          "trigger_id": {
+            "description": "Re-minted when triggers is replaced \u2014 not stable across edits.",
+            "title": "Trigger Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "trigger_id",
+          "event_type"
+        ],
+        "title": "OncallTriggerResponse",
         "type": "object"
       },
       "OrgGroupConfig": {
@@ -4013,6 +4996,40 @@
           "items"
         ],
         "title": "PaginatedResponse[KnowledgeNoteResponse]",
+        "type": "object"
+      },
+      "PaginatedResponse_OncallResponderResponse_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OncallResponderResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[OncallResponderResponse]",
         "type": "object"
       },
       "PaginatedResponse_OrganizationResponse_": {
@@ -5353,6 +6370,9 @@
             "title": "Name",
             "type": "string"
           },
+          "preferences": {
+            "$ref": "#/components/schemas/ServiceUserPreferences"
+          },
           "role_assignments": {
             "items": {
               "$ref": "#/components/schemas/RoleAssignment"
@@ -5370,9 +6390,50 @@
           "name",
           "expires_at",
           "deleted_at",
-          "role_assignments"
+          "role_assignments",
+          "preferences"
         ],
         "title": "ServiceUser",
+        "type": "object"
+      },
+      "ServiceUserPreferences": {
+        "description": "Per-service-user switches; a field left null means its default.",
+        "properties": {
+          "memory_dreaming_enabled": {
+            "description": "Whether the service user's memory is refined nightly from its sessions. Defaults to on when its memory is on.",
+            "nullable": true,
+            "title": "Memory Dreaming Enabled",
+            "type": "boolean"
+          },
+          "memory_enabled": {
+            "description": "Whether the service user's own sessions use its memory. Off until set to true; the organization's memory policy applies on top.",
+            "nullable": true,
+            "title": "Memory Enabled",
+            "type": "boolean"
+          }
+        },
+        "title": "ServiceUserPreferences",
+        "type": "object"
+      },
+      "ServiceUserUpdateRequest": {
+        "properties": {
+          "preferences": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ServiceUserPreferences"
+              }
+            ],
+            "description": "Switches to change; fields left out keep their value. A service user's preferences apply across the whole enterprise.",
+            "nullable": true
+          },
+          "role_id": {
+            "description": "Role to assign the service user at this scope.",
+            "nullable": true,
+            "title": "Role Id",
+            "type": "string"
+          }
+        },
+        "title": "ServiceUserUpdateRequest",
         "type": "object"
       },
       "ServiceUserUpdateRoleRequest": {
@@ -5683,6 +6744,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -5760,6 +6831,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -5846,6 +6927,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -5941,6 +7032,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -6056,6 +7157,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -6152,6 +7263,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -6236,6 +7357,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -6319,6 +7450,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -6390,6 +7531,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -6458,6 +7609,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -6538,6 +7699,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -6617,6 +7788,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -6688,6 +7869,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -6828,6 +8019,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -6906,6 +8107,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -6991,6 +8202,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -7073,6 +8294,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -7165,6 +8396,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -7261,6 +8502,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -7343,6 +8594,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -7422,6 +8683,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -7513,6 +8784,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -7602,6 +8883,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -7711,6 +9002,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -7819,6 +9120,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -7903,6 +9214,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -7986,6 +9307,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -8022,7 +9353,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ServiceUserUpdateRoleRequest"
+                "$ref": "#/components/schemas/ServiceUserUpdateRequest"
               }
             }
           },
@@ -8078,6 +9409,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -8171,6 +9512,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -8279,6 +9630,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -8361,6 +9722,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -8445,6 +9816,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -8526,6 +9907,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -8618,6 +10009,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -8689,6 +10090,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -8769,6 +10180,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -8866,6 +10287,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -8945,6 +10376,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -9031,6 +10472,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -9113,6 +10564,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -9207,6 +10668,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -9294,6 +10765,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -9400,6 +10881,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -9495,6 +10986,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -9592,6 +11093,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -9686,6 +11197,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -9789,6 +11310,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -9896,6 +11427,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -9990,6 +11531,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -10080,6 +11631,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -10182,6 +11743,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -10282,6 +11853,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -10402,6 +11983,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -10521,6 +12112,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -10617,6 +12218,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -10664,7 +12275,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ServiceUserUpdateRoleRequest"
+                "$ref": "#/components/schemas/ServiceUserUpdateRequest"
               }
             }
           },
@@ -10720,6 +12331,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -10824,6 +12445,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -10943,6 +12574,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -11036,6 +12677,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -11139,6 +12790,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -11241,6 +12902,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -11326,6 +12997,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -11408,6 +13089,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -11502,6 +13193,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -11595,6 +13296,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -11680,6 +13391,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -11762,6 +13483,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -11856,6 +13587,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -11949,6 +13690,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -12046,6 +13797,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -12125,6 +13886,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -12211,6 +13982,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -12294,6 +14075,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -12387,6 +14178,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -12484,6 +14285,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -12567,6 +14378,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -12637,6 +14458,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -12718,6 +14549,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -12792,6 +14633,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -12872,6 +14723,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -12963,6 +14824,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -13045,6 +14916,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -13126,6 +15007,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -13227,6 +15118,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -13311,6 +15212,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -13323,6 +15234,107 @@
           }
         },
         "summary": "Delete an enterprise blueprint file",
+        "tags": [
+          "snapshot_setup"
+        ]
+      }
+    },
+    "/v3/enterprise/snapshot-setup/blueprints/{blueprint_id}/files/{file_id}/contents": {
+      "get": {
+        "operationId": "get_enterprise_blueprint_file_contents_v3_enterprise_snapshot_setup_blueprints__blueprint_id__files__file_id__contents_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blueprint_id",
+            "required": true,
+            "schema": {
+              "title": "Blueprint Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "file_id",
+            "required": true,
+            "schema": {
+              "title": "File Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignedDownload"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Presigned URL for an enterprise blueprint file",
         "tags": [
           "snapshot_setup"
         ]
@@ -13481,6 +15493,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -13573,6 +15595,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -13671,6 +15703,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -13755,6 +15797,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -13850,6 +15902,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -13941,6 +16003,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -14044,6 +16116,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -14128,6 +16210,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -14266,6 +16358,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -14358,6 +16460,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -14455,6 +16567,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -14548,6 +16670,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -14653,6 +16785,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -14667,6 +16809,639 @@
         "summary": "Update an org-level note",
         "tags": [
           "notes"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/oncall/responders": {
+      "get": {
+        "description": "List the org's Oncall responders.",
+        "operationId": "handle_list_responders_v3_organizations__org_id__oncall_responders_get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "nullable": true,
+              "title": "After",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "first",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "First",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_OncallResponderResponse_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "List Oncall responders",
+        "tags": [
+          "oncall"
+        ]
+      },
+      "post": {
+        "description": "Create an Oncall responder (a triage_session automation).\n\n``triggers`` holds up to 10 OR'd triggers from one provider; every Slack\ncondition group needs a channel restriction or at least one filter. Omitted ``runbook`` uses the server\ndefault, omitted ``session_settings.net_policy`` the deployment default\npolicy, omitted ``tools.slack_channels`` a grant for the watched channels\n(or All public channels when any group has no channel restriction),\nand ``run_as`` defaults to ``organization``.",
+        "operationId": "handle_create_responder_v3_organizations__org_id__oncall_responders_post",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OncallResponderCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OncallResponderResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Create Oncall responder",
+        "tags": [
+          "oncall"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/oncall/responders/{responder_id}": {
+      "delete": {
+        "description": "Delete an Oncall responder.",
+        "operationId": "handle_delete_responder_v3_organizations__org_id__oncall_responders__responder_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "responder_id",
+            "required": true,
+            "schema": {
+              "title": "Responder Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OncallResponderResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Delete Oncall responder",
+        "tags": [
+          "oncall"
+        ]
+      },
+      "get": {
+        "description": "Get a single Oncall responder.",
+        "operationId": "handle_get_responder_v3_organizations__org_id__oncall_responders__responder_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "responder_id",
+            "required": true,
+            "schema": {
+              "title": "Responder Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OncallResponderResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Get Oncall responder",
+        "tags": [
+          "oncall"
+        ]
+      },
+      "patch": {
+        "description": "Update an Oncall responder (merge patch).\n\nOmitted fields and omitted group members keep their stored values;\nexplicit nulls clear (``run_as: null`` resets to organization); the\n``triggers``, ``tools.mcp_servers``, ``tools.slack_channels`` and\n``session.tags`` lists replace wholesale; ``metadata`` merges per key.",
+        "operationId": "handle_update_responder_v3_organizations__org_id__oncall_responders__responder_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "responder_id",
+            "required": true,
+            "schema": {
+              "title": "Responder Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OncallResponderUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OncallResponderResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Update Oncall responder",
+        "tags": [
+          "oncall"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/oncall/schemas": {
+      "get": {
+        "description": "Trigger event schemas responders accept, plus the defaults the create\nendpoints apply (network policy, Devin mode, runbook) and whether the org\nhas Slack connected (a precondition for responders and incidents).",
+        "operationId": "handle_get_oncall_schemas_v3_organizations__org_id__oncall_schemas_get",
+        "parameters": [
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OncallSchemasResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Get Oncall trigger schemas and defaults",
+        "tags": [
+          "oncall"
         ]
       }
     },
@@ -14773,6 +17548,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -14866,6 +17651,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -14964,6 +17759,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -15058,6 +17863,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -15163,6 +17978,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -15316,6 +18141,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -15414,6 +18249,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -15531,6 +18376,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -15628,6 +18483,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -15722,6 +18587,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -15812,6 +18687,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -15920,6 +18805,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -16021,6 +18916,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -16131,6 +19036,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -16224,6 +19139,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -16322,6 +19247,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -16416,6 +19351,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -16521,6 +19466,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -16629,6 +19584,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -16721,6 +19686,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -16818,6 +19793,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -16914,6 +19899,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -17007,6 +20002,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -17092,6 +20097,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -17183,6 +20198,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -17286,6 +20311,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -17379,6 +20414,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -17471,6 +20516,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -17582,6 +20637,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -17677,6 +20742,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -17689,6 +20764,118 @@
           }
         },
         "summary": "Delete a blueprint file",
+        "tags": [
+          "snapshot_setup"
+        ]
+      }
+    },
+    "/v3/organizations/{org_id}/snapshot-setup/blueprints/{blueprint_id}/files/{file_id}/contents": {
+      "get": {
+        "operationId": "get_org_blueprint_file_contents_v3_organizations__org_id__snapshot_setup_blueprints__blueprint_id__files__file_id__contents_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blueprint_id",
+            "required": true,
+            "schema": {
+              "title": "Blueprint Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "file_id",
+            "required": true,
+            "schema": {
+              "title": "File Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Organization ID (prefix: org-)",
+            "in": "path",
+            "name": "org_id",
+            "required": true,
+            "schema": {
+              "example": "org-abc123def456",
+              "title": "Org Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignedDownload"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Presigned URL for a blueprint file",
         "tags": [
           "snapshot_setup"
         ]
@@ -17814,6 +21001,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -17906,6 +21103,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -18000,6 +21207,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -18092,6 +21309,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -18186,6 +21413,16 @@
             },
             "description": "Conflict"
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
           "429": {
             "content": {
               "application/json": {
@@ -18272,6 +21509,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {
@@ -18374,6 +21621,16 @@
               }
             },
             "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
           },
           "429": {
             "content": {

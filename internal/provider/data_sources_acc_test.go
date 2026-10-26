@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"testing"
 
@@ -203,6 +204,32 @@ data "devin_idp_groups" "all" {
 						}
 						return fmt.Errorf("registered IdP group %q not found in data source output", groupName)
 					},
+				),
+			},
+		},
+	})
+}
+
+// The seed grants the org-token org two fake repos; filter_name narrows the
+// list to one.
+func TestAccRepositoriesDataSource_filter(t *testing.T) {
+	name := "data.devin_repositories.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccOrgTokenPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`%s
+data "devin_repositories" "test" {
+  org_id      = %q
+  filter_name = "acme/api"
+}
+`, orgTokenProviderConfig(), os.Getenv("DEVIN_ORG_TOKEN_ORG_ID")),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(name, "repositories.#", "1"),
+					resource.TestCheckResourceAttr(name, "repositories.0.repository_path", "acme/api"),
+					resource.TestCheckResourceAttr(name, "repositories.0.repo_language", "Python"),
+					resource.TestCheckResourceAttr(name, "repositories.0.git_connection_host", "github.com"),
 				),
 			},
 		},

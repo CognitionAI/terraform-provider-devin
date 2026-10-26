@@ -2,7 +2,9 @@ package provider
 
 import (
 	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -76,6 +78,89 @@ func TestAccBlueprintResource_org(t *testing.T) {
 		CheckDestroy: func(_ *terraform.State) error {
 			path := fmt.Sprintf("/v3/organizations/%s/snapshot-setup/blueprints/%s", orgID, blueprintID)
 			if status, _ := testAccAPIRequest(t, http.MethodGet, path, nil); status == http.StatusOK {
+				return fmt.Errorf("blueprint %s still exists after destroy", blueprintID)
+			}
+			return nil
+		},
+	})
+}
+
+func repoBlueprintConfig(contents string) string {
+	return fmt.Sprintf(`%s
+resource "devin_blueprint" "repo" {
+  org_id    = %q
+  repo_name = "acme/api"
+  contents  = %q
+}
+`, orgTokenProviderConfig(), os.Getenv("DEVIN_ORG_TOKEN_ORG_ID"), contents)
+}
+
+// checkBlueprintContents asserts the API serves want as the blueprint's YAML.
+func checkBlueprintContents(t *testing.T, orgID string, blueprintID *string, want string) resource.TestCheckFunc {
+	return func(_ *terraform.State) error {
+		path := fmt.Sprintf("/v3/organizations/%s/snapshot-setup/blueprints/%s/contents", orgID, *blueprintID)
+		status, body := testAccAPIRequestWithToken(t, http.MethodGet, path, nil, os.Getenv("DEVIN_ORG_TOKEN"))
+		if status != http.StatusOK {
+			return fmt.Errorf("GET %s returned %d", path, status)
+		}
+		url, _ := body["url"].(string)
+		resp, err := http.Get(url)
+		if err != nil {
+			return err
+		}
+		defer func() { _ = resp.Body.Close() }()
+		got, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		if string(got) != want {
+			return fmt.Errorf("API blueprint contents = %q, want %q", got, want)
+		}
+		return nil
+	}
+}
+
+// A repo blueprint on a seeded fake repo of the org-token org: create,
+// in-place update and import, cross-checked against the API.
+func TestAccBlueprintResource_repo(t *testing.T) {
+	name := "devin_blueprint.repo"
+	orgID := os.Getenv("DEVIN_ORG_TOKEN_ORG_ID")
+	var blueprintID string
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccOrgTokenPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: repoBlueprintConfig("initialize: |\n  echo one\n"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(name, "type", "repo"),
+					resource.TestCheckResourceAttr(name, "repo_name", "acme/api"),
+					resource.TestCheckResourceAttr(name, "source", "database"),
+					captureStateAttr(name, "blueprint_id", &blueprintID),
+					checkBlueprintContents(t, orgID, &blueprintID, "initialize: |\n  echo one\n"),
+				),
+			},
+			{
+				Config: repoBlueprintConfig("initialize: |\n  echo two\n"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(name, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: checkBlueprintContents(t, orgID, &blueprintID, "initialize: |\n  echo two\n"),
+			},
+			{
+				ResourceName:                         name,
+				ImportState:                          true,
+				ImportStateIdFunc:                    importStateIDFromAttrs(name, "org_id", "blueprint_id"),
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "blueprint_id",
+				ImportStateVerifyIgnore:              []string{"contents"},
+			},
+		},
+		CheckDestroy: func(_ *terraform.State) error {
+			path := fmt.Sprintf("/v3/organizations/%s/snapshot-setup/blueprints/%s", orgID, blueprintID)
+			if status, _ := testAccAPIRequestWithToken(t, http.MethodGet, path, nil, os.Getenv("DEVIN_ORG_TOKEN")); status == http.StatusOK {
 				return fmt.Errorf("blueprint %s still exists after destroy", blueprintID)
 			}
 			return nil

@@ -66,6 +66,18 @@ func orgAutomationPath(orgID, automationID string) string {
 	return orgAutomationsPath(orgID) + "/" + url.PathEscape(automationID)
 }
 
+func orgOncallPath(orgID string) string {
+	return organizationsPath + "/" + url.PathEscape(orgID) + "/oncall"
+}
+
+func orgOncallRespondersPath(orgID string) string {
+	return orgOncallPath(orgID) + "/responders"
+}
+
+func orgOncallResponderPath(orgID, responderID string) string {
+	return orgOncallRespondersPath(orgID) + "/" + url.PathEscape(responderID)
+}
+
 const (
 	enterpriseGitConnectionsPath     = "/v3/enterprise/git-providers/connections"
 	enterpriseRolesPath              = "/v3/enterprise/roles"
