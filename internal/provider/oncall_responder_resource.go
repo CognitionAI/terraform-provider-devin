@@ -8,6 +8,7 @@ import (
 	"github.com/cognitionai/terraform-provider-devin/internal/api"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -22,6 +23,7 @@ var _ resource.Resource = &oncallResponderResource{}
 var _ resource.ResourceWithImportState = &oncallResponderResource{}
 var _ resource.ResourceWithIdentity = &oncallResponderResource{}
 var _ resource.ResourceWithValidateConfig = &oncallResponderResource{}
+var _ resource.ResourceWithModifyPlan = &oncallResponderResource{}
 
 type oncallResponderResource struct {
 	client *Client
@@ -114,10 +116,11 @@ func (r *oncallResponderResource) Schema(_ context.Context, _ resource.SchemaReq
 				CustomType: jsontypes.NormalizedType{},
 				Description: "JSON-encoded array of triggers (use jsonencode(...)). Each trigger has event_type " +
 					"('slack:message', 'slack:usergroup_mentioned', 'teams:message', a 'pagerduty:incident_*' event, " +
-					"or 'webhook:incoming') and optional conditions (two-level any/all envelope of {field, operator, " +
+					"'webhook:incoming', or 'webhook:managed') and optional conditions (two-level any/all envelope of {field, operator, " +
 					"value}). All triggers of a responder use one provider; every Slack group needs a channel " +
 					"restriction; every teams:message group needs team_id eq and channel_id eq/in; webhook:incoming " +
-					"must be the only trigger and has no conditions; pagerduty:* triggers need pagerduty_connection_id.",
+					"must be the only trigger and has no conditions; webhook:managed must be the only trigger and " +
+					"requires managed_webhook_id; pagerduty:* triggers need pagerduty_connection_id.",
 				Required: true,
 			},
 			"tools": schema.StringAttribute{
@@ -159,7 +162,9 @@ func (r *oncallResponderResource) Schema(_ context.Context, _ resource.SchemaReq
 			},
 			"run_as": schema.StringAttribute{
 				Description: "Identity triage sessions run under: 'organization', 'creator' or 'service_user' " +
-					"(the service user named by run_as_service_user_id). Unset means 'organization'.",
+					"(the service user named by run_as_service_user_id). Unset or 'organization' runs as " +
+					"the organization's default service user and is kept as configured rather than " +
+					"reported as 'service_user'.",
 				Optional:   true,
 				Validators: []validator.String{stringvalidator.OneOf("organization", "creator", "service_user")},
 			},
@@ -185,10 +190,11 @@ func (r *oncallResponderResource) Schema(_ context.Context, _ resource.SchemaReq
 				Validators:    []validator.String{stringvalidator.OneOf("devin_users", "teams_users")},
 			},
 			"triage_issue_type": schema.StringAttribute{
-				Description: "What the responder triages: 'alerts' (monitoring alerts, incidents and pages) or 'bugs' " +
-					"(bug reports and support questions). Devin provisions a triage Board for the responder when set; " +
-					"omitting it creates a legacy responder without one. Changing it replaces the responder, which " +
-					"deletes its triage Board and the tickets on it.",
+				Description: "What the responder triages: 'alerts' (monitoring alerts and pages) or 'bugs' " +
+					"(bug reports and support questions). Devin provisions a triage Board for the responder. Required " +
+					"to create a responder; only a legacy responder created without one may leave it unset, and any " +
+					"change that replaces such a responder requires setting it. Changing it replaces the responder, " +
+					"which deletes its triage Board and the tickets on it.",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 				Validators:    []validator.String{stringvalidator.OneOf("alerts", "bugs")},
@@ -239,6 +245,36 @@ func (r *oncallResponderResource) ValidateConfig(ctx context.Context, req resour
 	validateRunAs(config.runAsModel(), &resp.Diagnostics)
 }
 
+// ModifyPlan requires triage_issue_type whenever the plan creates a responder,
+// including a replacement, so the destroy half of a replace never runs for a
+// create the API would reject. A legacy responder updated in place may omit it.
+//
+// resp.RequiresReplace is empty here because the framework does not pass in
+// attribute-level replaces, so a replace is detected from the attributes that
+// force one: org_id and triage_issue_type.
+func (r *oncallResponderResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+	var plan oncallResponderModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() || !plan.TriageIssueType.IsNull() {
+		return
+	}
+	if !req.State.Raw.IsNull() {
+		var state oncallResponderModel
+		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+		if resp.Diagnostics.HasError() || (state.TriageIssueType.IsNull() && plan.OrgID.Equal(state.OrgID)) {
+			return
+		}
+	}
+	resp.Diagnostics.AddAttributeError(
+		path.Root("triage_issue_type"),
+		"Missing triage_issue_type",
+		"Set triage_issue_type to 'alerts' or 'bugs' to create an Oncall responder.",
+	)
+}
+
 // runAsModel adapts the run_as attributes to the shared automation helpers.
 func (m oncallResponderModel) runAsModel() automationModel {
 	return automationModel{RunAs: m.RunAs, RunAsServiceUser: m.RunAsServiceUser}
@@ -253,6 +289,7 @@ func (r *oncallResponderResource) Create(ctx context.Context, req resource.Creat
 
 	body := api.OncallResponderCreateRequest{
 		Name:                  plan.Name.ValueString(),
+		TriageIssueType:       api.OncallResponderCreateRequestTriageIssueType(plan.TriageIssueType.ValueString()),
 		Enabled:               boolPtrFrom(plan.Enabled),
 		Metadata:              stringMapPtrFrom(ctx, plan.Metadata, &resp.Diagnostics),
 		Triggers:              decodeJSONAttribute[[]api.OncallTriggerRequest](plan.Triggers, "triggers", &resp.Diagnostics),
@@ -273,9 +310,6 @@ func (r *oncallResponderResource) Create(ctx context.Context, req resource.Creat
 	}
 	if !plan.TeamsReplyAccess.IsNull() && !plan.TeamsReplyAccess.IsUnknown() {
 		body.TeamsReplyAccess = nullable.NewNullableWithValue(api.OncallResponderCreateRequestTeamsReplyAccess(plan.TeamsReplyAccess.ValueString()))
-	}
-	if !plan.TriageIssueType.IsNull() && !plan.TriageIssueType.IsUnknown() {
-		body.TriageIssueType = nullable.NewNullableWithValue(api.OncallResponderCreateRequestTriageIssueType(plan.TriageIssueType.ValueString()))
 	}
 	if resp.Diagnostics.HasError() {
 		return

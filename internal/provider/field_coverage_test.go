@@ -64,6 +64,7 @@ var ignoredFields = map[string]map[string]string{
 		"updated_by":  "server-managed read-only metadata",
 	},
 	"organization_resource.go": {
+		"budget_id":  "read-only budget link; organization create/update requests do not manage budget links",
 		"created_at": "server-managed read-only metadata",
 		"updated_at": "server-managed read-only metadata",
 	},
@@ -74,6 +75,16 @@ var ignoredFields = map[string]map[string]string{
 		"created_by":    "server-managed read-only metadata",
 		"updated_at":    "server-managed read-only metadata",
 		"updated_by":    "server-managed read-only metadata",
+		"end_cursor":    paginationReason,
+		"has_next_page": paginationReason,
+		"items":         paginationReason,
+		"total":         paginationReason,
+	},
+	"enterprise_service_user_api_key_resource.go": {
+		"api_key_name":  "exposed via the 'name' attribute",
+		"is_active":     "the resource exists only while the key is active; an inactive key reads as deleted",
+		"revoked_at":    "the resource exists only while the key is active; an inactive key reads as deleted",
+		"last_used_at":  "server-managed runtime status",
 		"end_cursor":    paginationReason,
 		"has_next_page": paginationReason,
 		"items":         paginationReason,
@@ -122,16 +133,25 @@ var ignoredFields = map[string]map[string]string{
 			"permission flow, not yet modeled as provider config",
 		"filter_prompt": "member of AutomationLlmCheckRequest, carried inside the JSON-encoded " +
 			"'llm_check' attribute",
+		"runtime": "member of AutomationScriptCheckRequest, carried inside the JSON-encoded " +
+			"'script_check' attribute",
+		"source": "member of AutomationScriptCheckRequest, carried inside the JSON-encoded " +
+			"'script_check' attribute",
+		"timeout_seconds": "member of AutomationScriptCheckRequest, carried inside the JSON-encoded " +
+			"'script_check' attribute",
+		"secret_names": "member of AutomationScriptCheckRequest, carried inside the JSON-encoded " +
+			"'script_check' attribute",
 	},
 	"oncall_responder_resource.go": {
-		"id":         "exposed as the 'responder_id' attribute",
-		"webhook":    "exposed as the 'webhook_url' / 'webhook_secret' attributes",
-		"event_type": "member of the JSON-encoded 'triggers' attribute",
-		"conditions": "member of the JSON-encoded 'triggers' attribute",
-		"replies":    "member of the JSON-encoded 'triggers' attribute; responders manage their own replies",
-		"created_at": "server-managed read-only metadata",
-		"created_by": "server-managed read-only metadata",
-		"updated_at": "server-managed read-only metadata",
+		"id":                 "exposed as the 'responder_id' attribute",
+		"webhook":            "exposed as the 'webhook_url' / 'webhook_secret' attributes",
+		"event_type":         "member of the JSON-encoded 'triggers' attribute",
+		"managed_webhook_id": "member of the JSON-encoded 'triggers' attribute",
+		"conditions":         "member of the JSON-encoded 'triggers' attribute",
+		"replies":            "member of the JSON-encoded 'triggers' attribute; responders manage their own replies",
+		"created_at":         "server-managed read-only metadata",
+		"created_by":         "server-managed read-only metadata",
+		"updated_at":         "server-managed read-only metadata",
 	},
 	"oncall_schemas_data_source.go": {
 		"update_semantics": "constant PATCH-semantics note for API clients; the provider handles merge-patch internally",

@@ -3,12 +3,12 @@
 page_title: "devin_automation Resource - devin"
 subcategory: ""
 description: |-
-  Manages a Devin automation within an organization. Automations run Devin in response to events (GitHub/GitLab activity, Slack messages, Jira/Linear updates, schedules, incoming webhooks). The triggers/actions/notifications/limits/concurrency/tools/session_settings/llm_check groups are JSON-encoded (use jsonencode(...)); their configured values are authoritative and out-of-band edits to them are not detected as drift. The organization's automation event schemas endpoint (GET /v3/organizations/{org_id}/automations/schemas) documents the supported trigger event types, condition fields, and reply verbs.
+  Manages a Devin automation within an organization. Automations run Devin in response to events (GitHub/GitLab activity, Slack messages, Jira/Linear updates, schedules, incoming webhooks). The triggers/actions/notifications/limits/concurrency/tools/session_settings/script_check/llm_check groups are JSON-encoded (use jsonencode(...)); their configured values are authoritative and out-of-band edits to them are not detected as drift. The organization's automation event schemas endpoint (GET /v3/organizations/{org_id}/automations/schemas) documents the supported trigger event types, condition fields, and reply verbs.
 ---
 
 # devin_automation (Resource)
 
-Manages a Devin automation within an organization. Automations run Devin in response to events (GitHub/GitLab activity, Slack messages, Jira/Linear updates, schedules, incoming webhooks). The triggers/actions/notifications/limits/concurrency/tools/session_settings/llm_check groups are JSON-encoded (use jsonencode(...)); their configured values are authoritative and out-of-band edits to them are not detected as drift. The organization's automation event schemas endpoint (GET /v3/organizations/{org_id}/automations/schemas) documents the supported trigger event types, condition fields, and reply verbs.
+Manages a Devin automation within an organization. Automations run Devin in response to events (GitHub/GitLab activity, Slack messages, Jira/Linear updates, schedules, incoming webhooks). The triggers/actions/notifications/limits/concurrency/tools/session_settings/script_check/llm_check groups are JSON-encoded (use jsonencode(...)); their configured values are authoritative and out-of-band edits to them are not detected as drift. The organization's automation event schemas endpoint (GET /v3/organizations/{org_id}/automations/schemas) documents the supported trigger event types, condition fields, and reply verbs.
 
 ## Example Usage
 
@@ -71,6 +71,14 @@ resource "devin_automation" "incident_hook" {
   org_id   = devin_organization.frontend.org_id
   name     = "Incident intake"
   triggers = jsonencode([{ event_type = "webhook:incoming" }])
+  # Optional Preflight check: a script decides per event whether the actions
+  # run. It reads the event from $EVENT_FILE and writes {"run": true|false}
+  # (or {"items": [...]} to fan out) to $OUTPUT_FILE.
+  script_check = jsonencode({
+    runtime         = "python"
+    source          = file("${path.module}/script_check.py")
+    timeout_seconds = 30
+  })
   actions = jsonencode([{
     type   = "start_session"
     prompt = "Investigate the incident described in the webhook payload."
@@ -100,8 +108,9 @@ output "incident_hook_url" {
 - `llm_check` (String) JSON-encoded LLM check object (use jsonencode(...)): a fast model that decides per trigger event whether the automation runs. Members: filter_prompt (plain-language description of the events that should run the automation; required) and enabled (defaults to true). Requires the LLM check feature to be enabled for the organization, and cannot be combined with an enabled Preflight script. The API has no way to delete a configured check, so removing this attribute disables it (enabled=false) with the last configured filter_prompt.
 - `metadata` (Map of String) Org-visible key/value labels for organizing/filtering automations. At most 16 pairs; keys at most 32 chars; values at most 128.
 - `notifications` (String) JSON-encoded notifications object (use jsonencode(...)), e.g. {email = {when = "always"}}.
-- `run_as` (String) Identity the spawned sessions run under: 'organization', 'creator' (personal automation, visible only to the creator and org admins; rejected for service-user-created automations) or 'service_user' (the service user named by run_as_service_user_id; requires permission to manage that service user). The API requires an explicit choice on create, so the provider sends 'organization' when this is not set.
+- `run_as` (String) Identity the spawned sessions run under: 'organization', 'creator' (personal automation, visible only to the creator and org admins; rejected for service-user-created automations) or 'service_user' (the service user named by run_as_service_user_id; requires permission to manage that service user). Unset or 'organization' runs as the organization's default service user and is kept as configured rather than reported as 'service_user'.
 - `run_as_service_user_id` (String) ID of the service user the spawned sessions run as. Required when run_as is 'service_user' and must be unset otherwise.
+- `script_check` (String) JSON-encoded Preflight check object (use jsonencode(...)): a script that runs on its own microVM before the actions and decides per trigger event whether to proceed, skip, or fan out into one action run per item. Members: runtime ('python', 'node' or 'bash'; required), source (the script text, e.g. file("script_check.py"); it reads the trigger event from $EVENT_FILE and writes its decision to $OUTPUT_FILE; required), timeout_seconds (1-300, defaults to 60), secret_names (org secrets exposed as environment variables; requires permission to manage org secrets) and enabled (defaults to true). Requires the Preflight check feature to be enabled for the organization (see script_check_available on the schemas endpoint), and cannot be combined with an enabled LLM check. The API has no way to delete a configured check, so removing this attribute disables it (enabled=false) with the last configured script.
 - `session_settings` (String) JSON-encoded settings object applied to sessions this automation spawns (use jsonencode(...)). Members modeled by the API as non-nullable optional scalars can be changed but cannot be cleared through PATCH.
 - `slack_reply_access` (String) Who may reply into existing sessions from Slack threads: 'devin_users' (linked Devin accounts only), 'slack_users' (anyone in the organization's connected Slack workspaces), or 'external_slack_users' (also Slack Connect users). Does not affect who can trigger the automation. Defaults to 'slack_users'.
 - `teams_reply_access` (String) Who may reply into existing sessions from Microsoft Teams threads: 'devin_users' (linked Devin accounts only) or 'teams_users' (anyone in the organization's connected Microsoft tenant). Does not affect who can trigger the automation. Defaults to 'teams_users'.

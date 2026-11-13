@@ -107,6 +107,15 @@ func enterpriseMemberServiceUserPath(serviceUserID string) string {
 	return enterpriseMemberServiceUsersPath + "/" + url.PathEscape(serviceUserID)
 }
 
+// The API key endpoints are only served under v3beta1.
+func enterpriseServiceUserAPIKeysPath(serviceUserID string) string {
+	return "/v3beta1/enterprise/service-users/" + url.PathEscape(serviceUserID) + "/api-keys"
+}
+
+func enterpriseServiceUserAPIKeyPath(serviceUserID, apiKeyID string) string {
+	return enterpriseServiceUserAPIKeysPath(serviceUserID) + "/" + url.PathEscape(apiKeyID)
+}
+
 func orgMemberUserPath(orgID, userID string) string {
 	return organizationPath(orgID) + "/members/users/" + url.PathEscape(userID)
 }

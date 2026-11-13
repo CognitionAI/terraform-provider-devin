@@ -87,7 +87,7 @@ resource "devin_automation" "test" {
 // fresh import cannot recover them.
 var automationImportVerifyIgnore = []string{
 	"triggers", "actions", "notifications", "limits", "concurrency", "tools",
-	"session_settings", "llm_check", "run_as", "webhook_secret",
+	"session_settings", "script_check", "llm_check", "run_as", "webhook_secret",
 }
 
 // Create with a schedule trigger, validate against the API, import with the
@@ -102,11 +102,13 @@ func TestAccAutomationResource_basic(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: automationConfig(orgName, "Nightly check", "  metadata    = { env = \"dev\" }\n  limits      = jsonencode({ max_acu_limit = 25, invocations = { max_per_window = 5, window_seconds = 3600 } })\n  concurrency = jsonencode({ max_concurrent_runs = 2 })\n"),
+				Config: automationConfig(orgName, "Nightly check", "  run_as      = \"organization\"\n  metadata    = { env = \"dev\" }\n  limits      = jsonencode({ max_acu_limit = 25, invocations = { max_per_window = 5, window_seconds = 3600 } })\n  concurrency = jsonencode({ max_concurrent_runs = 2 })\n"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("devin_automation.test", "automation_id"),
 					resource.TestCheckResourceAttr("devin_automation.test", "name", "Nightly check"),
 					resource.TestCheckResourceAttr("devin_automation.test", "enabled", "true"),
+					resource.TestCheckResourceAttr("devin_automation.test", "run_as", "organization"),
+					resource.TestCheckNoResourceAttr("devin_automation.test", "run_as_service_user_id"),
 					resource.TestCheckResourceAttr("devin_automation.test", "metadata.env", "dev"),
 					resource.TestCheckNoResourceAttr("devin_automation.test", "webhook_url"),
 					resource.TestCheckResourceAttrPair("devin_automation.test", "org_id", "devin_organization.test", "org_id"),
@@ -148,6 +150,41 @@ func TestAccAutomationResource_basic(t *testing.T) {
 					checkAutomationAPIFieldNull("devin_automation.test", "concurrency"),
 					checkAutomationAPIFieldEmptyObject("devin_automation.test", "metadata"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccAutomationResource_omittedRunAsUsesOrgDefault(t *testing.T) {
+	orgName := randomName("tf-acc-auto-default-run-as")
+	config := automationConfig(orgName, "Default run-as check", "")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("devin_automation.test", "run_as"),
+					resource.TestCheckNoResourceAttr("devin_automation.test", "run_as_service_user_id"),
+					checkAutomationAPIField("devin_automation.test", "run_as", func(value any) error {
+						runAs, ok := value.(map[string]any)
+						if !ok || runAs["type"] != "service_user" {
+							return fmt.Errorf("expected API run_as type service_user, got %v", value)
+						}
+						serviceUserID, ok := runAs["service_user_id"].(string)
+						if !ok || strings.TrimSpace(serviceUserID) == "" {
+							return fmt.Errorf("expected API run_as service_user_id, got %v", runAs["service_user_id"])
+						}
+						return nil
+					}),
+				),
+			},
+			{
+				Config:             config,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
@@ -364,6 +401,48 @@ func TestAccAutomationResource_llmCheck(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckNoResourceAttr("devin_automation.test", "llm_check"),
 					checkAutomationLlmCheck("devin_automation.test", "Only pull requests that touch the billing service", false),
+				),
+			},
+		},
+	})
+}
+
+// Configure a Preflight script on create, replace it and disable it on
+// update, then drop the attribute and verify the API side keeps the last
+// script disabled (the API cannot delete a configured check).
+func TestAccAutomationResource_preflight(t *testing.T) {
+	orgName := randomName("tf-acc-preflight-org")
+	name := randomName("tf-acc-preflight")
+	initial := "  script_check = jsonencode({ runtime = \"bash\", source = \"echo '{\\\"run\\\": true}' > \\\"$OUTPUT_FILE\\\"\" })\n"
+	updated := "  script_check = jsonencode({ runtime = \"python\", source = \"import json, os\\njson.dump({'run': False, 'reason': 'skipped'}, open(os.environ['OUTPUT_FILE'], 'w'))\\n\", timeout_seconds = 120, enabled = false })\n"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: automationConfigWithPrompt(orgName, name, "Review the PR.", initial),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("devin_automation.test", "script_check"),
+					checkAutomationPreflight("devin_automation.test", "bash", 60, true),
+				),
+			},
+			{
+				Config: automationConfigWithPrompt(orgName, name, "Review the PR.", updated),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkAutomationPreflight("devin_automation.test", "python", 120, false),
+				),
+			},
+			{
+				Config: automationConfigWithPrompt(orgName, name, "Review the PR.", initial),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkAutomationPreflight("devin_automation.test", "bash", 60, true),
+				),
+			},
+			{
+				Config: automationConfigWithPrompt(orgName, name, "Review the PR.", ""),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("devin_automation.test", "script_check"),
+					checkAutomationPreflight("devin_automation.test", "bash", 60, false),
 				),
 			},
 		},
@@ -647,6 +726,32 @@ func checkAutomationLlmCheck(resourceName, expectedPrompt string, expectedEnable
 		}
 		if parsed.Enabled != expectedEnabled {
 			return fmt.Errorf("llm_check.enabled = %t, want %t", parsed.Enabled, expectedEnabled)
+		}
+		return nil
+	}
+}
+
+// checkAutomationPreflight reads the automation's Preflight check through the
+// dedicated GET endpoint (the automation response does not carry it). The
+// endpoint is served on the beta mount only.
+func checkAutomationPreflight(resourceName, expectedRuntime string, expectedTimeout int, expectedEnabled bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		var parsed struct {
+			Enabled        bool   `json:"enabled"`
+			Runtime        string `json:"runtime"`
+			TimeoutSeconds int    `json:"timeout_seconds"`
+		}
+		if err := getAutomationJSON(s, resourceName, "/v3beta1/organizations/%s/automations/%s/script-check", &parsed); err != nil {
+			return err
+		}
+		if parsed.Runtime != expectedRuntime {
+			return fmt.Errorf("script_check.runtime = %q, want %q", parsed.Runtime, expectedRuntime)
+		}
+		if parsed.TimeoutSeconds != expectedTimeout {
+			return fmt.Errorf("script_check.timeout_seconds = %d, want %d", parsed.TimeoutSeconds, expectedTimeout)
+		}
+		if parsed.Enabled != expectedEnabled {
+			return fmt.Errorf("script_check.enabled = %t, want %t", parsed.Enabled, expectedEnabled)
 		}
 		return nil
 	}

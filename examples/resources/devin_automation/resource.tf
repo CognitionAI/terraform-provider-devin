@@ -56,6 +56,14 @@ resource "devin_automation" "incident_hook" {
   org_id   = devin_organization.frontend.org_id
   name     = "Incident intake"
   triggers = jsonencode([{ event_type = "webhook:incoming" }])
+  # Optional Preflight check: a script decides per event whether the actions
+  # run. It reads the event from $EVENT_FILE and writes {"run": true|false}
+  # (or {"items": [...]} to fan out) to $OUTPUT_FILE.
+  script_check = jsonencode({
+    runtime         = "python"
+    source          = file("${path.module}/script_check.py")
+    timeout_seconds = 30
+  })
   actions = jsonencode([{
     type   = "start_session"
     prompt = "Investigate the incident described in the webhook payload."

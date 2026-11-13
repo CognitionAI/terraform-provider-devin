@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -38,9 +40,15 @@ func TestAccOncallResponderResource_webhook(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
+				Config:      oncallWebhookResponderConfig(name, ""),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Missing triage_issue_type"),
+			},
+			{
 				// The server trims the runbook, and session tags and the triage
 				// issue type only reach it if Create sends them.
 				Config: oncallWebhookResponderConfig(name, `
+  run_as           = "organization"
   triage_issue_type = "alerts"
   runbook = <<-EOT
     Check the dashboards.
@@ -60,6 +68,8 @@ func TestAccOncallResponderResource_webhook(t *testing.T) {
 					resource.TestCheckResourceAttrSet("devin_oncall_responder.test", "responder_id"),
 					resource.TestCheckResourceAttr("devin_oncall_responder.test", "source", "webhook"),
 					resource.TestCheckResourceAttr("devin_oncall_responder.test", "enabled", "true"),
+					resource.TestCheckResourceAttr("devin_oncall_responder.test", "run_as", "organization"),
+					resource.TestCheckNoResourceAttr("devin_oncall_responder.test", "run_as_service_user_id"),
 					resource.TestCheckResourceAttrSet("devin_oncall_responder.test", "webhook_url"),
 					resource.TestCheckResourceAttrSet("devin_oncall_responder.test", "webhook_secret"),
 					captureStateAttr("devin_oncall_responder.test", "webhook_secret", &webhookSecret),
@@ -113,6 +123,41 @@ func TestAccOncallResponderResource_webhook(t *testing.T) {
 				ImportStateIdFunc:                    importStateIDFromAttrs("devin_oncall_responder.test", "org_id", "responder_id"),
 				ImportStateVerifyIdentifierAttribute: "responder_id",
 				ImportStateVerifyIgnore:              []string{"triggers", "session_settings", "webhook_secret"},
+			},
+		},
+	})
+}
+
+func TestAccOncallResponderResource_omittedRunAsUsesOrgDefault(t *testing.T) {
+	name := randomName("tf-acc-oncall-default-run-as")
+	config := oncallWebhookResponderConfig(name, "  triage_issue_type = \"alerts\"\n")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccOrgTokenPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("devin_oncall_responder.test", "run_as"),
+					resource.TestCheckNoResourceAttr("devin_oncall_responder.test", "run_as_service_user_id"),
+					checkOncallResponderAPI(t, func(responder map[string]any) error {
+						runAs, ok := responder["run_as"].(map[string]any)
+						if !ok || runAs["type"] != "service_user" {
+							return fmt.Errorf("expected API run_as type service_user, got %v", responder["run_as"])
+						}
+						serviceUserID, ok := runAs["service_user_id"].(string)
+						if !ok || strings.TrimSpace(serviceUserID) == "" {
+							return fmt.Errorf("expected API run_as service_user_id, got %v", runAs["service_user_id"])
+						}
+						return nil
+					}),
+				),
+			},
+			{
+				Config:             config,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
 			},
 		},
 	})

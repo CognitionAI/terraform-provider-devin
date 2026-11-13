@@ -65,6 +65,78 @@
         "title": "ActorResponse",
         "type": "object"
       },
+      "ApiKeyResponse": {
+        "description": "Shared response model for API key details (used by both PAT and service user endpoints).",
+        "properties": {
+          "api_key_id": {
+            "title": "Api Key Id",
+            "type": "string"
+          },
+          "api_key_name": {
+            "title": "Api Key Name",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "integer"
+          },
+          "expires_at": {
+            "nullable": true,
+            "title": "Expires At",
+            "type": "integer"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "last_used_at": {
+            "nullable": true,
+            "title": "Last Used At",
+            "type": "integer"
+          },
+          "revoked_at": {
+            "nullable": true,
+            "title": "Revoked At",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "api_key_id",
+          "api_key_name",
+          "created_at",
+          "expires_at",
+          "revoked_at",
+          "last_used_at",
+          "is_active"
+        ],
+        "title": "ApiKeyResponse",
+        "type": "object"
+      },
+      "ApiKeyWithTokenResponse": {
+        "description": "Shared response model for API key creation/rotation (includes one-time token).",
+        "properties": {
+          "api_key_id": {
+            "title": "Api Key Id",
+            "type": "string"
+          },
+          "api_key_name": {
+            "title": "Api Key Name",
+            "type": "string"
+          },
+          "token": {
+            "description": "The raw API token. This is only shown once at creation/rotation time.",
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "api_key_id",
+          "api_key_name",
+          "token"
+        ],
+        "title": "ApiKeyWithTokenResponse",
+        "type": "object"
+      },
       "AutomationComparisonCondition": {
         "additionalProperties": false,
         "properties": {
@@ -297,6 +369,15 @@
               }
             ],
             "title": "Run As"
+          },
+          "script_check": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutomationScriptCheckRequest"
+              }
+            ],
+            "description": "Optional script Preflight check: a script that runs before the actions and decides per trigger whether to proceed, skip, or fan out. Validated and written with the automation.",
+            "nullable": true
           },
           "security_profile": {
             "allOf": [
@@ -1097,7 +1178,7 @@
             "nullable": true
           },
           "run_as": {
-            "description": "Identity the spawned sessions run under. organization: the org's automation identity. When the organization has a default service user for automations, sessions run as that service user and the response returns run_as service_user with its id; saving requires every permission that service user holds. Otherwise it is the System User in the app \u2014 sessions use system permissions, so MCP servers installed with a personal (user-scoped) connection cannot be selected, and switching an automation to organization removes them from its selection. creator: personal automation \u2014 runs with the creator's own permissions and is visible only to the creator and org admins; rejected for service-user-created automations. service_user: runs as the given service user, with its roles, grants and ACU limits; requires permission to manage that service user. Required on create; null on update resets to organization.",
+            "description": "Identity the spawned sessions run under. organization: the org's automation identity. When the organization has a default service user for automations, sessions run as that service user and the response returns run_as service_user with its id; saving requires every permission that service user holds. Without one, creating an automation or saving an enabled one is rejected. MCP servers installed with a personal (user-scoped) connection that service user has not connected cannot be selected, and switching an automation to organization removes them from its selection. creator: personal automation \u2014 runs with the creator's own permissions and is visible only to the creator and org admins; rejected for service-user-created automations. service_user: runs as the given service user, with its roles, grants and ACU limits; requires permission to manage that service user. Required on create; null on update resets to organization.",
             "oneOf": [
               {
                 "$ref": "#/components/schemas/AutomationRunAsOrganization"
@@ -1338,6 +1419,7 @@
               "board",
               "teams_team",
               "teams_channel",
+              "teams_reaction",
               "file_paths"
             ],
             "title": "Type",
@@ -1387,6 +1469,7 @@
                 "lite",
                 "ultra",
                 "fusion",
+                "fast-ultra",
                 "swe-2-medium",
                 "swe-2-high",
                 "swe-2-max"
@@ -1403,7 +1486,8 @@
               "fast",
               "lite",
               "ultra",
-              "fusion"
+              "fusion",
+              "fast-ultra"
             ],
             "nullable": true,
             "title": "Default Fallback Devin Mode",
@@ -1418,6 +1502,12 @@
             "description": "Network policy clients should start new automations from: the deployment's Git Manager-only policy (add only the destinations the task requires), or null when the governing security profile (see security_profile) has a network policy. In that case sessions use the profile's policy; omit session_settings.net_policy unless the task must restrict further.",
             "nullable": true
           },
+          "script_check_available": {
+            "default": false,
+            "description": "Whether this organization can configure a script Preflight check (the automation-code-step rollout). When false the script_check field is rejected with 403.",
+            "title": "Script Check Available",
+            "type": "boolean"
+          },
           "security_profile": {
             "allOf": [
               {
@@ -1426,6 +1516,12 @@
             ],
             "description": "Security profile governing this organization's automation sessions, or null when none applies.",
             "nullable": true
+          },
+          "skills_serve_playbooks": {
+            "default": false,
+            "description": "Whether this account uses Skills in place of Playbooks.",
+            "title": "Skills Serve Playbooks",
+            "type": "boolean"
           },
           "sources": {
             "additionalProperties": {
@@ -1482,6 +1578,51 @@
           "mcp_servers"
         ],
         "title": "AutomationSchemasSecurityProfile",
+        "type": "object"
+      },
+      "AutomationScriptCheckRequest": {
+        "additionalProperties": false,
+        "description": "The automation's Preflight check configuration. On update the whole\ngroup is replaced; ``enabled`` alone may be omitted to keep its state.",
+        "properties": {
+          "enabled": {
+            "description": "Whether the script gates the automation's runs. Omitted keeps the current state; a new configuration starts enabled.",
+            "nullable": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "runtime": {
+            "description": "Script runtime. One of: python, node, bash.",
+            "title": "Runtime",
+            "type": "string"
+          },
+          "secret_names": {
+            "description": "Org secrets exposed to the script as environment variables. Requires the manage-org-secrets permission whenever non-empty.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Secret Names",
+            "type": "array"
+          },
+          "source": {
+            "description": "The script source (at most 256KB). It reads the trigger event from $EVENT_FILE, may read/write a small JSON object at $STATE_FILE that persists across runs, and must write its decision to $OUTPUT_FILE: {\"run\": true}, {\"run\": false, \"reason\": \"...\"}, or {\"items\": [...]} (one action run per item).",
+            "minLength": 1,
+            "title": "Source",
+            "type": "string"
+          },
+          "timeout_seconds": {
+            "default": 60,
+            "description": "Wall-clock limit for one run; a run past it fails closed (no actions start).",
+            "maximum": 300.0,
+            "minimum": 1.0,
+            "title": "Timeout Seconds",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "runtime",
+          "source"
+        ],
+        "title": "AutomationScriptCheckRequest",
         "type": "object"
       },
       "AutomationSecurityProfileResponse": {
@@ -1679,7 +1820,8 @@
               "fast",
               "lite",
               "ultra",
-              "fusion"
+              "fusion",
+              "fast-ultra"
             ],
             "nullable": true,
             "title": "Fallback Devin Mode",
@@ -1714,7 +1856,8 @@
               "fast",
               "lite",
               "ultra",
-              "fusion"
+              "fusion",
+              "fast-ultra"
             ],
             "nullable": true,
             "title": "Fallback Devin Mode",
@@ -2091,7 +2234,7 @@
           },
           "mcp_servers": {
             "default": [],
-            "description": "Marketplace slugs (the slug field of the mcp-servers resource, e.g. 'github', 'notion') enabled for spawned sessions. Servers installed with a personal (user-scoped) connection require run_as creator; selecting them with run_as organization is rejected since the Automations service identity has no personal token for them, and switching an automation's run_as to organization removes them from the stored selection.",
+            "description": "Marketplace slugs (the slug field of the mcp-servers resource, e.g. 'github', 'notion') enabled for spawned sessions. Servers installed with a personal (user-scoped) connection require run_as creator; selecting them with run_as organization is rejected when the default service user has no personal token for them, and switching an automation's run_as to organization removes them from the stored selection.",
             "items": {
               "type": "string"
             },
@@ -2160,6 +2303,7 @@
               "github:pull_request_review",
               "github:pull_request_review_comment",
               "github:check_run",
+              "github:workflow_run",
               "github:push",
               "gitlab:merge_request",
               "gitlab:note",
@@ -2178,7 +2322,9 @@
               "slack:message",
               "slack:reaction_added",
               "slack:usergroup_mentioned",
+              "slack:app_mentioned",
               "teams:message",
+              "teams:reaction_added",
               "linear:create",
               "linear:label_added",
               "linear:assigned",
@@ -2203,10 +2349,19 @@
               "pagerduty:incident_resolved",
               "pagerduty:incident_updated",
               "webhook:incoming",
+              "webhook:managed",
               "snapshot_build:completed",
-              "board:ticket_updated"
+              "board:ticket_updated",
+              "security_threat:published",
+              "gmail:message_received"
             ],
             "title": "Event Type",
+            "type": "string"
+          },
+          "managed_webhook_id": {
+            "description": "Required on webhook:managed triggers, rejected on every other event type: the ID of the managed webhook that fires this trigger.",
+            "nullable": true,
+            "title": "Managed Webhook Id",
             "type": "string"
           },
           "replies": {
@@ -2246,6 +2401,7 @@
               "github:pull_request_review",
               "github:pull_request_review_comment",
               "github:check_run",
+              "github:workflow_run",
               "github:push",
               "gitlab:merge_request",
               "gitlab:note",
@@ -2264,7 +2420,9 @@
               "slack:message",
               "slack:reaction_added",
               "slack:usergroup_mentioned",
+              "slack:app_mentioned",
               "teams:message",
+              "teams:reaction_added",
               "linear:create",
               "linear:label_added",
               "linear:assigned",
@@ -2289,10 +2447,19 @@
               "pagerduty:incident_resolved",
               "pagerduty:incident_updated",
               "webhook:incoming",
+              "webhook:managed",
               "snapshot_build:completed",
-              "board:ticket_updated"
+              "board:ticket_updated",
+              "security_threat:published",
+              "gmail:message_received"
             ],
             "title": "Event Type",
+            "type": "string"
+          },
+          "managed_webhook_id": {
+            "description": "Required on webhook:managed triggers, rejected on every other event type: the ID of the managed webhook that fires this trigger.",
+            "nullable": true,
+            "title": "Managed Webhook Id",
             "type": "string"
           },
           "replies": {
@@ -2324,6 +2491,12 @@
           },
           "event_type": {
             "title": "Event Type",
+            "type": "string"
+          },
+          "managed_webhook_id": {
+            "description": "Only on webhook:managed triggers.",
+            "nullable": true,
+            "title": "Managed Webhook Id",
             "type": "string"
           },
           "replies": {
@@ -2443,6 +2616,11 @@
               }
             ],
             "title": "Run As"
+          },
+          "script_check": {
+            "$ref": "#/components/schemas/AutomationScriptCheckRequest",
+            "description": "Replace the automation's script Preflight check (script, runtime, timeout, secrets, enabled state). Omitted keeps the current one; null is rejected, disable it with enabled=false instead.",
+            "title": "Script Check"
           },
           "security_profile": {
             "allOf": [
@@ -2776,6 +2954,27 @@
           "repositories"
         ],
         "title": "BulkIndexRepositoriesRequest",
+        "type": "object"
+      },
+      "CreateApiKeyRequest": {
+        "properties": {
+          "expires_at": {
+            "description": "Optional expiration as a UNIX timestamp in seconds. Must be in the future if provided.",
+            "nullable": true,
+            "title": "Expires At",
+            "type": "integer"
+          },
+          "name": {
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "CreateApiKeyRequest",
         "type": "object"
       },
       "CreateEnterpriseBlueprintBody": {
@@ -3758,17 +3957,16 @@
             "nullable": true
           },
           "triage_issue_type": {
-            "description": "What the responder triages, which sets its issue workflow and triage behavior: 'alerts' for monitoring alerts, incidents and pages; 'bugs' for bug reports and support questions. Set it on every new responder: the responder then keeps its issues as tickets on a triage Board the server provisions for it. Omitting it creates a legacy responder (no Board) and is kept only for existing callers.",
+            "description": "What the responder triages, which sets its issue workflow and triage behavior: 'alerts' for monitoring alerts and pages; 'bugs' for bug reports and support questions.",
             "enum": [
               "alerts",
               "bugs"
             ],
-            "nullable": true,
             "title": "Triage Issue Type",
             "type": "string"
           },
           "triggers": {
-            "description": "Up to 10 triggers from one provider, OR'd; each has its own filter and no two may be identical. Slack: slack:message or slack:usergroup_mentioned triggers, all in one Slack workspace. Usergroup mentioned requires a usergroup eq filter with a Slack usergroup ID. Each condition group must restrict channels (eq or in) or include at least one completed filter other than is_thread_reply. PagerDuty: pagerduty:* triggers (pagerduty_connection_id required); an event type may repeat with different filters. Teams: teams:message triggers; every condition group names one team (team_id eq) and its channels (channel_id eq/in). Linear: linear:* issue triggers (team_id filters scope the watched teams; Devin comments on the issue, and replies in that thread reach the session). Jira: jira:* issue triggers (project filters scope the watched projects; Devin comments on the issue with the session link).",
+            "description": "Up to 10 triggers from one provider, OR'd; each has its own filter and no two may be identical. Slack: slack:message, slack:usergroup_mentioned or slack:app_mentioned triggers, all in one Slack workspace. Usergroup mentioned requires a usergroup eq filter with a Slack usergroup ID. App mentioned listens on the run-as service user's own Slack app and needs no filter. Each condition group must restrict channels (eq or in) or include at least one completed filter other than is_thread_reply. PagerDuty: pagerduty:* triggers (pagerduty_connection_id required); an event type may repeat with different filters. Teams: teams:message triggers; every condition group names one team (team_id eq) and its channels (channel_id eq/in). Linear: linear:* issue triggers (team_id filters scope the watched teams; Devin comments on the issue, and replies in that thread reach the session). Jira: jira:* issue triggers (project filters scope the watched projects; Devin comments on the issue with the session link).",
             "items": {
               "$ref": "#/components/schemas/OncallTriggerRequest"
             },
@@ -3780,7 +3978,8 @@
         },
         "required": [
           "name",
-          "triggers"
+          "triggers",
+          "triage_issue_type"
         ],
         "title": "OncallResponderCreateRequest",
         "type": "object"
@@ -3884,11 +4083,12 @@
           },
           "source": {
             "default": "slack",
-            "description": "Alert provider the responder triages: slack, pagerduty, webhook, teams, linear, jira or pylon.",
+            "description": "Alert provider the responder triages: slack, pagerduty, webhook, schedule, teams, linear, jira or pylon.",
             "enum": [
               "slack",
               "pagerduty",
               "webhook",
+              "schedule",
               "teams",
               "linear",
               "jira",
@@ -3898,7 +4098,7 @@
             "type": "string"
           },
           "source_channel_id": {
-            "description": "First Slack or Teams channel the responder's triggers watch; empty for unscoped Slack, PagerDuty, webhook, Linear, Jira or Pylon responders.",
+            "description": "First Slack or Teams channel the responder's triggers watch; empty for unscoped Slack, PagerDuty, webhook, schedule, Linear, Jira or Pylon responders.",
             "title": "Source Channel Id",
             "type": "string"
           },
@@ -3937,7 +4137,7 @@
             "type": "string"
           },
           "triggers": {
-            "description": "Automation-style triggers, OR'd: the responder runs once when any trigger matches. Slack responders: slack:message / slack:usergroup_mentioned triggers. PagerDuty responders: pagerduty:* triggers. Teams responders: teams:message triggers. Linear responders: linear:* issue triggers. Jira responders: jira:* issue triggers. Pylon responders: pylon:* issue triggers. Webhook responders: one webhook:incoming trigger.",
+            "description": "Automation-style triggers, OR'd: the responder runs once when any trigger matches. Slack responders: slack:message / slack:usergroup_mentioned / slack:app_mentioned triggers. PagerDuty responders: pagerduty:* triggers. Teams responders: teams:message triggers. Linear responders: linear:* issue triggers. Jira responders: jira:* issue triggers. Pylon responders: pylon:* issue triggers. Webhook responders: one incoming or managed webhook trigger. Schedule responders: one schedule:recurring trigger with a recurrence rule.",
             "items": {
               "$ref": "#/components/schemas/OncallTriggerResponse"
             },
@@ -4108,7 +4308,8 @@
                 "fast",
                 "lite",
                 "ultra",
-                "fusion"
+                "fusion",
+                "fast-ultra"
               ],
               "type": "string"
             },
@@ -4122,7 +4323,8 @@
               "fast",
               "lite",
               "ultra",
-              "fusion"
+              "fusion",
+              "fast-ultra"
             ],
             "nullable": true,
             "title": "Default Devin Mode",
@@ -4254,7 +4456,8 @@
               "fast",
               "lite",
               "ultra",
-              "fusion"
+              "fusion",
+              "fast-ultra"
             ],
             "nullable": true,
             "title": "Devin Mode",
@@ -4284,7 +4487,8 @@
               "fast",
               "lite",
               "ultra",
-              "fusion"
+              "fusion",
+              "fast-ultra"
             ],
             "nullable": true,
             "title": "Devin Mode",
@@ -4312,7 +4516,8 @@
               "fast",
               "lite",
               "ultra",
-              "fusion"
+              "fusion",
+              "fast-ultra"
             ],
             "nullable": true,
             "title": "Devin Mode",
@@ -4332,8 +4537,18 @@
       },
       "OncallTools": {
         "additionalProperties": false,
-        "description": "Tools granted to spawned sessions; mirrors Automations ``tools`` minus\n``slack_dm_scope`` (Oncall sessions never DM).",
+        "description": "Tools granted to spawned sessions; mirrors Automations ``tools``.",
         "properties": {
+          "jira_projects": {
+            "description": "Jira project ids the sessions' Jira tools are limited to; null (the default) allows every project the run identity can access. On update, omitting this member keeps the stored list; send null to clear it. Responders only.",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "nullable": true,
+            "title": "Jira Projects",
+            "type": "array"
+          },
           "linear_enabled": {
             "description": "Enable Linear tools; null = org default.",
             "nullable": true,
@@ -4358,14 +4573,33 @@
             "title": "Slack Channels",
             "type": "array"
           },
+          "slack_dm_scope": {
+            "description": "Allow spawned sessions to open 1:1 Slack DMs in the organization's connected workspaces: 'org_members' (enterprise accounts) or 'workspace' (non-enterprise accounts). Omit or null to disable DMs. Responders only.",
+            "enum": [
+              "org_members",
+              "workspace"
+            ],
+            "nullable": true,
+            "title": "Slack Dm Scope",
+            "type": "string"
+          },
           "teams_channels": {
             "default": [],
-            "description": "Microsoft Teams channels spawned sessions may read/post in (Teams responders only). Omitted on create = the watched channels.",
+            "description": "Microsoft Teams channels spawned sessions may read/post in (tool grant, independent of the trigger). Omitted on a Teams responder create = the watched channels.",
             "items": {
               "$ref": "#/components/schemas/AutomationTeamsChannel"
             },
             "title": "Teams Channels",
             "type": "array"
+          },
+          "teams_dm_scope": {
+            "description": "Allow spawned sessions to open 1:1 Microsoft Teams DMs with users who installed the Devin app personally. Omit or null to disable DMs. Responders only.",
+            "enum": [
+              "installed_users"
+            ],
+            "nullable": true,
+            "title": "Teams Dm Scope",
+            "type": "string"
           }
         },
         "title": "OncallTools",
@@ -4375,6 +4609,15 @@
         "additionalProperties": false,
         "description": "Merge-patch view of ``tools``: only members present in the request\nchange; explicit null clears a member.",
         "properties": {
+          "jira_projects": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "nullable": true,
+            "title": "Jira Projects",
+            "type": "array"
+          },
           "linear_enabled": {
             "nullable": true,
             "title": "Linear Enabled",
@@ -4396,6 +4639,15 @@
             "title": "Slack Channels",
             "type": "array"
           },
+          "slack_dm_scope": {
+            "enum": [
+              "org_members",
+              "workspace"
+            ],
+            "nullable": true,
+            "title": "Slack Dm Scope",
+            "type": "string"
+          },
           "teams_channels": {
             "items": {
               "$ref": "#/components/schemas/AutomationTeamsChannel"
@@ -4403,6 +4655,14 @@
             "nullable": true,
             "title": "Teams Channels",
             "type": "array"
+          },
+          "teams_dm_scope": {
+            "enum": [
+              "installed_users"
+            ],
+            "nullable": true,
+            "title": "Teams Dm Scope",
+            "type": "string"
           }
         },
         "title": "OncallToolsPatch",
@@ -4421,16 +4681,19 @@
             "nullable": true
           },
           "event_type": {
-            "description": "Trigger event type: 'slack:message' or 'slack:usergroup_mentioned', a 'pagerduty:incident_*' event (requires pagerduty_connection_id), 'teams:message', or 'webhook:incoming' (exactly one, no conditions; the response's webhook field carries the inbox URL and, on create, the one-time secret). All of a responder's triggers use one provider.",
+            "description": "Trigger event type: 'slack:message', 'slack:usergroup_mentioned' or 'slack:app_mentioned' (the run-as service user's own Slack app), a 'pagerduty:incident_*' event (requires pagerduty_connection_id), 'teams:message', or 'webhook:incoming' (exactly one, no conditions; the response's webhook field carries the inbox URL and, on create, the one-time secret), or 'webhook:managed' (exactly one, with managed_webhook_id). All of a responder's triggers use one provider. Use schedule:recurring with an rrule condition for a scheduled responder.",
             "enum": [
               "slack:message",
               "slack:usergroup_mentioned",
+              "slack:app_mentioned",
               "pagerduty:incident_triggered",
               "pagerduty:incident_acknowledged",
               "pagerduty:incident_resolved",
               "pagerduty:incident_updated",
               "teams:message",
               "webhook:incoming",
+              "webhook:managed",
+              "schedule:recurring",
               "linear:create",
               "linear:label_added",
               "linear:status_changed",
@@ -4447,6 +4710,12 @@
               "pylon:issue_status_changed"
             ],
             "title": "Event Type",
+            "type": "string"
+          },
+          "managed_webhook_id": {
+            "description": "ID of the managed source, required only for webhook:managed.",
+            "nullable": true,
+            "title": "Managed Webhook Id",
             "type": "string"
           },
           "replies": {
@@ -4478,6 +4747,11 @@
           },
           "event_type": {
             "title": "Event Type",
+            "type": "string"
+          },
+          "managed_webhook_id": {
+            "nullable": true,
+            "title": "Managed Webhook Id",
             "type": "string"
           },
           "replies": {
@@ -4565,6 +4839,12 @@
       },
       "OrganizationResponse": {
         "properties": {
+          "budget_id": {
+            "description": "Identifier of the active budget linked to the organization, or null if no active budget is linked.",
+            "nullable": true,
+            "title": "Budget Id",
+            "type": "string"
+          },
           "created_at": {
             "title": "Created At",
             "type": "integer"
@@ -4598,7 +4878,8 @@
           "created_at",
           "updated_at",
           "max_session_acu_limit",
-          "max_cycle_acu_limit"
+          "max_cycle_acu_limit",
+          "budget_id"
         ],
         "title": "OrganizationResponse",
         "type": "object"
@@ -4656,6 +4937,40 @@
           "items"
         ],
         "title": "PaginatedResponse[ACULimitResponse]",
+        "type": "object"
+      },
+      "PaginatedResponse_ApiKeyResponse_": {
+        "properties": {
+          "end_cursor": {
+            "description": "Cursor to fetch the next page, or None if this is the last page.",
+            "nullable": true,
+            "title": "End Cursor",
+            "type": "string"
+          },
+          "has_next_page": {
+            "default": false,
+            "description": "Whether there are more items available after this page.",
+            "title": "Has Next Page",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ApiKeyResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "description": "Optional total count (can be omitted for performance).",
+            "nullable": true,
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PaginatedResponse[ApiKeyResponse]",
         "type": "object"
       },
       "PaginatedResponse_AutomationResponse_": {
@@ -5836,6 +6151,24 @@
         "title": "RoleDetailResponse",
         "type": "object"
       },
+      "RotateApiKeyRequest": {
+        "properties": {
+          "new_key_expires_at": {
+            "description": "Optional expiration for the new key as a UNIX timestamp in seconds. Null for no expiration.",
+            "nullable": true,
+            "title": "New Key Expires At",
+            "type": "integer"
+          },
+          "revoke_current": {
+            "default": true,
+            "description": "Whether to revoke the current key. Set to False for graceful rollover.",
+            "title": "Revoke Current",
+            "type": "boolean"
+          }
+        },
+        "title": "RotateApiKeyRequest",
+        "type": "object"
+      },
       "ScheduleCreateRequest": {
         "properties": {
           "agent": {
@@ -6406,7 +6739,7 @@
             "type": "boolean"
           },
           "memory_enabled": {
-            "description": "Whether the service user's own sessions use its memory. Off until set to true; the organization's memory policy applies on top.",
+            "description": "Whether the service user's own sessions use its memory. New service users start with true; left unset on an older service user, it means off. The organization's memory policy applies on top.",
             "nullable": true,
             "title": "Memory Enabled",
             "type": "boolean"
@@ -18080,6 +18413,22 @@
             }
           },
           {
+            "description": "Only return repositories with these provider repository IDs (the `provider_repository_id` field of each item). Repeat the parameter to pass several IDs.",
+            "in": "query",
+            "name": "provider_repository_id",
+            "required": false,
+            "schema": {
+              "description": "Only return repositories with these provider repository IDs (the `provider_repository_id` field of each item). Repeat the parameter to pass several IDs.",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 100,
+              "nullable": true,
+              "title": "Provider Repository Id",
+              "type": "array"
+            }
+          },
+          {
             "in": "query",
             "name": "load_indexing_status",
             "required": false,
@@ -21646,6 +21995,438 @@
         "summary": "Pin the org to a specific successful build",
         "tags": [
           "snapshot_setup"
+        ]
+      }
+    },
+    "/v3beta1/enterprise/service-users/{service_user_id}/api-keys": {
+      "get": {
+        "description": "List API keys for a service user, optionally filtered by status.",
+        "operationId": "handle_list_service_user_api_keys_v3beta1_enterprise_service_users__service_user_id__api_keys_get",
+        "parameters": [
+          {
+            "description": "Service user ID (prefix: service-user-)",
+            "in": "path",
+            "name": "service_user_id",
+            "required": true,
+            "schema": {
+              "example": "service-user-abc123def456",
+              "title": "Service User Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "default": "all",
+              "enum": [
+                "active",
+                "revoked",
+                "expired",
+                "all"
+              ],
+              "title": "Status",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedResponse_ApiKeyResponse_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "List API keys for service user",
+        "tags": [
+          "service_user_api_keys"
+        ]
+      },
+      "post": {
+        "description": "Create a new API key for a service user.\n\nThe caller must have ManageAccountServiceUsers permission. Returns 409\nwhile static service user keys are disabled for the enterprise, unless the\nservice user backs SCIM or an active Outpost.",
+        "operationId": "handle_create_service_user_api_key_v3beta1_enterprise_service_users__service_user_id__api_keys_post",
+        "parameters": [
+          {
+            "description": "Service user ID (prefix: service-user-)",
+            "in": "path",
+            "name": "service_user_id",
+            "required": true,
+            "schema": {
+              "example": "service-user-abc123def456",
+              "title": "Service User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateApiKeyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyWithTokenResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Create API key for service user",
+        "tags": [
+          "service_user_api_keys"
+        ]
+      }
+    },
+    "/v3beta1/enterprise/service-users/{service_user_id}/api-keys/{api_key_id}": {
+      "delete": {
+        "description": "Revoke an API key for a service user.\n\nReturns 404 if the key is not found, 409 if already revoked.",
+        "operationId": "handle_revoke_service_user_api_key_v3beta1_enterprise_service_users__service_user_id__api_keys__api_key_id__delete",
+        "parameters": [
+          {
+            "description": "Service user ID (prefix: service-user-)",
+            "in": "path",
+            "name": "service_user_id",
+            "required": true,
+            "schema": {
+              "example": "service-user-abc123def456",
+              "title": "Service User Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "api_key_id",
+            "required": true,
+            "schema": {
+              "title": "Api Key Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Revoke API key for service user",
+        "tags": [
+          "service_user_api_keys"
+        ]
+      }
+    },
+    "/v3beta1/enterprise/service-users/{service_user_id}/api-keys/{api_key_id}/rotate": {
+      "post": {
+        "description": "Rotate an API key for a service user.\n\nCreates a new key. By default revokes the old key; set revoke_current=false\nfor graceful rollover where both keys remain active temporarily.\nReturns 404 if the key is not found, 400 if the key is not active, and 409\nwhile static service user keys are disabled for the enterprise, unless the\nservice user backs SCIM or an active Outpost.",
+        "operationId": "handle_rotate_service_user_api_key_v3beta1_enterprise_service_users__service_user_id__api_keys__api_key_id__rotate_post",
+        "parameters": [
+          {
+            "description": "Service user ID (prefix: service-user-)",
+            "in": "path",
+            "name": "service_user_id",
+            "required": true,
+            "schema": {
+              "example": "service-user-abc123def456",
+              "title": "Service User Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "api_key_id",
+            "required": true,
+            "schema": {
+              "title": "Api Key Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RotateApiKeyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyWithTokenResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Rotate API key for service user",
+        "tags": [
+          "service_user_api_keys"
         ]
       }
     }

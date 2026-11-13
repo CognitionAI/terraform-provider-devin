@@ -178,7 +178,7 @@ resource "devin_oncall_responder" "team" {
 
 - `name` (String) Responder name.
 - `org_id` (String) Organization ID that owns this responder.
-- `triggers` (String) JSON-encoded array of triggers (use jsonencode(...)). Each trigger has event_type ('slack:message', 'slack:usergroup_mentioned', 'teams:message', a 'pagerduty:incident_*' event, or 'webhook:incoming') and optional conditions (two-level any/all envelope of {field, operator, value}). All triggers of a responder use one provider; every Slack group needs a channel restriction; every teams:message group needs team_id eq and channel_id eq/in; webhook:incoming must be the only trigger and has no conditions; pagerduty:* triggers need pagerduty_connection_id.
+- `triggers` (String) JSON-encoded array of triggers (use jsonencode(...)). Each trigger has event_type ('slack:message', 'slack:usergroup_mentioned', 'teams:message', a 'pagerduty:incident_*' event, 'webhook:incoming', or 'webhook:managed') and optional conditions (two-level any/all envelope of {field, operator, value}). All triggers of a responder use one provider; every Slack group needs a channel restriction; every teams:message group needs team_id eq and channel_id eq/in; webhook:incoming must be the only trigger and has no conditions; webhook:managed must be the only trigger and requires managed_webhook_id; pagerduty:* triggers need pagerduty_connection_id.
 
 ### Optional
 
@@ -186,7 +186,7 @@ resource "devin_oncall_responder" "team" {
 - `limits` (String) JSON-encoded limits object (use jsonencode(...)): max_acu_limit (1-1000) and/or invocations ({max_per_window >= 1, window_seconds >= 60}).
 - `metadata` (Map of String) Org-visible key/value labels. At most 16 pairs; keys at most 32 chars; values at most 128.
 - `pagerduty_connection_id` (String) PagerDuty connection the pagerduty:* triggers listen on (see devin_oncall_schemas.pagerduty_connection_id).
-- `run_as` (String) Identity triage sessions run under: 'organization', 'creator' or 'service_user' (the service user named by run_as_service_user_id). Unset means 'organization'.
+- `run_as` (String) Identity triage sessions run under: 'organization', 'creator' or 'service_user' (the service user named by run_as_service_user_id). Unset or 'organization' runs as the organization's default service user and is kept as configured rather than reported as 'service_user'.
 - `run_as_service_user_id` (String) ID of the service user triage sessions run as. Required when run_as is 'service_user' and must be unset otherwise.
 - `runbook` (String) Triage instructions given to every session the responder starts. Defaults to the organization's default runbook (see devin_oncall_schemas.default_runbook); omit it to use the default.
 - `session` (String) JSON-encoded session object (use jsonencode(...)): tags, the session tags (cost codes) triage sessions bill to. At most 16 tags; organizations that enforce required session tags must supply exactly one allowed tag.
@@ -195,7 +195,7 @@ resource "devin_oncall_responder" "team" {
 - `team_id` (String) Slack workspace (team) ID of the watched channels, for organizations with more than one connected workspace. Slack responders only.
 - `teams_reply_access` (String) Who may reply into triage sessions from Microsoft Teams threads: 'devin_users' or 'teams_users'. Teams responders only; the server default is 'teams_users'.
 - `tools` (String) JSON-encoded tools object (use jsonencode(...)): mcp_servers, slack_channels ([{team_id, channel_id}]), teams_channels and linear_enabled granted to triage sessions.
-- `triage_issue_type` (String) What the responder triages: 'alerts' (monitoring alerts, incidents and pages) or 'bugs' (bug reports and support questions). Devin provisions a triage Board for the responder when set; omitting it creates a legacy responder without one. Changing it replaces the responder, which deletes its triage Board and the tickets on it.
+- `triage_issue_type` (String) What the responder triages: 'alerts' (monitoring alerts and pages) or 'bugs' (bug reports and support questions). Devin provisions a triage Board for the responder. Required to create a responder; only a legacy responder created without one may leave it unset, and any change that replaces such a responder requires setting it. Changing it replaces the responder, which deletes its triage Board and the tickets on it.
 
 ### Read-Only
 

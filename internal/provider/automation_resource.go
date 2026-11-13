@@ -54,6 +54,7 @@ type automationModel struct {
 	Concurrency      jsontypes.Normalized `tfsdk:"concurrency"`
 	Tools            jsontypes.Normalized `tfsdk:"tools"`
 	SessionSettings  jsontypes.Normalized `tfsdk:"session_settings"`
+	ScriptCheck      jsontypes.Normalized `tfsdk:"script_check"`
 	LlmCheck         jsontypes.Normalized `tfsdk:"llm_check"`
 	RunAs            types.String         `tfsdk:"run_as"`
 	RunAsServiceUser types.String         `tfsdk:"run_as_service_user_id"`
@@ -77,7 +78,7 @@ func (r *automationResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			"response to events (GitHub/GitLab activity, Slack messages, Jira/Linear updates, " +
 			"schedules, incoming webhooks). The triggers/actions/notifications/limits/" +
 			"concurrency/tools/" +
-			"session_settings/llm_check groups are JSON-encoded (use jsonencode(...)); their configured " +
+			"session_settings/script_check/llm_check groups are JSON-encoded (use jsonencode(...)); their configured " +
 			"values are authoritative and out-of-band edits to them are not detected as drift. " +
 			"The organization's automation event schemas endpoint " +
 			"(GET /v3/organizations/{org_id}/automations/schemas) documents the supported trigger " +
@@ -174,6 +175,23 @@ func (r *automationResource) Schema(_ context.Context, _ resource.SchemaRequest,
 					"scalars can be changed but cannot be cleared through PATCH.",
 				Optional: true,
 			},
+			"script_check": schema.StringAttribute{
+				CustomType: jsontypes.NormalizedType{},
+				Description: "JSON-encoded Preflight check object (use jsonencode(...)): a script " +
+					"that runs on its own microVM before the actions and decides per trigger " +
+					"event whether to proceed, skip, or fan out into one action run per item. " +
+					"Members: runtime ('python', 'node' or 'bash'; required), source (the script " +
+					"text, e.g. file(\"script_check.py\"); it reads the trigger event from " +
+					"$EVENT_FILE and writes its decision to $OUTPUT_FILE; required), " +
+					"timeout_seconds (1-300, defaults to 60), secret_names (org secrets exposed " +
+					"as environment variables; requires permission to manage org secrets) and " +
+					"enabled (defaults to true). Requires the Preflight check feature to be " +
+					"enabled for the organization (see script_check_available on the schemas " +
+					"endpoint), and cannot be combined with an enabled LLM check. The API has " +
+					"no way to delete a configured check, so removing " +
+					"this attribute disables it (enabled=false) with the last configured script.",
+				Optional: true,
+			},
 			"llm_check": schema.StringAttribute{
 				CustomType: jsontypes.NormalizedType{},
 				Description: "JSON-encoded LLM check object (use jsonencode(...)): a fast model " +
@@ -190,9 +208,9 @@ func (r *automationResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				Description: "Identity the spawned sessions run under: 'organization', 'creator' " +
 					"(personal automation, visible only to the creator and org admins; rejected for " +
 					"service-user-created automations) or 'service_user' (the service user named by " +
-					"run_as_service_user_id; requires permission to manage that service user). The " +
-					"API requires an explicit choice on create, so the provider sends 'organization' " +
-					"when this is not set.",
+					"run_as_service_user_id; requires permission to manage that service user). Unset or " +
+					"'organization' runs as the organization's default service user and is kept as " +
+					"configured rather than reported as 'service_user'.",
 				Optional: true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("organization", "creator", "service_user"),
@@ -277,6 +295,7 @@ func (r *automationResource) Create(ctx context.Context, req resource.CreateRequ
 		Concurrency:     optionalGroupFrom[api.AutomationConcurrency](plan.Concurrency, "concurrency", &resp.Diagnostics),
 		Tools:           optionalGroupFrom[api.AutomationTools](plan.Tools, "tools", &resp.Diagnostics),
 		SessionSettings: optionalGroupFrom[api.AutomationSessionSettingsInput](plan.SessionSettings, "session_settings", &resp.Diagnostics),
+		ScriptCheck:     optionalGroupFrom[api.AutomationScriptCheckRequest](plan.ScriptCheck, "script_check", &resp.Diagnostics),
 		LlmCheck:        optionalGroupFrom[api.AutomationLlmCheckRequest](plan.LlmCheck, "llm_check", &resp.Diagnostics),
 	}
 	// The API requires an explicit run-as choice on create; an unset
@@ -393,8 +412,13 @@ func (r *automationResource) Update(ctx context.Context, req resource.UpdateRequ
 	if normalizedJSONChanged(ctx, plan.SessionSettings, state.SessionSettings, &resp.Diagnostics) {
 		body.SessionSettings = nullableGroupFromJSON[api.AutomationSessionSettingsInput](plan.SessionSettings, "session_settings", &resp.Diagnostics)
 	}
+	if normalizedJSONChanged(ctx, plan.ScriptCheck, state.ScriptCheck, &resp.Diagnostics) {
+		body.ScriptCheck = enabledGroupPatch(plan.ScriptCheck, state.ScriptCheck, "script_check", &resp.Diagnostics,
+			func(check *api.AutomationScriptCheckRequest) *nullable.Nullable[bool] { return &check.Enabled })
+	}
 	if normalizedJSONChanged(ctx, plan.LlmCheck, state.LlmCheck, &resp.Diagnostics) {
-		body.LlmCheck = llmCheckPatch(plan.LlmCheck, state.LlmCheck, &resp.Diagnostics)
+		body.LlmCheck = enabledGroupPatch(plan.LlmCheck, state.LlmCheck, "llm_check", &resp.Diagnostics,
+			func(check *api.AutomationLlmCheckRequest) *nullable.Nullable[bool] { return &check.Enabled })
 	}
 	validateRunAs(plan, &resp.Diagnostics)
 	if plan.RunAs.IsNull() {
@@ -492,25 +516,24 @@ func optionalGroupFrom[T any](value jsontypes.Normalized, attribute string, diag
 	return result
 }
 
-// llmCheckPatch builds the llm_check member of an update. The API replaces
-// the check with the sent value and rejects null, so clearing the attribute
-// disables the previously configured check instead of deleting it.
-func llmCheckPatch(plan, state jsontypes.Normalized, diags *diag.Diagnostics) *api.AutomationLlmCheckRequest {
+// enabledGroupPatch builds the member of an update for the check groups
+// (script_check, llm_check). The API replaces the group with the sent value and
+// rejects null, so clearing the attribute re-sends the previously configured
+// group with enabled=false instead of deleting it.
+func enabledGroupPatch[T any](plan, state jsontypes.Normalized, attribute string, diags *diag.Diagnostics, enabled func(*T) *nullable.Nullable[bool]) *T {
 	if !plan.IsNull() && !plan.IsUnknown() && strings.TrimSpace(plan.ValueString()) != "null" {
-		check := decodeJSONAttribute[api.AutomationLlmCheckRequest](plan, "llm_check", diags)
-		if check.Enabled.IsNull() || !check.Enabled.IsSpecified() {
-			check.Enabled = nullable.NewNullableWithValue(true)
+		group := decodeJSONAttribute[T](plan, attribute, diags)
+		if flag := enabled(&group); flag.IsNull() || !flag.IsSpecified() {
+			*flag = nullable.NewNullableWithValue(true)
 		}
-		return &check
+		return &group
 	}
 	if state.IsNull() || state.IsUnknown() || strings.TrimSpace(state.ValueString()) == "null" {
 		return nil
 	}
-	previous := decodeJSONAttribute[api.AutomationLlmCheckRequest](state, "llm_check", diags)
-	return &api.AutomationLlmCheckRequest{
-		FilterPrompt: previous.FilterPrompt,
-		Enabled:      nullable.NewNullableWithValue(false),
-	}
+	previous := decodeJSONAttribute[T](state, attribute, diags)
+	*enabled(&previous) = nullable.NewNullableWithValue(false)
+	return &previous
 }
 
 func nullableGroupFromJSON[T any](value jsontypes.Normalized, attribute string, diags *diag.Diagnostics) nullable.Nullable[T] {
@@ -1003,6 +1026,10 @@ func runAsFromResponse(union any, prior types.String) (types.String, types.Strin
 	}
 	if runAs.Type == "" {
 		runAs.Type = "organization"
+	}
+	if runAs.Type == "service_user" && (prior.IsNull() || prior.ValueString() == "organization") {
+		// A config with no identity or 'organization' runs as the org's default service user picked by the server; this is not drift.
+		return prior, types.StringNull()
 	}
 	serviceUser := types.StringNull()
 	if runAs.Type == "service_user" {

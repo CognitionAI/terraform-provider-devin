@@ -419,6 +419,31 @@ func TestAutomationRunAsFromResponse(t *testing.T) {
 	}
 }
 
+// Unset and 'organization' keep their configured identities for the org default service user.
+func TestAutomationRunAsFromResponseKeepsOmittedRunAsOnDefaultServiceUser(t *testing.T) {
+	cases := []struct {
+		name  string
+		prior types.String
+		want  types.String
+	}{
+		{name: "omitted", prior: types.StringNull(), want: types.StringNull()},
+		{
+			name:  "explicit organization",
+			prior: types.StringValue("organization"),
+			want:  types.StringValue("organization"),
+		},
+	}
+	raw := `{"type": "service_user", "service_user_id": "service-user-1"}`
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, gotServiceUser := runAsFromResponse(runAsResponse(t, raw).RunAs, tc.prior)
+			if !got.Equal(tc.want) || !gotServiceUser.IsNull() {
+				t.Errorf("got (%v, %v), want (%v, null)", got, gotServiceUser, tc.want)
+			}
+		})
+	}
+}
+
 // A null prior state must stay null while the server holds the organization
 // default (null and "organization" are equivalent, so config-omitted run_as
 // must not plan a perpetual reset), while every real out-of-band change
