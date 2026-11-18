@@ -235,3 +235,25 @@ data "devin_repositories" "test" {
 		},
 	})
 }
+
+// The sessions data source lists an org's sessions. The seed org may have
+// none, so only the list shape is asserted.
+func TestAccSessionsDataSource_basic(t *testing.T) {
+	name := "data.devin_sessions.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccOrgTokenPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`%s
+data "devin_sessions" "test" {
+  org_id = %q
+}
+`, orgTokenProviderConfig(), os.Getenv("DEVIN_ORG_TOKEN_ORG_ID")),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(name, "sessions.#"),
+				),
+			},
+		},
+	})
+}

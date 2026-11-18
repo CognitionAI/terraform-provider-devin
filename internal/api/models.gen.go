@@ -5,6 +5,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/oapi-codegen/nullable"
@@ -26,6 +27,378 @@ const (
 const (
 	ActorResponseTypeServiceUser ActorResponseType = "service_user"
 	ActorResponseTypeUser        ActorResponseType = "user"
+)
+
+// Defines values for AiGatewayMetric.
+const (
+	E2ELatency     AiGatewayMetric = "e2e_latency"
+	InterDeltaGap  AiGatewayMetric = "inter_delta_gap"
+	OutputTps      AiGatewayMetric = "output_tps"
+	RequestItl     AiGatewayMetric = "request_itl"
+	Requests       AiGatewayMetric = "requests"
+	StreamingShare AiGatewayMetric = "streaming_share"
+	Tokens         AiGatewayMetric = "tokens"
+	Ttft           AiGatewayMetric = "ttft"
+)
+
+// Defines values for AiGatewayMetricProvenanceResponseEnvironment.
+const (
+	Production AiGatewayMetricProvenanceResponseEnvironment = "production"
+)
+
+// Defines values for AiGatewayMetricProvenanceResponseKind.
+const (
+	AiGatewayMetricProvenanceResponseKindCounter      AiGatewayMetricProvenanceResponseKind = "counter"
+	AiGatewayMetricProvenanceResponseKindDistribution AiGatewayMetricProvenanceResponseKind = "distribution"
+	AiGatewayMetricProvenanceResponseKindRatio        AiGatewayMetricProvenanceResponseKind = "ratio"
+)
+
+// Defines values for AiGatewayMetricProvenanceResponseScope.
+const (
+	AiGatewayMetricProvenanceResponseScopeAccount AiGatewayMetricProvenanceResponseScope = "account"
+)
+
+// Defines values for AiGatewayMetricProvenanceResponseSource.
+const (
+	Otel AiGatewayMetricProvenanceResponseSource = "otel"
+)
+
+// Defines values for AiGatewayMetricsResponseAggregation.
+const (
+	AiGatewayMetricsResponseAggregationAvg   AiGatewayMetricsResponseAggregation = "avg"
+	AiGatewayMetricsResponseAggregationP50   AiGatewayMetricsResponseAggregation = "p50"
+	AiGatewayMetricsResponseAggregationP90   AiGatewayMetricsResponseAggregation = "p90"
+	AiGatewayMetricsResponseAggregationP95   AiGatewayMetricsResponseAggregation = "p95"
+	AiGatewayMetricsResponseAggregationP99   AiGatewayMetricsResponseAggregation = "p99"
+	AiGatewayMetricsResponseAggregationRatio AiGatewayMetricsResponseAggregation = "ratio"
+	AiGatewayMetricsResponseAggregationSum   AiGatewayMetricsResponseAggregation = "sum"
+)
+
+// Defines values for AiGatewayMetricsResponseSampled.
+const (
+	False AiGatewayMetricsResponseSampled = false
+)
+
+// Defines values for AiGatewayMetricsResponseUnit.
+const (
+	Ms      AiGatewayMetricsResponseUnit = "ms"
+	Percent AiGatewayMetricsResponseUnit = "percent"
+	Request AiGatewayMetricsResponseUnit = "request"
+	Token   AiGatewayMetricsResponseUnit = "token"
+	TokenS  AiGatewayMetricsResponseUnit = "token/s"
+)
+
+// Defines values for AiGatewayModelResponseCurrency.
+const (
+	USD AiGatewayModelResponseCurrency = "USD"
+)
+
+// Defines values for AiGatewayModelResponseUnit.
+const (
+	PerToken AiGatewayModelResponseUnit = "per_token"
+)
+
+// Defines values for AuditLogAction.
+const (
+	AcceptSkillPr                             AuditLogAction = "accept_skill_pr"
+	AcknowledgeSessionHardCap                 AuditLogAction = "acknowledge_session_hard_cap"
+	AddBillingTagMember                       AuditLogAction = "add_billing_tag_member"
+	AddEnterpriseMember                       AuditLogAction = "add_enterprise_member"
+	AddGroupMembership                        AuditLogAction = "add_group_membership"
+	AddIdpGroupMember                         AuditLogAction = "add_idp_group_member"
+	AddMember                                 AuditLogAction = "add_member"
+	AiGuardrailViolation                      AuditLogAction = "ai_guardrail_violation"
+	ApproveDeploy                             AuditLogAction = "approve_deploy"
+	ApproveJoinRequest                        AuditLogAction = "approve_join_request"
+	ApprovePatRequest                         AuditLogAction = "approve_pat_request"
+	ApproveSeatRequest                        AuditLogAction = "approve_seat_request"
+	ApproveTestApp                            AuditLogAction = "approve_test_app"
+	ArchiveCodeScan                           AuditLogAction = "archive_code_scan"
+	ArchiveSession                            AuditLogAction = "archive_session"
+	AssignBillingTagSession                   AuditLogAction = "assign_billing_tag_session"
+	AssignRoles                               AuditLogAction = "assign_roles"
+	AssignServiceUserRole                     AuditLogAction = "assign_service_user_role"
+	AuthorizeLocalToolsAccess                 AuditLogAction = "authorize_local_tools_access"
+	AuthorizeSSHAccess                        AuditLogAction = "authorize_ssh_access"
+	AutomaticJoinEvent                        AuditLogAction = "automatic_join_event"
+	AutomationTargetWriteApprover             AuditLogAction = "automation_target_write_approver"
+	AutomationTargetWriteApproverDenied       AuditLogAction = "automation_target_write_approver_denied"
+	BulkRevokePats                            AuditLogAction = "bulk_revoke_pats"
+	CancelBlueprintBuild                      AuditLogAction = "cancel_blueprint_build"
+	CancelPatRequest                          AuditLogAction = "cancel_pat_request"
+	CancelSessionDeletion                     AuditLogAction = "cancel_session_deletion"
+	ClaimOutpostSession                       AuditLogAction = "claim_outpost_session"
+	CompletePatRequest                        AuditLogAction = "complete_pat_request"
+	CreateApp                                 AuditLogAction = "create_app"
+	CreateArtifact                            AuditLogAction = "create_artifact"
+	CreateAuditLogExport                      AuditLogAction = "create_audit_log_export"
+	CreateAutomation                          AuditLogAction = "create_automation"
+	CreateAzureDevopsIntegration              AuditLogAction = "create_azure_devops_integration"
+	CreateBillingTag                          AuditLogAction = "create_billing_tag"
+	CreateBitbucketAppConfig                  AuditLogAction = "create_bitbucket_app_config"
+	CreateBitbucketIntegration                AuditLogAction = "create_bitbucket_integration"
+	CreateBlueprint                           AuditLogAction = "create_blueprint"
+	CreateBlueprintPr                         AuditLogAction = "create_blueprint_pr"
+	CreateBlueprintVersion                    AuditLogAction = "create_blueprint_version"
+	CreateCodeScanProfile                     AuditLogAction = "create_code_scan_profile"
+	CreateEnterpriseBlueprint                 AuditLogAction = "create_enterprise_blueprint"
+	CreateEnterpriseBlueprintVersion          AuditLogAction = "create_enterprise_blueprint_version"
+	CreateEnvironment                         AuditLogAction = "create_environment"
+	CreateFederatedCredential                 AuditLogAction = "create_federated_credential"
+	CreateFederatedIdentityProvider           AuditLogAction = "create_federated_identity_provider"
+	CreateFolder                              AuditLogAction = "create_folder"
+	CreateGateway                             AuditLogAction = "create_gateway"
+	CreateGerritIntegration                   AuditLogAction = "create_gerrit_integration"
+	CreateGitPermission                       AuditLogAction = "create_git_permission"
+	CreateGithubIntegration                   AuditLogAction = "create_github_integration"
+	CreateGitlabAppConfig                     AuditLogAction = "create_gitlab_app_config"
+	CreateGitlabIntegration                   AuditLogAction = "create_gitlab_integration"
+	CreateIdpGroup                            AuditLogAction = "create_idp_group"
+	CreateJoinRequest                         AuditLogAction = "create_join_request"
+	CreateKnowledge                           AuditLogAction = "create_knowledge"
+	CreateMaintenanceTask                     AuditLogAction = "create_maintenance_task"
+	CreateMcpValidationSession                AuditLogAction = "create_mcp_validation_session"
+	CreateOncallConfig                        AuditLogAction = "create_oncall_config"
+	CreateOrg                                 AuditLogAction = "create_org"
+	CreateOrgAPIKey                           AuditLogAction = "create_org_api_key"
+	CreateOutpostPool                         AuditLogAction = "create_outpost_pool"
+	CreatePat                                 AuditLogAction = "create_pat"
+	CreatePatRequest                          AuditLogAction = "create_pat_request"
+	CreatePerforceIntegration                 AuditLogAction = "create_perforce_integration"
+	CreatePlaybook                            AuditLogAction = "create_playbook"
+	CreateProviderSyncPurgePreview            AuditLogAction = "create_provider_sync_purge_preview"
+	CreateReviewProfile                       AuditLogAction = "create_review_profile"
+	CreateReviewTrigger                       AuditLogAction = "create_review_trigger"
+	CreateRole                                AuditLogAction = "create_role"
+	CreateScimUser                            AuditLogAction = "create_scim_user"
+	CreateSeatRequest                         AuditLogAction = "create_seat_request"
+	CreateSecret                              AuditLogAction = "create_secret"
+	CreateServiceAPIKey                       AuditLogAction = "create_service_api_key"
+	CreateServiceUser                         AuditLogAction = "create_service_user"
+	CreateServiceUserAPIKey                   AuditLogAction = "create_service_user_api_key"
+	CreateSession                             AuditLogAction = "create_session"
+	CreateSnapshotScript                      AuditLogAction = "create_snapshot_script"
+	CreateTrackerConnection                   AuditLogAction = "create_tracker_connection"
+	CreateUserAPIKey                          AuditLogAction = "create_user_api_key"
+	CustomerNetworkCaBundleDelete             AuditLogAction = "customer_network_ca_bundle_delete"
+	CustomerNetworkCaBundleSet                AuditLogAction = "customer_network_ca_bundle_set"
+	DeclineSeatRequest                        AuditLogAction = "decline_seat_request"
+	DeleteApp                                 AuditLogAction = "delete_app"
+	DeleteAuditLogExport                      AuditLogAction = "delete_audit_log_export"
+	DeleteAutomation                          AuditLogAction = "delete_automation"
+	DeleteAzureDevopsIntegration              AuditLogAction = "delete_azure_devops_integration"
+	DeleteBitbucketAppConfig                  AuditLogAction = "delete_bitbucket_app_config"
+	DeleteBitbucketIntegration                AuditLogAction = "delete_bitbucket_integration"
+	DeleteBlueprint                           AuditLogAction = "delete_blueprint"
+	DeleteBlueprintFile                       AuditLogAction = "delete_blueprint_file"
+	DeleteBuild                               AuditLogAction = "delete_build"
+	DeleteEnterpriseBlueprint                 AuditLogAction = "delete_enterprise_blueprint"
+	DeleteEnvironment                         AuditLogAction = "delete_environment"
+	DeleteFederatedIdentityProvider           AuditLogAction = "delete_federated_identity_provider"
+	DeleteFolder                              AuditLogAction = "delete_folder"
+	DeleteGateway                             AuditLogAction = "delete_gateway"
+	DeleteGerritIntegration                   AuditLogAction = "delete_gerrit_integration"
+	DeleteGitPermission                       AuditLogAction = "delete_git_permission"
+	DeleteGithubIntegration                   AuditLogAction = "delete_github_integration"
+	DeleteGitlabAppConfig                     AuditLogAction = "delete_gitlab_app_config"
+	DeleteGitlabIntegration                   AuditLogAction = "delete_gitlab_integration"
+	DeleteGroupMembership                     AuditLogAction = "delete_group_membership"
+	DeleteIdpGroup                            AuditLogAction = "delete_idp_group"
+	DeleteKnowledge                           AuditLogAction = "delete_knowledge"
+	DeleteMaintenanceTask                     AuditLogAction = "delete_maintenance_task"
+	DeleteManagedPluginBundle                 AuditLogAction = "delete_managed_plugin_bundle"
+	DeleteMember                              AuditLogAction = "delete_member"
+	DeleteMergeManagerMemory                  AuditLogAction = "delete_merge_manager_memory"
+	DeleteOncallConfig                        AuditLogAction = "delete_oncall_config"
+	DeleteOrg                                 AuditLogAction = "delete_org"
+	DeleteOutpostPool                         AuditLogAction = "delete_outpost_pool"
+	DeletePerforceIntegration                 AuditLogAction = "delete_perforce_integration"
+	DeletePersona                             AuditLogAction = "delete_persona"
+	DeletePlaybook                            AuditLogAction = "delete_playbook"
+	DeleteRepoSetup                           AuditLogAction = "delete_repo_setup"
+	DeleteRepoSetupSteeringKnowledge          AuditLogAction = "delete_repo_setup_steering_knowledge"
+	DeleteReviewRepoBillingTarget             AuditLogAction = "delete_review_repo_billing_target"
+	DeleteReviewTrigger                       AuditLogAction = "delete_review_trigger"
+	DeleteRole                                AuditLogAction = "delete_role"
+	DeleteScimUser                            AuditLogAction = "delete_scim_user"
+	DeleteSecret                              AuditLogAction = "delete_secret"
+	DeleteServiceUser                         AuditLogAction = "delete_service_user"
+	DeleteTrackerConnection                   AuditLogAction = "delete_tracker_connection"
+	DenyPatRequest                            AuditLogAction = "deny_pat_request"
+	DeployApp                                 AuditLogAction = "deploy_app"
+	DetachBlueprintFromGit                    AuditLogAction = "detach_blueprint_from_git"
+	DisablePersona                            AuditLogAction = "disable_persona"
+	DisableServiceUserForAutomations          AuditLogAction = "disable_service_user_for_automations"
+	EditKnowledge                             AuditLogAction = "edit_knowledge"
+	EnablePersona                             AuditLogAction = "enable_persona"
+	EnableServiceUserForAutomations           AuditLogAction = "enable_service_user_for_automations"
+	EnrollSSHKey                              AuditLogAction = "enroll_ssh_key"
+	ExchangeFederatedToken                    AuditLogAction = "exchange_federated_token"
+	ExecuteSnapshotScript                     AuditLogAction = "execute_snapshot_script"
+	ExposePort                                AuditLogAction = "expose_port"
+	FailOutpostSession                        AuditLogAction = "fail_outpost_session"
+	FinishRepoSetup                           AuditLogAction = "finish_repo_setup"
+	GitPrAuthorCollaborator                   AuditLogAction = "git_pr_author_collaborator"
+	GitPrAuthorCollaboratorDenied             AuditLogAction = "git_pr_author_collaborator_denied"
+	GitPrMerge                                AuditLogAction = "git_pr_merge"
+	GitPrMergeDenied                          AuditLogAction = "git_pr_merge_denied"
+	GithubIntegrationDeleted                  AuditLogAction = "github_integration_deleted"
+	GrantSSHAccess                            AuditLogAction = "grant_ssh_access"
+	ImportCodeScan                            AuditLogAction = "import_code_scan"
+	InstallGitlabWebhook                      AuditLogAction = "install_gitlab_webhook"
+	LinkJiraAgentInstallation                 AuditLogAction = "link_jira_agent_installation"
+	LinkWorkItem                              AuditLogAction = "link_work_item"
+	Login                                     AuditLogAction = "login"
+	McpEnterpriseServerCredentialDelete       AuditLogAction = "mcp_enterprise_server_credential_delete"
+	McpEnterpriseServerCredentialSet          AuditLogAction = "mcp_enterprise_server_credential_set"
+	McpEnterpriseServerTargetsUpdate          AuditLogAction = "mcp_enterprise_server_targets_update"
+	McpServerConnectSecretsResolved           AuditLogAction = "mcp_server_connect_secrets_resolved"
+	McpServerCredentialDelete                 AuditLogAction = "mcp_server_credential_delete"
+	McpServerCredentialSet                    AuditLogAction = "mcp_server_credential_set"
+	McpServerDelete                           AuditLogAction = "mcp_server_delete"
+	McpServerDisable                          AuditLogAction = "mcp_server_disable"
+	McpServerEnable                           AuditLogAction = "mcp_server_enable"
+	McpServerInstall                          AuditLogAction = "mcp_server_install"
+	McpServerOauthInitiate                    AuditLogAction = "mcp_server_oauth_initiate"
+	McpServerOauthTokensGranted               AuditLogAction = "mcp_server_oauth_tokens_granted"
+	McpServerOauthTokensRevoked               AuditLogAction = "mcp_server_oauth_tokens_revoked"
+	McpServerSecretLink                       AuditLogAction = "mcp_server_secret_link"
+	McpServerSecretUnlink                     AuditLogAction = "mcp_server_secret_unlink"
+	McpServerToolsListSecretsResolved         AuditLogAction = "mcp_server_tools_list_secrets_resolved"
+	McpServerUpdate                           AuditLogAction = "mcp_server_update"
+	PermissionResponse                        AuditLogAction = "permission_response"
+	PinBuild                                  AuditLogAction = "pin_build"
+	PolicyRevokePat                           AuditLogAction = "policy_revoke_pat"
+	PublishArtifactVersion                    AuditLogAction = "publish_artifact_version"
+	PurgeProviderSyncHumanAccess              AuditLogAction = "purge_provider_sync_human_access"
+	ReconnectAzureDevopsIntegration           AuditLogAction = "reconnect_azure_devops_integration"
+	ReconnectGitlabIntegration                AuditLogAction = "reconnect_gitlab_integration"
+	RefreshGithubIntegration                  AuditLogAction = "refresh_github_integration"
+	RegenerateAutomationWebhookSecret         AuditLogAction = "regenerate_automation_webhook_secret"
+	RegenerateGatewayToken                    AuditLogAction = "regenerate_gateway_token"
+	RehostCodeScan                            AuditLogAction = "rehost_code_scan"
+	RejectJoinRequest                         AuditLogAction = "reject_join_request"
+	ReleaseOutpostSession                     AuditLogAction = "release_outpost_session"
+	RemoveIdpGroupMember                      AuditLogAction = "remove_idp_group_member"
+	RemoveRepoFromDevin                       AuditLogAction = "remove_repo_from_devin"
+	RemoveSSHKey                              AuditLogAction = "remove_ssh_key"
+	RemoveServiceUserRole                     AuditLogAction = "remove_service_user_role"
+	ReorderBlueprints                         AuditLogAction = "reorder_blueprints"
+	ReportPrReviewTriage                      AuditLogAction = "report_pr_review_triage"
+	RequestLocalToolsAccess                   AuditLogAction = "request_local_tools_access"
+	RequestLocalToolsApprovalMode             AuditLogAction = "request_local_tools_approval_mode"
+	ResetAutomationMonitor                    AuditLogAction = "reset_automation_monitor"
+	RevokeAllEnterpriseAPIKeys                AuditLogAction = "revoke_all_enterprise_api_keys"
+	RevokeEnterpriseAPIKey                    AuditLogAction = "revoke_enterprise_api_key"
+	RevokeFederatedCredential                 AuditLogAction = "revoke_federated_credential"
+	RevokeLocalToolsAccess                    AuditLogAction = "revoke_local_tools_access"
+	RevokePat                                 AuditLogAction = "revoke_pat"
+	RevokeServiceUserAPIKey                   AuditLogAction = "revoke_service_user_api_key"
+	RollbackBlueprintVersion                  AuditLogAction = "rollback_blueprint_version"
+	RollbackEnterpriseBlueprintVersion        AuditLogAction = "rollback_enterprise_blueprint_version"
+	RotatePat                                 AuditLogAction = "rotate_pat"
+	RotateServiceUserAPIKey                   AuditLogAction = "rotate_service_user_api_key"
+	RotateTrackerConnectionToken              AuditLogAction = "rotate_tracker_connection_token"
+	ScheduleSessionDeletion                   AuditLogAction = "schedule_session_deletion"
+	ScheduleSnapshotScript                    AuditLogAction = "schedule_snapshot_script"
+	SearchQuery                               AuditLogAction = "search_query"
+	SecureModeBindingCreated                  AuditLogAction = "secure_mode_binding_created"
+	SecureModeBindingDeleted                  AuditLogAction = "secure_mode_binding_deleted"
+	SecureModeBindingUpdated                  AuditLogAction = "secure_mode_binding_updated"
+	SecureModeProfileCreated                  AuditLogAction = "secure_mode_profile_created"
+	SecureModeProfileDeleted                  AuditLogAction = "secure_mode_profile_deleted"
+	SecureModeProfileUpdated                  AuditLogAction = "secure_mode_profile_updated"
+	SendMessage                               AuditLogAction = "send_message"
+	SetAccountManagedPlugins                  AuditLogAction = "set_account_managed_plugins"
+	SetDefaultAutomationServiceUser           AuditLogAction = "set_default_automation_service_user"
+	SetManagedPluginBundle                    AuditLogAction = "set_managed_plugin_bundle"
+	SetOrgGroupLimits                         AuditLogAction = "set_org_group_limits"
+	SetOrgManagedPlugins                      AuditLogAction = "set_org_managed_plugins"
+	SetReviewRepoBillingTarget                AuditLogAction = "set_review_repo_billing_target"
+	SetUserManagedPlugins                     AuditLogAction = "set_user_managed_plugins"
+	ShareApp                                  AuditLogAction = "share_app"
+	ShareOrgApps                              AuditLogAction = "share_org_apps"
+	SharePreview                              AuditLogAction = "share_preview"
+	SleepSession                              AuditLogAction = "sleep_session"
+	StartCodeScan                             AuditLogAction = "start_code_scan"
+	StartRepoSetup                            AuditLogAction = "start_repo_setup"
+	StopApp                                   AuditLogAction = "stop_app"
+	SwitchCodeScanProfile                     AuditLogAction = "switch_code_scan_profile"
+	SyncRepoBlueprints                        AuditLogAction = "sync_repo_blueprints"
+	TerminateSession                          AuditLogAction = "terminate_session"
+	TransferCanonicalRepo                     AuditLogAction = "transfer_canonical_repo"
+	TriggerAutomation                         AuditLogAction = "trigger_automation"
+	TriggerBlueprintBuild                     AuditLogAction = "trigger_blueprint_build"
+	UnarchiveSession                          AuditLogAction = "unarchive_session"
+	UnlinkCodeScanFindingSession              AuditLogAction = "unlink_code_scan_finding_session"
+	UnlinkJiraAgentInstallation               AuditLogAction = "unlink_jira_agent_installation"
+	UnlinkWorkItem                            AuditLogAction = "unlink_work_item"
+	UnpinBuild                                AuditLogAction = "unpin_build"
+	UnpublishArtifact                         AuditLogAction = "unpublish_artifact"
+	UpdateAiGuardrail                         AuditLogAction = "update_ai_guardrail"
+	UpdateApp                                 AuditLogAction = "update_app"
+	UpdateArtifact                            AuditLogAction = "update_artifact"
+	UpdateAuditLogExport                      AuditLogAction = "update_audit_log_export"
+	UpdateAutomation                          AuditLogAction = "update_automation"
+	UpdateAutomationScratch                   AuditLogAction = "update_automation_scratch"
+	UpdateBitbucketIntegration                AuditLogAction = "update_bitbucket_integration"
+	UpdateBlueprintSettings                   AuditLogAction = "update_blueprint_settings"
+	UpdateCodeScanEffort                      AuditLogAction = "update_code_scan_effort"
+	UpdateCodeScanFindingContent              AuditLogAction = "update_code_scan_finding_content"
+	UpdateCodeScanFindingStatus               AuditLogAction = "update_code_scan_finding_status"
+	UpdateCodeScanPlatform                    AuditLogAction = "update_code_scan_platform"
+	UpdateCodeScanProfile                     AuditLogAction = "update_code_scan_profile"
+	UpdateCodeSnippetTelemetry                AuditLogAction = "update_code_snippet_telemetry"
+	UpdateCommitEmail                         AuditLogAction = "update_commit_email"
+	UpdateCommitSigningMode                   AuditLogAction = "update_commit_signing_mode"
+	UpdateEnterpriseHypervisorSettings        AuditLogAction = "update_enterprise_hypervisor_settings"
+	UpdateEnterpriseSettings                  AuditLogAction = "update_enterprise_settings"
+	UpdateEnvironment                         AuditLogAction = "update_environment"
+	UpdateFederatedIdentityProvider           AuditLogAction = "update_federated_identity_provider"
+	UpdateFolder                              AuditLogAction = "update_folder"
+	UpdateGatewayDialAddress                  AuditLogAction = "update_gateway_dial_address"
+	UpdateGatewayHostnames                    AuditLogAction = "update_gateway_hostnames"
+	UpdateGitManagerOutpostIPAccessList       AuditLogAction = "update_git_manager_outpost_ip_access_list"
+	UpdateGitPermission                       AuditLogAction = "update_git_permission"
+	UpdateGithubOwnedPublicReposInAutomations AuditLogAction = "update_github_owned_public_repos_in_automations"
+	UpdateGitlabIntegration                   AuditLogAction = "update_gitlab_integration"
+	UpdateGroupMembership                     AuditLogAction = "update_group_membership"
+	UpdateIdpGroup                            AuditLogAction = "update_idp_group"
+	UpdateLocalControls                       AuditLogAction = "update_local_controls"
+	UpdateLocalEnterpriseConfig               AuditLogAction = "update_local_enterprise_config"
+	UpdateLocalOrgConfig                      AuditLogAction = "update_local_org_config"
+	UpdateLocalTierConfig                     AuditLogAction = "update_local_tier_config"
+	UpdateMaintenanceTask                     AuditLogAction = "update_maintenance_task"
+	UpdateMergeManagerMemory                  AuditLogAction = "update_merge_manager_memory"
+	UpdateOncallConfig                        AuditLogAction = "update_oncall_config"
+	UpdateOrg                                 AuditLogAction = "update_org"
+	UpdateOrgSettings                         AuditLogAction = "update_org_settings"
+	UpdateOutpostPool                         AuditLogAction = "update_outpost_pool"
+	UpdatePatPolicy                           AuditLogAction = "update_pat_policy"
+	UpdatePerforceIntegration                 AuditLogAction = "update_perforce_integration"
+	UpdatePlaybook                            AuditLogAction = "update_playbook"
+	UpdateProviderSyncPolicy                  AuditLogAction = "update_provider_sync_policy"
+	UpdateRepoSetupSteeringKnowledge          AuditLogAction = "update_repo_setup_steering_knowledge"
+	UpdateReviewCommentLanguage               AuditLogAction = "update_review_comment_language"
+	UpdateReviewProfile                       AuditLogAction = "update_review_profile"
+	UpdateReviewSettings                      AuditLogAction = "update_review_settings"
+	UpdateReviewTrigger                       AuditLogAction = "update_review_trigger"
+	UpdateRole                                AuditLogAction = "update_role"
+	UpdateScimUser                            AuditLogAction = "update_scim_user"
+	UpdateSecret                              AuditLogAction = "update_secret"
+	UpdateServiceUser                         AuditLogAction = "update_service_user"
+	UpdateServiceUserKeyPolicy                AuditLogAction = "update_service_user_key_policy"
+	UpdateTrackerConnection                   AuditLogAction = "update_tracker_connection"
+	UpdateWebhookIPAccessList                 AuditLogAction = "update_webhook_ip_access_list"
+	UploadBlueprintFile                       AuditLogAction = "upload_blueprint_file"
+	ViewOrgAPIKey                             AuditLogAction = "view_org_api_key"
+	ViewUserAPIKey                            AuditLogAction = "view_user_api_key"
+)
+
+// Defines values for AutoScanScheduleCreateRequestEffort.
+const (
+	AutoScanScheduleCreateRequestEffortDeep   AutoScanScheduleCreateRequestEffort = "deep"
+	AutoScanScheduleCreateRequestEffortNormal AutoScanScheduleCreateRequestEffort = "normal"
 )
 
 // Defines values for AutomationComparisonConditionOperator.
@@ -225,9 +598,9 @@ const (
 
 // Defines values for AutomationSecurityProfileResponseSelection.
 const (
-	Inherit AutomationSecurityProfileResponseSelection = "inherit"
-	None    AutomationSecurityProfileResponseSelection = "none"
-	Profile AutomationSecurityProfileResponseSelection = "profile"
+	AutomationSecurityProfileResponseSelectionInherit AutomationSecurityProfileResponseSelection = "inherit"
+	AutomationSecurityProfileResponseSelectionNone    AutomationSecurityProfileResponseSelection = "none"
+	AutomationSecurityProfileResponseSelectionProfile AutomationSecurityProfileResponseSelection = "profile"
 )
 
 // Defines values for AutomationSessionSettingsInputFallbackDevinMode.
@@ -463,10 +836,276 @@ const (
 	Manual BuildTrigger = "manual"
 )
 
+// Defines values for CancelCodeScanResponseStatus.
+const (
+	CancelCodeScanResponseStatusCancelled CancelCodeScanResponseStatus = "cancelled"
+)
+
+// Defines values for CodeScanCreateRequestDevinMode.
+const (
+	CodeScanCreateRequestDevinModeFusion CodeScanCreateRequestDevinMode = "fusion"
+	CodeScanCreateRequestDevinModeSwe2   CodeScanCreateRequestDevinMode = "swe-2"
+)
+
+// Defines values for CodeScanCreateRequestEffort.
+const (
+	CodeScanCreateRequestEffortDeep   CodeScanCreateRequestEffort = "deep"
+	CodeScanCreateRequestEffortNormal CodeScanCreateRequestEffort = "normal"
+)
+
+// Defines values for CodeScanCreateRequestScanType.
+const (
+	CodeScanCreateRequestScanTypeAccessibility CodeScanCreateRequestScanType = "accessibility"
+	CodeScanCreateRequestScanTypeCleanup       CodeScanCreateRequestScanType = "cleanup"
+	CodeScanCreateRequestScanTypeCodeQuality   CodeScanCreateRequestScanType = "code-quality"
+	CodeScanCreateRequestScanTypeCompliance    CodeScanCreateRequestScanType = "compliance"
+	CodeScanCreateRequestScanTypeDBQueries     CodeScanCreateRequestScanType = "db-queries"
+	CodeScanCreateRequestScanTypeDeadCode      CodeScanCreateRequestScanType = "dead-code"
+	CodeScanCreateRequestScanTypeGeneral       CodeScanCreateRequestScanType = "general"
+	CodeScanCreateRequestScanTypeMigrationDocs CodeScanCreateRequestScanType = "migration-docs"
+	CodeScanCreateRequestScanTypePerformance   CodeScanCreateRequestScanType = "performance"
+	CodeScanCreateRequestScanTypeRedTeam       CodeScanCreateRequestScanType = "red-team"
+	CodeScanCreateRequestScanTypeSecurity      CodeScanCreateRequestScanType = "security"
+	CodeScanCreateRequestScanTypeTelemetry     CodeScanCreateRequestScanType = "telemetry"
+	CodeScanCreateRequestScanTypeTestCoverage  CodeScanCreateRequestScanType = "test-coverage"
+)
+
+// Defines values for CodeScanEffortResponseEffort.
+const (
+	CodeScanEffortResponseEffortDeep   CodeScanEffortResponseEffort = "deep"
+	CodeScanEffortResponseEffortNormal CodeScanEffortResponseEffort = "normal"
+)
+
+// Defines values for CodeScanEffortUpdateRequestEffort.
+const (
+	CodeScanEffortUpdateRequestEffortDeep   CodeScanEffortUpdateRequestEffort = "deep"
+	CodeScanEffortUpdateRequestEffortNormal CodeScanEffortUpdateRequestEffort = "normal"
+)
+
+// Defines values for CodeScanFindingResponseFixEffort.
+const (
+	Large CodeScanFindingResponseFixEffort = "large"
+	Small CodeScanFindingResponseFixEffort = "small"
+)
+
+// Defines values for CodeScanFindingResponsePayoff.
+const (
+	CodeScanFindingResponsePayoffBigFix       CodeScanFindingResponsePayoff = "big_fix"
+	CodeScanFindingResponsePayoffDeprioritize CodeScanFindingResponsePayoff = "deprioritize"
+	CodeScanFindingResponsePayoffEasyFix      CodeScanFindingResponsePayoff = "easy_fix"
+	CodeScanFindingResponsePayoffQuickWin     CodeScanFindingResponsePayoff = "quick_win"
+)
+
+// Defines values for CodeScanFindingResponseSeverity.
+const (
+	CodeScanFindingResponseSeverityCritical CodeScanFindingResponseSeverity = "critical"
+	CodeScanFindingResponseSeverityHigh     CodeScanFindingResponseSeverity = "high"
+	CodeScanFindingResponseSeverityLow      CodeScanFindingResponseSeverity = "low"
+	CodeScanFindingResponseSeverityMedium   CodeScanFindingResponseSeverity = "medium"
+)
+
+// Defines values for CodeScanFindingResponseStatus.
+const (
+	CodeScanFindingResponseStatusDismissed CodeScanFindingResponseStatus = "dismissed"
+	CodeScanFindingResponseStatusOpen      CodeScanFindingResponseStatus = "open"
+	CodeScanFindingResponseStatusResolved  CodeScanFindingResponseStatus = "resolved"
+)
+
+// Defines values for CodeScanFindingResponseValidationResult.
+const (
+	Confirmed     CodeScanFindingResponseValidationResult = "confirmed"
+	FalsePositive CodeScanFindingResponseValidationResult = "false_positive"
+	Inconclusive  CodeScanFindingResponseValidationResult = "inconclusive"
+)
+
+// Defines values for CodeScanFindingStatusResponseStatus.
+const (
+	CodeScanFindingStatusResponseStatusDismissed CodeScanFindingStatusResponseStatus = "dismissed"
+	CodeScanFindingStatusResponseStatusOpen      CodeScanFindingStatusResponseStatus = "open"
+	CodeScanFindingStatusResponseStatusResolved  CodeScanFindingStatusResponseStatus = "resolved"
+)
+
+// Defines values for CodeScanFindingStatusUpdateRequestStatus.
+const (
+	CodeScanFindingStatusUpdateRequestStatusDismissed CodeScanFindingStatusUpdateRequestStatus = "dismissed"
+	CodeScanFindingStatusUpdateRequestStatusOpen      CodeScanFindingStatusUpdateRequestStatus = "open"
+	CodeScanFindingStatusUpdateRequestStatusResolved  CodeScanFindingStatusUpdateRequestStatus = "resolved"
+)
+
+// Defines values for CodeScanFindingsSelectionSeverity.
+const (
+	CodeScanFindingsSelectionSeverityCritical CodeScanFindingsSelectionSeverity = "critical"
+	CodeScanFindingsSelectionSeverityHigh     CodeScanFindingsSelectionSeverity = "high"
+	CodeScanFindingsSelectionSeverityLow      CodeScanFindingsSelectionSeverity = "low"
+	CodeScanFindingsSelectionSeverityMedium   CodeScanFindingsSelectionSeverity = "medium"
+)
+
+// Defines values for CodeScanFindingsSelectionStatus.
+const (
+	CodeScanFindingsSelectionStatusDismissed CodeScanFindingsSelectionStatus = "dismissed"
+	CodeScanFindingsSelectionStatusOpen      CodeScanFindingsSelectionStatus = "open"
+	CodeScanFindingsSelectionStatusResolved  CodeScanFindingsSelectionStatus = "resolved"
+)
+
+// Defines values for CodeScanFindingsStatusUpdateRequestStatus.
+const (
+	CodeScanFindingsStatusUpdateRequestStatusDismissed CodeScanFindingsStatusUpdateRequestStatus = "dismissed"
+	CodeScanFindingsStatusUpdateRequestStatusOpen      CodeScanFindingsStatusUpdateRequestStatus = "open"
+	CodeScanFindingsStatusUpdateRequestStatusResolved  CodeScanFindingsStatusUpdateRequestStatus = "resolved"
+)
+
+// Defines values for CodeScanProfileDetailResponseMode.
+const (
+	CodeScanProfileDetailResponseModeDiscover CodeScanProfileDetailResponseMode = "discover"
+	CodeScanProfileDetailResponseModeIngest   CodeScanProfileDetailResponseMode = "ingest"
+)
+
+// Defines values for CodeScanProfileDetailResponseScanType.
+const (
+	CodeScanProfileDetailResponseScanTypeAccessibility CodeScanProfileDetailResponseScanType = "accessibility"
+	CodeScanProfileDetailResponseScanTypeCleanup       CodeScanProfileDetailResponseScanType = "cleanup"
+	CodeScanProfileDetailResponseScanTypeCodeQuality   CodeScanProfileDetailResponseScanType = "code-quality"
+	CodeScanProfileDetailResponseScanTypeCompliance    CodeScanProfileDetailResponseScanType = "compliance"
+	CodeScanProfileDetailResponseScanTypeDBQueries     CodeScanProfileDetailResponseScanType = "db-queries"
+	CodeScanProfileDetailResponseScanTypeDeadCode      CodeScanProfileDetailResponseScanType = "dead-code"
+	CodeScanProfileDetailResponseScanTypeGeneral       CodeScanProfileDetailResponseScanType = "general"
+	CodeScanProfileDetailResponseScanTypeMigrationDocs CodeScanProfileDetailResponseScanType = "migration-docs"
+	CodeScanProfileDetailResponseScanTypePerformance   CodeScanProfileDetailResponseScanType = "performance"
+	CodeScanProfileDetailResponseScanTypeRedTeam       CodeScanProfileDetailResponseScanType = "red-team"
+	CodeScanProfileDetailResponseScanTypeSecurity      CodeScanProfileDetailResponseScanType = "security"
+	CodeScanProfileDetailResponseScanTypeTelemetry     CodeScanProfileDetailResponseScanType = "telemetry"
+	CodeScanProfileDetailResponseScanTypeTestCoverage  CodeScanProfileDetailResponseScanType = "test-coverage"
+)
+
+// Defines values for CodeScanProfileDetailResponseValidationSeverities.
+const (
+	CodeScanProfileDetailResponseValidationSeveritiesCritical CodeScanProfileDetailResponseValidationSeverities = "critical"
+	CodeScanProfileDetailResponseValidationSeveritiesHigh     CodeScanProfileDetailResponseValidationSeverities = "high"
+	CodeScanProfileDetailResponseValidationSeveritiesLow      CodeScanProfileDetailResponseValidationSeverities = "low"
+	CodeScanProfileDetailResponseValidationSeveritiesMedium   CodeScanProfileDetailResponseValidationSeverities = "medium"
+)
+
+// Defines values for CodeScanProfileDetailResponseVisibility.
+const (
+	CodeScanProfileDetailResponseVisibilityAccount CodeScanProfileDetailResponseVisibility = "account"
+	CodeScanProfileDetailResponseVisibilityOrg     CodeScanProfileDetailResponseVisibility = "org"
+)
+
+// Defines values for CodeScanProfileSummaryResponseMode.
+const (
+	CodeScanProfileSummaryResponseModeDiscover CodeScanProfileSummaryResponseMode = "discover"
+	CodeScanProfileSummaryResponseModeIngest   CodeScanProfileSummaryResponseMode = "ingest"
+)
+
+// Defines values for CodeScanProfileSummaryResponseScanType.
+const (
+	CodeScanProfileSummaryResponseScanTypeAccessibility CodeScanProfileSummaryResponseScanType = "accessibility"
+	CodeScanProfileSummaryResponseScanTypeCleanup       CodeScanProfileSummaryResponseScanType = "cleanup"
+	CodeScanProfileSummaryResponseScanTypeCodeQuality   CodeScanProfileSummaryResponseScanType = "code-quality"
+	CodeScanProfileSummaryResponseScanTypeCompliance    CodeScanProfileSummaryResponseScanType = "compliance"
+	CodeScanProfileSummaryResponseScanTypeDBQueries     CodeScanProfileSummaryResponseScanType = "db-queries"
+	CodeScanProfileSummaryResponseScanTypeDeadCode      CodeScanProfileSummaryResponseScanType = "dead-code"
+	CodeScanProfileSummaryResponseScanTypeGeneral       CodeScanProfileSummaryResponseScanType = "general"
+	CodeScanProfileSummaryResponseScanTypeMigrationDocs CodeScanProfileSummaryResponseScanType = "migration-docs"
+	CodeScanProfileSummaryResponseScanTypePerformance   CodeScanProfileSummaryResponseScanType = "performance"
+	CodeScanProfileSummaryResponseScanTypeRedTeam       CodeScanProfileSummaryResponseScanType = "red-team"
+	CodeScanProfileSummaryResponseScanTypeSecurity      CodeScanProfileSummaryResponseScanType = "security"
+	CodeScanProfileSummaryResponseScanTypeTelemetry     CodeScanProfileSummaryResponseScanType = "telemetry"
+	CodeScanProfileSummaryResponseScanTypeTestCoverage  CodeScanProfileSummaryResponseScanType = "test-coverage"
+)
+
+// Defines values for CodeScanProfileSummaryResponseVisibility.
+const (
+	CodeScanProfileSummaryResponseVisibilityAccount CodeScanProfileSummaryResponseVisibility = "account"
+	CodeScanProfileSummaryResponseVisibilityOrg     CodeScanProfileSummaryResponseVisibility = "org"
+)
+
+// Defines values for CodeScanResponseEffort.
+const (
+	CodeScanResponseEffortDeep   CodeScanResponseEffort = "deep"
+	CodeScanResponseEffortNormal CodeScanResponseEffort = "normal"
+)
+
+// Defines values for CodeScanResponseScanType.
+const (
+	CodeScanResponseScanTypeAccessibility CodeScanResponseScanType = "accessibility"
+	CodeScanResponseScanTypeCleanup       CodeScanResponseScanType = "cleanup"
+	CodeScanResponseScanTypeCodeQuality   CodeScanResponseScanType = "code-quality"
+	CodeScanResponseScanTypeCompliance    CodeScanResponseScanType = "compliance"
+	CodeScanResponseScanTypeDBQueries     CodeScanResponseScanType = "db-queries"
+	CodeScanResponseScanTypeDeadCode      CodeScanResponseScanType = "dead-code"
+	CodeScanResponseScanTypeGeneral       CodeScanResponseScanType = "general"
+	CodeScanResponseScanTypeMigrationDocs CodeScanResponseScanType = "migration-docs"
+	CodeScanResponseScanTypePerformance   CodeScanResponseScanType = "performance"
+	CodeScanResponseScanTypeRedTeam       CodeScanResponseScanType = "red-team"
+	CodeScanResponseScanTypeSecurity      CodeScanResponseScanType = "security"
+	CodeScanResponseScanTypeTelemetry     CodeScanResponseScanType = "telemetry"
+	CodeScanResponseScanTypeTestCoverage  CodeScanResponseScanType = "test-coverage"
+)
+
+// Defines values for CodeScanResponseStatus.
+const (
+	CodeScanResponseStatusAwaitingUserInput CodeScanResponseStatus = "awaiting_user_input"
+	CodeScanResponseStatusCancelled         CodeScanResponseStatus = "cancelled"
+	CodeScanResponseStatusCompleted         CodeScanResponseStatus = "completed"
+	CodeScanResponseStatusFailed            CodeScanResponseStatus = "failed"
+	CodeScanResponseStatusPending           CodeScanResponseStatus = "pending"
+	CodeScanResponseStatusRunning           CodeScanResponseStatus = "running"
+	CodeScanResponseStatusWaiting           CodeScanResponseStatus = "waiting"
+)
+
 // Defines values for CreateOrgBlueprintBodySource.
 const (
 	CreateOrgBlueprintBodySourceDatabase CreateOrgBlueprintBodySource = "database"
 	CreateOrgBlueprintBodySourceGit      CreateOrgBlueprintBodySource = "git"
+)
+
+// Defines values for DevinBrainUserSelfPrincipalType.
+const (
+	DevinBrain DevinBrainUserSelfPrincipalType = "devin_brain"
+)
+
+// Defines values for EnterpriseSecurityProfileDefaultSelectionSelection.
+const (
+	EnterpriseSecurityProfileDefaultSelectionSelectionNone    EnterpriseSecurityProfileDefaultSelectionSelection = "none"
+	EnterpriseSecurityProfileDefaultSelectionSelectionProfile EnterpriseSecurityProfileDefaultSelectionSelection = "profile"
+)
+
+// Defines values for EnterpriseSecurityProfileDefaultStateSelection.
+const (
+	EnterpriseSecurityProfileDefaultStateSelectionNone    EnterpriseSecurityProfileDefaultStateSelection = "none"
+	EnterpriseSecurityProfileDefaultStateSelectionProfile EnterpriseSecurityProfileDefaultStateSelection = "profile"
+)
+
+// Defines values for EnterpriseSecurityProfileResponseEnforcementLevel.
+const (
+	EnterpriseSecurityProfileResponseEnforcementLevelMandatory   EnterpriseSecurityProfileResponseEnforcementLevel = "mandatory"
+	EnterpriseSecurityProfileResponseEnforcementLevelRecommended EnterpriseSecurityProfileResponseEnforcementLevel = "recommended"
+)
+
+// Defines values for EnterpriseSecurityProfileResponseGitAccessLevel.
+const (
+	EnterpriseSecurityProfileResponseGitAccessLevelReadOnly  EnterpriseSecurityProfileResponseGitAccessLevel = "read_only"
+	EnterpriseSecurityProfileResponseGitAccessLevelReadWrite EnterpriseSecurityProfileResponseGitAccessLevel = "read_write"
+)
+
+// Defines values for EnterpriseSecurityProfileResponseSlackDmScope.
+const (
+	EnterpriseSecurityProfileResponseSlackDmScopeDisabled   EnterpriseSecurityProfileResponseSlackDmScope = "disabled"
+	EnterpriseSecurityProfileResponseSlackDmScopeOrgMembers EnterpriseSecurityProfileResponseSlackDmScope = "org_members"
+	EnterpriseSecurityProfileResponseSlackDmScopeWorkspace  EnterpriseSecurityProfileResponseSlackDmScope = "workspace"
+)
+
+// Defines values for EnterpriseSecurityProfileResponseTeamsDmScope.
+const (
+	EnterpriseSecurityProfileResponseTeamsDmScopeDisabled       EnterpriseSecurityProfileResponseTeamsDmScope = "disabled"
+	EnterpriseSecurityProfileResponseTeamsDmScopeInstalledUsers EnterpriseSecurityProfileResponseTeamsDmScope = "installed_users"
+)
+
+// Defines values for EnterpriseSecurityProfileResponseTeamsGroupChatScope.
+const (
+	EnterpriseSecurityProfileResponseTeamsGroupChatScopeDisabled   EnterpriseSecurityProfileResponseTeamsGroupChatScope = "disabled"
+	EnterpriseSecurityProfileResponseTeamsGroupChatScopeOriginChat EnterpriseSecurityProfileResponseTeamsGroupChatScope = "origin_chat"
 )
 
 // Defines values for GitConnectionResponseGitProviderType.
@@ -520,14 +1159,14 @@ const (
 
 // Defines values for OncallResponderResponseSource.
 const (
-	Jira      OncallResponderResponseSource = "jira"
-	Linear    OncallResponderResponseSource = "linear"
-	Pagerduty OncallResponderResponseSource = "pagerduty"
-	Pylon     OncallResponderResponseSource = "pylon"
-	Schedule  OncallResponderResponseSource = "schedule"
-	Slack     OncallResponderResponseSource = "slack"
-	Teams     OncallResponderResponseSource = "teams"
-	Webhook   OncallResponderResponseSource = "webhook"
+	OncallResponderResponseSourceJira      OncallResponderResponseSource = "jira"
+	OncallResponderResponseSourceLinear    OncallResponderResponseSource = "linear"
+	OncallResponderResponseSourcePagerduty OncallResponderResponseSource = "pagerduty"
+	OncallResponderResponseSourcePylon     OncallResponderResponseSource = "pylon"
+	OncallResponderResponseSourceSchedule  OncallResponderResponseSource = "schedule"
+	OncallResponderResponseSourceSlack     OncallResponderResponseSource = "slack"
+	OncallResponderResponseSourceTeams     OncallResponderResponseSource = "teams"
+	OncallResponderResponseSourceWebhook   OncallResponderResponseSource = "webhook"
 )
 
 // Defines values for OncallResponderResponseTeamsReplyAccess.
@@ -602,12 +1241,12 @@ const (
 
 // Defines values for OncallSessionSettingsPatchDevinMode.
 const (
-	Fast      OncallSessionSettingsPatchDevinMode = "fast"
-	FastUltra OncallSessionSettingsPatchDevinMode = "fast-ultra"
-	Fusion    OncallSessionSettingsPatchDevinMode = "fusion"
-	Lite      OncallSessionSettingsPatchDevinMode = "lite"
-	Normal    OncallSessionSettingsPatchDevinMode = "normal"
-	Ultra     OncallSessionSettingsPatchDevinMode = "ultra"
+	OncallSessionSettingsPatchDevinModeFast      OncallSessionSettingsPatchDevinMode = "fast"
+	OncallSessionSettingsPatchDevinModeFastUltra OncallSessionSettingsPatchDevinMode = "fast-ultra"
+	OncallSessionSettingsPatchDevinModeFusion    OncallSessionSettingsPatchDevinMode = "fusion"
+	OncallSessionSettingsPatchDevinModeLite      OncallSessionSettingsPatchDevinMode = "lite"
+	OncallSessionSettingsPatchDevinModeNormal    OncallSessionSettingsPatchDevinMode = "normal"
+	OncallSessionSettingsPatchDevinModeUltra     OncallSessionSettingsPatchDevinMode = "ultra"
 )
 
 // Defines values for OncallToolsSlackDmScope.
@@ -623,13 +1262,13 @@ const (
 
 // Defines values for OncallToolsPatchSlackDmScope.
 const (
-	OrgMembers OncallToolsPatchSlackDmScope = "org_members"
-	Workspace  OncallToolsPatchSlackDmScope = "workspace"
+	OncallToolsPatchSlackDmScopeOrgMembers OncallToolsPatchSlackDmScope = "org_members"
+	OncallToolsPatchSlackDmScopeWorkspace  OncallToolsPatchSlackDmScope = "workspace"
 )
 
 // Defines values for OncallToolsPatchTeamsDmScope.
 const (
-	InstalledUsers OncallToolsPatchTeamsDmScope = "installed_users"
+	OncallToolsPatchTeamsDmScopeInstalledUsers OncallToolsPatchTeamsDmScope = "installed_users"
 )
 
 // Defines values for OncallTriggerRequestEventType.
@@ -661,10 +1300,69 @@ const (
 	WebhookManaged                OncallTriggerRequestEventType = "webhook:managed"
 )
 
+// Defines values for OrgCodeScanCreateRequestDevinMode.
+const (
+	OrgCodeScanCreateRequestDevinModeFusion OrgCodeScanCreateRequestDevinMode = "fusion"
+	OrgCodeScanCreateRequestDevinModeSwe2   OrgCodeScanCreateRequestDevinMode = "swe-2"
+)
+
+// Defines values for OrgCodeScanCreateRequestEffort.
+const (
+	OrgCodeScanCreateRequestEffortDeep   OrgCodeScanCreateRequestEffort = "deep"
+	OrgCodeScanCreateRequestEffortNormal OrgCodeScanCreateRequestEffort = "normal"
+)
+
+// Defines values for OrgCodeScanCreateRequestScanType.
+const (
+	OrgCodeScanCreateRequestScanTypeAccessibility OrgCodeScanCreateRequestScanType = "accessibility"
+	OrgCodeScanCreateRequestScanTypeCleanup       OrgCodeScanCreateRequestScanType = "cleanup"
+	OrgCodeScanCreateRequestScanTypeCodeQuality   OrgCodeScanCreateRequestScanType = "code-quality"
+	OrgCodeScanCreateRequestScanTypeCompliance    OrgCodeScanCreateRequestScanType = "compliance"
+	OrgCodeScanCreateRequestScanTypeDBQueries     OrgCodeScanCreateRequestScanType = "db-queries"
+	OrgCodeScanCreateRequestScanTypeDeadCode      OrgCodeScanCreateRequestScanType = "dead-code"
+	OrgCodeScanCreateRequestScanTypeGeneral       OrgCodeScanCreateRequestScanType = "general"
+	OrgCodeScanCreateRequestScanTypeMigrationDocs OrgCodeScanCreateRequestScanType = "migration-docs"
+	OrgCodeScanCreateRequestScanTypePerformance   OrgCodeScanCreateRequestScanType = "performance"
+	OrgCodeScanCreateRequestScanTypeRedTeam       OrgCodeScanCreateRequestScanType = "red-team"
+	OrgCodeScanCreateRequestScanTypeSecurity      OrgCodeScanCreateRequestScanType = "security"
+	OrgCodeScanCreateRequestScanTypeTelemetry     OrgCodeScanCreateRequestScanType = "telemetry"
+	OrgCodeScanCreateRequestScanTypeTestCoverage  OrgCodeScanCreateRequestScanType = "test-coverage"
+)
+
+// Defines values for PatUserSelfPrincipalType.
+const (
+	PatUser PatUserSelfPrincipalType = "pat_user"
+)
+
 // Defines values for PlaybookResponseAccessType.
 const (
 	PlaybookResponseAccessTypeEnterprise PlaybookResponseAccessType = "enterprise"
 	PlaybookResponseAccessTypeOrg        PlaybookResponseAccessType = "org"
+)
+
+// Defines values for PrReviewResponseStatus.
+const (
+	PrReviewResponseStatusCancelled PrReviewResponseStatus = "cancelled"
+	PrReviewResponseStatusCompleted PrReviewResponseStatus = "completed"
+	PrReviewResponseStatusErrored   PrReviewResponseStatus = "errored"
+	PrReviewResponseStatusPending   PrReviewResponseStatus = "pending"
+	PrReviewResponseStatusRunning   PrReviewResponseStatus = "running"
+	PrReviewResponseStatusSkipped   PrReviewResponseStatus = "skipped"
+)
+
+// Defines values for QueueResponseStatus.
+const (
+	QueueResponseStatusElevated QueueResponseStatus = "elevated"
+	QueueResponseStatusHigh     QueueResponseStatus = "high"
+	QueueResponseStatusNormal   QueueResponseStatus = "normal"
+)
+
+// Defines values for RemediateFindingsSelectionSeverity.
+const (
+	RemediateFindingsSelectionSeverityCritical RemediateFindingsSelectionSeverity = "critical"
+	RemediateFindingsSelectionSeverityHigh     RemediateFindingsSelectionSeverity = "high"
+	RemediateFindingsSelectionSeverityLow      RemediateFindingsSelectionSeverity = "low"
+	RemediateFindingsSelectionSeverityMedium   RemediateFindingsSelectionSeverity = "medium"
 )
 
 // Defines values for RepoIndexJobResponseStatus.
@@ -726,8 +1424,8 @@ const (
 
 // Defines values for ScheduleUpdateRequestAgent.
 const (
-	DataAnalyst ScheduleUpdateRequestAgent = "data_analyst"
-	Devin       ScheduleUpdateRequestAgent = "devin"
+	ScheduleUpdateRequestAgentDataAnalyst ScheduleUpdateRequestAgent = "data_analyst"
+	ScheduleUpdateRequestAgentDevin       ScheduleUpdateRequestAgent = "devin"
 )
 
 // Defines values for ScheduleUpdateRequestNotifyOn.
@@ -763,16 +1461,546 @@ const (
 	SecretResponseSecretTypeTotp     SecretResponseSecretType = "totp"
 )
 
+// Defines values for SecurityProfileCreateRequestEnforcementLevel.
+const (
+	SecurityProfileCreateRequestEnforcementLevelMandatory   SecurityProfileCreateRequestEnforcementLevel = "mandatory"
+	SecurityProfileCreateRequestEnforcementLevelRecommended SecurityProfileCreateRequestEnforcementLevel = "recommended"
+)
+
+// Defines values for SecurityProfileCreateRequestGitAccessLevel.
+const (
+	SecurityProfileCreateRequestGitAccessLevelReadOnly  SecurityProfileCreateRequestGitAccessLevel = "read_only"
+	SecurityProfileCreateRequestGitAccessLevelReadWrite SecurityProfileCreateRequestGitAccessLevel = "read_write"
+)
+
+// Defines values for SecurityProfileCreateRequestSlackDmScope.
+const (
+	SecurityProfileCreateRequestSlackDmScopeDisabled   SecurityProfileCreateRequestSlackDmScope = "disabled"
+	SecurityProfileCreateRequestSlackDmScopeOrgMembers SecurityProfileCreateRequestSlackDmScope = "org_members"
+	SecurityProfileCreateRequestSlackDmScopeWorkspace  SecurityProfileCreateRequestSlackDmScope = "workspace"
+)
+
+// Defines values for SecurityProfileCreateRequestTeamsDmScope.
+const (
+	SecurityProfileCreateRequestTeamsDmScopeDisabled       SecurityProfileCreateRequestTeamsDmScope = "disabled"
+	SecurityProfileCreateRequestTeamsDmScopeInstalledUsers SecurityProfileCreateRequestTeamsDmScope = "installed_users"
+)
+
+// Defines values for SecurityProfileCreateRequestTeamsGroupChatScope.
+const (
+	SecurityProfileCreateRequestTeamsGroupChatScopeDisabled   SecurityProfileCreateRequestTeamsGroupChatScope = "disabled"
+	SecurityProfileCreateRequestTeamsGroupChatScopeOriginChat SecurityProfileCreateRequestTeamsGroupChatScope = "origin_chat"
+)
+
+// Defines values for SecurityProfileDefaultSelectionSelection.
+const (
+	SecurityProfileDefaultSelectionSelectionInherit SecurityProfileDefaultSelectionSelection = "inherit"
+	SecurityProfileDefaultSelectionSelectionNone    SecurityProfileDefaultSelectionSelection = "none"
+	SecurityProfileDefaultSelectionSelectionProfile SecurityProfileDefaultSelectionSelection = "profile"
+)
+
+// Defines values for SecurityProfileDefaultStateProfileScope.
+const (
+	SecurityProfileDefaultStateProfileScopeEnterprise SecurityProfileDefaultStateProfileScope = "enterprise"
+	SecurityProfileDefaultStateProfileScopeOrg        SecurityProfileDefaultStateProfileScope = "org"
+)
+
+// Defines values for SecurityProfileDefaultStateSelection.
+const (
+	SecurityProfileDefaultStateSelectionInherit SecurityProfileDefaultStateSelection = "inherit"
+	SecurityProfileDefaultStateSelectionNone    SecurityProfileDefaultStateSelection = "none"
+	SecurityProfileDefaultStateSelectionProfile SecurityProfileDefaultStateSelection = "profile"
+)
+
+// Defines values for SecurityProfileResponseEnforcementLevel.
+const (
+	SecurityProfileResponseEnforcementLevelMandatory   SecurityProfileResponseEnforcementLevel = "mandatory"
+	SecurityProfileResponseEnforcementLevelRecommended SecurityProfileResponseEnforcementLevel = "recommended"
+)
+
+// Defines values for SecurityProfileResponseGitAccessLevel.
+const (
+	SecurityProfileResponseGitAccessLevelReadOnly  SecurityProfileResponseGitAccessLevel = "read_only"
+	SecurityProfileResponseGitAccessLevelReadWrite SecurityProfileResponseGitAccessLevel = "read_write"
+)
+
+// Defines values for SecurityProfileResponseSlackDmScope.
+const (
+	SecurityProfileResponseSlackDmScopeDisabled   SecurityProfileResponseSlackDmScope = "disabled"
+	SecurityProfileResponseSlackDmScopeOrgMembers SecurityProfileResponseSlackDmScope = "org_members"
+	SecurityProfileResponseSlackDmScopeWorkspace  SecurityProfileResponseSlackDmScope = "workspace"
+)
+
+// Defines values for SecurityProfileResponseTeamsDmScope.
+const (
+	SecurityProfileResponseTeamsDmScopeDisabled       SecurityProfileResponseTeamsDmScope = "disabled"
+	SecurityProfileResponseTeamsDmScopeInstalledUsers SecurityProfileResponseTeamsDmScope = "installed_users"
+)
+
+// Defines values for SecurityProfileResponseTeamsGroupChatScope.
+const (
+	SecurityProfileResponseTeamsGroupChatScopeDisabled   SecurityProfileResponseTeamsGroupChatScope = "disabled"
+	SecurityProfileResponseTeamsGroupChatScopeOriginChat SecurityProfileResponseTeamsGroupChatScope = "origin_chat"
+)
+
+// Defines values for SecurityProfileSlackChannelAccessMode.
+const (
+	SecurityProfileSlackChannelAccessModeAllPublic SecurityProfileSlackChannelAccessMode = "all_public"
+	SecurityProfileSlackChannelAccessModeNone      SecurityProfileSlackChannelAccessMode = "none"
+	SecurityProfileSlackChannelAccessModeSpecific  SecurityProfileSlackChannelAccessMode = "specific"
+)
+
+// Defines values for SecurityProfileTeamsChannelAccessMode.
+const (
+	SecurityProfileTeamsChannelAccessModeInstalledTeams SecurityProfileTeamsChannelAccessMode = "installed_teams"
+	SecurityProfileTeamsChannelAccessModeNone           SecurityProfileTeamsChannelAccessMode = "none"
+	SecurityProfileTeamsChannelAccessModeSpecific       SecurityProfileTeamsChannelAccessMode = "specific"
+)
+
+// Defines values for SecurityProfileUpdateRequestEnforcementLevel.
+const (
+	SecurityProfileUpdateRequestEnforcementLevelMandatory   SecurityProfileUpdateRequestEnforcementLevel = "mandatory"
+	SecurityProfileUpdateRequestEnforcementLevelRecommended SecurityProfileUpdateRequestEnforcementLevel = "recommended"
+)
+
+// Defines values for SecurityProfileUpdateRequestGitAccessLevel.
+const (
+	SecurityProfileUpdateRequestGitAccessLevelReadOnly  SecurityProfileUpdateRequestGitAccessLevel = "read_only"
+	SecurityProfileUpdateRequestGitAccessLevelReadWrite SecurityProfileUpdateRequestGitAccessLevel = "read_write"
+)
+
+// Defines values for SecurityProfileUpdateRequestSlackDmScope.
+const (
+	SecurityProfileUpdateRequestSlackDmScopeDisabled   SecurityProfileUpdateRequestSlackDmScope = "disabled"
+	SecurityProfileUpdateRequestSlackDmScopeOrgMembers SecurityProfileUpdateRequestSlackDmScope = "org_members"
+	SecurityProfileUpdateRequestSlackDmScopeWorkspace  SecurityProfileUpdateRequestSlackDmScope = "workspace"
+)
+
+// Defines values for SecurityProfileUpdateRequestTeamsDmScope.
+const (
+	SecurityProfileUpdateRequestTeamsDmScopeDisabled       SecurityProfileUpdateRequestTeamsDmScope = "disabled"
+	SecurityProfileUpdateRequestTeamsDmScopeInstalledUsers SecurityProfileUpdateRequestTeamsDmScope = "installed_users"
+)
+
+// Defines values for SecurityProfileUpdateRequestTeamsGroupChatScope.
+const (
+	SecurityProfileUpdateRequestTeamsGroupChatScopeDisabled   SecurityProfileUpdateRequestTeamsGroupChatScope = "disabled"
+	SecurityProfileUpdateRequestTeamsGroupChatScopeOriginChat SecurityProfileUpdateRequestTeamsGroupChatScope = "origin_chat"
+)
+
+// Defines values for ServiceUserSelfPrincipalType.
+const (
+	ServiceUserSelfPrincipalTypeServiceUser ServiceUserSelfPrincipalType = "service_user"
+)
+
+// Defines values for SessionAttachmentSource.
+const (
+	SessionAttachmentSourceDevin SessionAttachmentSource = "devin"
+	SessionAttachmentSourceUser  SessionAttachmentSource = "user"
+)
+
+// Defines values for SessionCreateRequestDevinMode.
+const (
+	SessionCreateRequestDevinModeFast       SessionCreateRequestDevinMode = "fast"
+	SessionCreateRequestDevinModeFastUltra  SessionCreateRequestDevinMode = "fast-ultra"
+	SessionCreateRequestDevinModeFusion     SessionCreateRequestDevinMode = "fusion"
+	SessionCreateRequestDevinModeLite       SessionCreateRequestDevinMode = "lite"
+	SessionCreateRequestDevinModeNormal     SessionCreateRequestDevinMode = "normal"
+	SessionCreateRequestDevinModeSwe2High   SessionCreateRequestDevinMode = "swe-2-high"
+	SessionCreateRequestDevinModeSwe2Max    SessionCreateRequestDevinMode = "swe-2-max"
+	SessionCreateRequestDevinModeSwe2Medium SessionCreateRequestDevinMode = "swe-2-medium"
+	SessionCreateRequestDevinModeUltra      SessionCreateRequestDevinMode = "ultra"
+)
+
+// Defines values for SessionInsightsActionItemType.
+const (
+	SessionInsightsActionItemTypeExternal          SessionInsightsActionItemType = "external"
+	SessionInsightsActionItemTypeKnowledge         SessionInsightsActionItemType = "knowledge"
+	SessionInsightsActionItemTypeMachineSetup      SessionInsightsActionItemType = "machine_setup"
+	SessionInsightsActionItemTypeOther             SessionInsightsActionItemType = "other"
+	SessionInsightsActionItemTypePromptImprovement SessionInsightsActionItemType = "prompt_improvement"
+	SessionInsightsActionItemTypeRepoConfig        SessionInsightsActionItemType = "repo_config"
+)
+
+// Defines values for SessionInsightsResponseAnalysisStatus.
+const (
+	SessionInsightsResponseAnalysisStatusCompleted SessionInsightsResponseAnalysisStatus = "completed"
+	SessionInsightsResponseAnalysisStatusFailed    SessionInsightsResponseAnalysisStatus = "failed"
+	SessionInsightsResponseAnalysisStatusStarted   SessionInsightsResponseAnalysisStatus = "started"
+)
+
+// Defines values for SessionInsightsResponseCategory.
+const (
+	SessionInsightsResponseCategoryBugFixing                  SessionInsightsResponseCategory = "bug_fixing"
+	SessionInsightsResponseCategoryCiCdAndDevops              SessionInsightsResponseCategory = "ci_cd_and_devops"
+	SessionInsightsResponseCategoryCodeQualityAndSecurity     SessionInsightsResponseCategory = "code_quality_and_security"
+	SessionInsightsResponseCategoryCodeReview                 SessionInsightsResponseCategory = "code_review"
+	SessionInsightsResponseCategoryCodeReviewAndAnalysis      SessionInsightsResponseCategory = "code_review_and_analysis"
+	SessionInsightsResponseCategoryDataAndAutomation          SessionInsightsResponseCategory = "data_and_automation"
+	SessionInsightsResponseCategoryDocumentationAndContent    SessionInsightsResponseCategory = "documentation_and_content"
+	SessionInsightsResponseCategoryFeatureDevelopment         SessionInsightsResponseCategory = "feature_development"
+	SessionInsightsResponseCategoryMigrationsAndUpgrades      SessionInsightsResponseCategory = "migrations_and_upgrades"
+	SessionInsightsResponseCategoryOther                      SessionInsightsResponseCategory = "other"
+	SessionInsightsResponseCategoryProductionInvestigation    SessionInsightsResponseCategory = "production_investigation"
+	SessionInsightsResponseCategoryRefactoringAndOptimization SessionInsightsResponseCategory = "refactoring_and_optimization"
+	SessionInsightsResponseCategoryResearchAndExploration     SessionInsightsResponseCategory = "research_and_exploration"
+	SessionInsightsResponseCategorySecurity                   SessionInsightsResponseCategory = "security"
+	SessionInsightsResponseCategoryUnitTestGeneration         SessionInsightsResponseCategory = "unit_test_generation"
+)
+
+// Defines values for SessionInsightsResponseDevinMode.
+const (
+	SessionInsightsResponseDevinModeFast       SessionInsightsResponseDevinMode = "fast"
+	SessionInsightsResponseDevinModeFastUltra  SessionInsightsResponseDevinMode = "fast-ultra"
+	SessionInsightsResponseDevinModeFusion     SessionInsightsResponseDevinMode = "fusion"
+	SessionInsightsResponseDevinModeLite       SessionInsightsResponseDevinMode = "lite"
+	SessionInsightsResponseDevinModeNormal     SessionInsightsResponseDevinMode = "normal"
+	SessionInsightsResponseDevinModeSwe2High   SessionInsightsResponseDevinMode = "swe-2-high"
+	SessionInsightsResponseDevinModeSwe2Max    SessionInsightsResponseDevinMode = "swe-2-max"
+	SessionInsightsResponseDevinModeSwe2Medium SessionInsightsResponseDevinMode = "swe-2-medium"
+	SessionInsightsResponseDevinModeUltra      SessionInsightsResponseDevinMode = "ultra"
+)
+
+// Defines values for SessionInsightsResponseOrigin.
+const (
+	SessionInsightsResponseOriginAPI        SessionInsightsResponseOrigin = "api"
+	SessionInsightsResponseOriginAutomation SessionInsightsResponseOrigin = "automation"
+	SessionInsightsResponseOriginCli        SessionInsightsResponseOrigin = "cli"
+	SessionInsightsResponseOriginCodeScan   SessionInsightsResponseOrigin = "code_scan"
+	SessionInsightsResponseOriginDesktop    SessionInsightsResponseOrigin = "desktop"
+	SessionInsightsResponseOriginJira       SessionInsightsResponseOrigin = "jira"
+	SessionInsightsResponseOriginLinear     SessionInsightsResponseOrigin = "linear"
+	SessionInsightsResponseOriginOther      SessionInsightsResponseOrigin = "other"
+	SessionInsightsResponseOriginSlack      SessionInsightsResponseOrigin = "slack"
+	SessionInsightsResponseOriginTeams      SessionInsightsResponseOrigin = "teams"
+	SessionInsightsResponseOriginWebapp     SessionInsightsResponseOrigin = "webapp"
+)
+
+// Defines values for SessionInsightsResponseSessionSize.
+const (
+	L  SessionInsightsResponseSessionSize = "l"
+	M  SessionInsightsResponseSessionSize = "m"
+	S  SessionInsightsResponseSessionSize = "s"
+	Xl SessionInsightsResponseSessionSize = "xl"
+	Xs SessionInsightsResponseSessionSize = "xs"
+)
+
+// Defines values for SessionInsightsResponseStatus.
+const (
+	SessionInsightsResponseStatusClaimed   SessionInsightsResponseStatus = "claimed"
+	SessionInsightsResponseStatusError     SessionInsightsResponseStatus = "error"
+	SessionInsightsResponseStatusExit      SessionInsightsResponseStatus = "exit"
+	SessionInsightsResponseStatusNew       SessionInsightsResponseStatus = "new"
+	SessionInsightsResponseStatusResuming  SessionInsightsResponseStatus = "resuming"
+	SessionInsightsResponseStatusRunning   SessionInsightsResponseStatus = "running"
+	SessionInsightsResponseStatusSuspended SessionInsightsResponseStatus = "suspended"
+)
+
+// Defines values for SessionInsightsResponseStatusDetail.
+const (
+	SessionInsightsResponseStatusDetailContractExpired           SessionInsightsResponseStatusDetail = "contract_expired"
+	SessionInsightsResponseStatusDetailError                     SessionInsightsResponseStatusDetail = "error"
+	SessionInsightsResponseStatusDetailFinished                  SessionInsightsResponseStatusDetail = "finished"
+	SessionInsightsResponseStatusDetailInactivity                SessionInsightsResponseStatusDetail = "inactivity"
+	SessionInsightsResponseStatusDetailNoQuotaAllocation         SessionInsightsResponseStatusDetail = "no_quota_allocation"
+	SessionInsightsResponseStatusDetailOrgUsageLimitExceeded     SessionInsightsResponseStatusDetail = "org_usage_limit_exceeded"
+	SessionInsightsResponseStatusDetailOutOfCredits              SessionInsightsResponseStatusDetail = "out_of_credits"
+	SessionInsightsResponseStatusDetailOutOfQuota                SessionInsightsResponseStatusDetail = "out_of_quota"
+	SessionInsightsResponseStatusDetailPaymentDeclined           SessionInsightsResponseStatusDetail = "payment_declined"
+	SessionInsightsResponseStatusDetailTotalSessionLimitExceeded SessionInsightsResponseStatusDetail = "total_session_limit_exceeded"
+	SessionInsightsResponseStatusDetailUsageLimitExceeded        SessionInsightsResponseStatusDetail = "usage_limit_exceeded"
+	SessionInsightsResponseStatusDetailUserRequest               SessionInsightsResponseStatusDetail = "user_request"
+	SessionInsightsResponseStatusDetailUserUsageLimitExceeded    SessionInsightsResponseStatusDetail = "user_usage_limit_exceeded"
+	SessionInsightsResponseStatusDetailWaitingForApproval        SessionInsightsResponseStatusDetail = "waiting_for_approval"
+	SessionInsightsResponseStatusDetailWaitingForUser            SessionInsightsResponseStatusDetail = "waiting_for_user"
+	SessionInsightsResponseStatusDetailWorking                   SessionInsightsResponseStatusDetail = "working"
+)
+
+// Defines values for SessionMessageSource.
+const (
+	SessionMessageSourceDevin SessionMessageSource = "devin"
+	SessionMessageSourceUser  SessionMessageSource = "user"
+)
+
+// Defines values for SessionResponseCategory.
+const (
+	SessionResponseCategoryBugFixing                  SessionResponseCategory = "bug_fixing"
+	SessionResponseCategoryCiCdAndDevops              SessionResponseCategory = "ci_cd_and_devops"
+	SessionResponseCategoryCodeQualityAndSecurity     SessionResponseCategory = "code_quality_and_security"
+	SessionResponseCategoryCodeReview                 SessionResponseCategory = "code_review"
+	SessionResponseCategoryCodeReviewAndAnalysis      SessionResponseCategory = "code_review_and_analysis"
+	SessionResponseCategoryDataAndAutomation          SessionResponseCategory = "data_and_automation"
+	SessionResponseCategoryDocumentationAndContent    SessionResponseCategory = "documentation_and_content"
+	SessionResponseCategoryFeatureDevelopment         SessionResponseCategory = "feature_development"
+	SessionResponseCategoryMigrationsAndUpgrades      SessionResponseCategory = "migrations_and_upgrades"
+	SessionResponseCategoryOther                      SessionResponseCategory = "other"
+	SessionResponseCategoryProductionInvestigation    SessionResponseCategory = "production_investigation"
+	SessionResponseCategoryRefactoringAndOptimization SessionResponseCategory = "refactoring_and_optimization"
+	SessionResponseCategoryResearchAndExploration     SessionResponseCategory = "research_and_exploration"
+	SessionResponseCategorySecurity                   SessionResponseCategory = "security"
+	SessionResponseCategoryUnitTestGeneration         SessionResponseCategory = "unit_test_generation"
+)
+
+// Defines values for SessionResponseDevinMode.
+const (
+	SessionResponseDevinModeFast       SessionResponseDevinMode = "fast"
+	SessionResponseDevinModeFastUltra  SessionResponseDevinMode = "fast-ultra"
+	SessionResponseDevinModeFusion     SessionResponseDevinMode = "fusion"
+	SessionResponseDevinModeLite       SessionResponseDevinMode = "lite"
+	SessionResponseDevinModeNormal     SessionResponseDevinMode = "normal"
+	SessionResponseDevinModeSwe2High   SessionResponseDevinMode = "swe-2-high"
+	SessionResponseDevinModeSwe2Max    SessionResponseDevinMode = "swe-2-max"
+	SessionResponseDevinModeSwe2Medium SessionResponseDevinMode = "swe-2-medium"
+	SessionResponseDevinModeUltra      SessionResponseDevinMode = "ultra"
+)
+
+// Defines values for SessionResponseOrigin.
+const (
+	SessionResponseOriginAPI        SessionResponseOrigin = "api"
+	SessionResponseOriginAutomation SessionResponseOrigin = "automation"
+	SessionResponseOriginCli        SessionResponseOrigin = "cli"
+	SessionResponseOriginCodeScan   SessionResponseOrigin = "code_scan"
+	SessionResponseOriginDesktop    SessionResponseOrigin = "desktop"
+	SessionResponseOriginJira       SessionResponseOrigin = "jira"
+	SessionResponseOriginLinear     SessionResponseOrigin = "linear"
+	SessionResponseOriginOther      SessionResponseOrigin = "other"
+	SessionResponseOriginSlack      SessionResponseOrigin = "slack"
+	SessionResponseOriginTeams      SessionResponseOrigin = "teams"
+	SessionResponseOriginWebapp     SessionResponseOrigin = "webapp"
+)
+
+// Defines values for SessionResponseStatus.
+const (
+	SessionResponseStatusClaimed   SessionResponseStatus = "claimed"
+	SessionResponseStatusError     SessionResponseStatus = "error"
+	SessionResponseStatusExit      SessionResponseStatus = "exit"
+	SessionResponseStatusNew       SessionResponseStatus = "new"
+	SessionResponseStatusResuming  SessionResponseStatus = "resuming"
+	SessionResponseStatusRunning   SessionResponseStatus = "running"
+	SessionResponseStatusSuspended SessionResponseStatus = "suspended"
+)
+
+// Defines values for SessionResponseStatusDetail.
+const (
+	SessionResponseStatusDetailContractExpired           SessionResponseStatusDetail = "contract_expired"
+	SessionResponseStatusDetailError                     SessionResponseStatusDetail = "error"
+	SessionResponseStatusDetailFinished                  SessionResponseStatusDetail = "finished"
+	SessionResponseStatusDetailInactivity                SessionResponseStatusDetail = "inactivity"
+	SessionResponseStatusDetailNoQuotaAllocation         SessionResponseStatusDetail = "no_quota_allocation"
+	SessionResponseStatusDetailOrgUsageLimitExceeded     SessionResponseStatusDetail = "org_usage_limit_exceeded"
+	SessionResponseStatusDetailOutOfCredits              SessionResponseStatusDetail = "out_of_credits"
+	SessionResponseStatusDetailOutOfQuota                SessionResponseStatusDetail = "out_of_quota"
+	SessionResponseStatusDetailPaymentDeclined           SessionResponseStatusDetail = "payment_declined"
+	SessionResponseStatusDetailTotalSessionLimitExceeded SessionResponseStatusDetail = "total_session_limit_exceeded"
+	SessionResponseStatusDetailUsageLimitExceeded        SessionResponseStatusDetail = "usage_limit_exceeded"
+	SessionResponseStatusDetailUserRequest               SessionResponseStatusDetail = "user_request"
+	SessionResponseStatusDetailUserUsageLimitExceeded    SessionResponseStatusDetail = "user_usage_limit_exceeded"
+	SessionResponseStatusDetailWaitingForApproval        SessionResponseStatusDetail = "waiting_for_approval"
+	SessionResponseStatusDetailWaitingForUser            SessionResponseStatusDetail = "waiting_for_user"
+	SessionResponseStatusDetailWorking                   SessionResponseStatusDetail = "working"
+)
+
+// Defines values for SessionSecurityProfileResponseSelection.
+const (
+	SessionSecurityProfileResponseSelectionInherit SessionSecurityProfileResponseSelection = "inherit"
+	SessionSecurityProfileResponseSelectionNone    SessionSecurityProfileResponseSelection = "none"
+	SessionSecurityProfileResponseSelectionProfile SessionSecurityProfileResponseSelection = "profile"
+)
+
+// Defines values for SessionsQueryParamsCategory.
+const (
+	SessionsQueryParamsCategoryBugFixing                  SessionsQueryParamsCategory = "bug_fixing"
+	SessionsQueryParamsCategoryCiCdAndDevops              SessionsQueryParamsCategory = "ci_cd_and_devops"
+	SessionsQueryParamsCategoryCodeQualityAndSecurity     SessionsQueryParamsCategory = "code_quality_and_security"
+	SessionsQueryParamsCategoryCodeReview                 SessionsQueryParamsCategory = "code_review"
+	SessionsQueryParamsCategoryCodeReviewAndAnalysis      SessionsQueryParamsCategory = "code_review_and_analysis"
+	SessionsQueryParamsCategoryDataAndAutomation          SessionsQueryParamsCategory = "data_and_automation"
+	SessionsQueryParamsCategoryDocumentationAndContent    SessionsQueryParamsCategory = "documentation_and_content"
+	SessionsQueryParamsCategoryFeatureDevelopment         SessionsQueryParamsCategory = "feature_development"
+	SessionsQueryParamsCategoryMigrationsAndUpgrades      SessionsQueryParamsCategory = "migrations_and_upgrades"
+	SessionsQueryParamsCategoryOther                      SessionsQueryParamsCategory = "other"
+	SessionsQueryParamsCategoryProductionInvestigation    SessionsQueryParamsCategory = "production_investigation"
+	SessionsQueryParamsCategoryRefactoringAndOptimization SessionsQueryParamsCategory = "refactoring_and_optimization"
+	SessionsQueryParamsCategoryResearchAndExploration     SessionsQueryParamsCategory = "research_and_exploration"
+	SessionsQueryParamsCategorySecurity                   SessionsQueryParamsCategory = "security"
+	SessionsQueryParamsCategoryUnitTestGeneration         SessionsQueryParamsCategory = "unit_test_generation"
+)
+
+// Defines values for SessionsQueryParamsOrigins.
+const (
+	SessionsQueryParamsOriginsAPI        SessionsQueryParamsOrigins = "api"
+	SessionsQueryParamsOriginsAutomation SessionsQueryParamsOrigins = "automation"
+	SessionsQueryParamsOriginsCli        SessionsQueryParamsOrigins = "cli"
+	SessionsQueryParamsOriginsCodeScan   SessionsQueryParamsOrigins = "code_scan"
+	SessionsQueryParamsOriginsDesktop    SessionsQueryParamsOrigins = "desktop"
+	SessionsQueryParamsOriginsJira       SessionsQueryParamsOrigins = "jira"
+	SessionsQueryParamsOriginsLinear     SessionsQueryParamsOrigins = "linear"
+	SessionsQueryParamsOriginsOther      SessionsQueryParamsOrigins = "other"
+	SessionsQueryParamsOriginsSlack      SessionsQueryParamsOrigins = "slack"
+	SessionsQueryParamsOriginsTeams      SessionsQueryParamsOrigins = "teams"
+	SessionsQueryParamsOriginsWebapp     SessionsQueryParamsOrigins = "webapp"
+)
+
+// Defines values for StartIngestionScanRequestEffort.
+const (
+	Deep   StartIngestionScanRequestEffort = "deep"
+	Normal StartIngestionScanRequestEffort = "normal"
+)
+
 // Defines values for UpdateOrgBlueprintBodySource.
 const (
 	Database UpdateOrgBlueprintBodySource = "database"
 	Git      UpdateOrgBlueprintBodySource = "git"
 )
 
+// Defines values for UserBillingOrgFailureReason.
+const (
+	OrgNotFound      UserBillingOrgFailureReason = "org_not_found"
+	UserNotFound     UserBillingOrgFailureReason = "user_not_found"
+	UserNotOrgMember UserBillingOrgFailureReason = "user_not_org_member"
+)
+
+// Defines values for WindsurfSessionUserSelfPrincipalType.
+const (
+	WindsurfSession WindsurfSessionUserSelfPrincipalType = "windsurf_session"
+)
+
+// Defines values for HandleGetEnterpriseAuditLogsV3EnterpriseAuditLogsGetParamsOrder.
+const (
+	HandleGetEnterpriseAuditLogsV3EnterpriseAuditLogsGetParamsOrderAsc  HandleGetEnterpriseAuditLogsV3EnterpriseAuditLogsGetParamsOrder = "asc"
+	HandleGetEnterpriseAuditLogsV3EnterpriseAuditLogsGetParamsOrderDesc HandleGetEnterpriseAuditLogsV3EnterpriseAuditLogsGetParamsOrder = "desc"
+)
+
+// Defines values for HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsSeverity.
+const (
+	HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsSeverityCritical HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsSeverity = "critical"
+	HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsSeverityHigh     HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsSeverity = "high"
+	HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsSeverityLow      HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsSeverity = "low"
+	HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsSeverityMedium   HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsSeverity = "medium"
+)
+
+// Defines values for HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsStatus.
+const (
+	HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsStatusDismissed HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsStatus = "dismissed"
+	HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsStatusOpen      HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsStatus = "open"
+	HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsStatusResolved  HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsStatus = "resolved"
+)
+
+// Defines values for HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsPayoff.
+const (
+	HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsPayoffBigFix       HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsPayoff = "big_fix"
+	HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsPayoffDeprioritize HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsPayoff = "deprioritize"
+	HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsPayoffEasyFix      HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsPayoff = "easy_fix"
+	HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsPayoffQuickWin     HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsPayoff = "quick_win"
+)
+
+// Defines values for HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanType.
+const (
+	HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanTypeAccessibility HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanType = "accessibility"
+	HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanTypeCleanup       HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanType = "cleanup"
+	HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanTypeCodeQuality   HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanType = "code-quality"
+	HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanTypeCompliance    HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanType = "compliance"
+	HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanTypeDBQueries     HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanType = "db-queries"
+	HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanTypeDeadCode      HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanType = "dead-code"
+	HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanTypeGeneral       HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanType = "general"
+	HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanTypeMigrationDocs HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanType = "migration-docs"
+	HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanTypePerformance   HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanType = "performance"
+	HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanTypeRedTeam       HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanType = "red-team"
+	HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanTypeSecurity      HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanType = "security"
+	HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanTypeTelemetry     HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanType = "telemetry"
+	HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanTypeTestCoverage  HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanType = "test-coverage"
+)
+
+// Defines values for HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatus.
+const (
+	HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatusAll          HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatus = "all"
+	HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatusAvailable    HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatus = "available"
+	HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatusDisconnected HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatus = "disconnected"
+	HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatusDraining     HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatus = "draining"
+	HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatusRestarting   HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatus = "restarting"
+	HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatusRetiring     HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatus = "retiring"
+	HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatusTerminated   HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatus = "terminated"
+	HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatusUnhealthy    HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatus = "unhealthy"
+)
+
 // Defines values for HandleListNotesV3EnterpriseKnowledgeNotesGetParamsAccessType.
 const (
 	Enterprise HandleListNotesV3EnterpriseKnowledgeNotesGetParamsAccessType = "enterprise"
 	Org        HandleListNotesV3EnterpriseKnowledgeNotesGetParamsAccessType = "org"
+)
+
+// Defines values for HandleGetOrgAuditLogsV3EnterpriseOrganizationsOrgIDAuditLogsGetParamsOrder.
+const (
+	HandleGetOrgAuditLogsV3EnterpriseOrganizationsOrgIDAuditLogsGetParamsOrderAsc  HandleGetOrgAuditLogsV3EnterpriseOrganizationsOrgIDAuditLogsGetParamsOrder = "asc"
+	HandleGetOrgAuditLogsV3EnterpriseOrganizationsOrgIDAuditLogsGetParamsOrderDesc HandleGetOrgAuditLogsV3EnterpriseOrganizationsOrgIDAuditLogsGetParamsOrder = "desc"
+)
+
+// Defines values for HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOrigins.
+const (
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOriginsAPI        HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOrigins = "api"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOriginsAutomation HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOrigins = "automation"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOriginsCli        HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOrigins = "cli"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOriginsCodeScan   HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOrigins = "code_scan"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOriginsDesktop    HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOrigins = "desktop"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOriginsJira       HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOrigins = "jira"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOriginsLinear     HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOrigins = "linear"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOriginsOther      HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOrigins = "other"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOriginsSlack      HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOrigins = "slack"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOriginsTeams      HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOrigins = "teams"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOriginsWebapp     HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOrigins = "webapp"
+)
+
+// Defines values for HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory.
+const (
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategoryBugFixing                  HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory = "bug_fixing"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategoryCiCdAndDevops              HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory = "ci_cd_and_devops"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategoryCodeQualityAndSecurity     HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory = "code_quality_and_security"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategoryCodeReview                 HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory = "code_review"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategoryCodeReviewAndAnalysis      HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory = "code_review_and_analysis"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategoryDataAndAutomation          HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory = "data_and_automation"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategoryDocumentationAndContent    HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory = "documentation_and_content"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategoryFeatureDevelopment         HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory = "feature_development"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategoryMigrationsAndUpgrades      HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory = "migrations_and_upgrades"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategoryOther                      HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory = "other"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategoryProductionInvestigation    HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory = "production_investigation"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategoryRefactoringAndOptimization HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory = "refactoring_and_optimization"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategoryResearchAndExploration     HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory = "research_and_exploration"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategorySecurity                   HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory = "security"
+	HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategoryUnitTestGeneration         HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory = "unit_test_generation"
+)
+
+// Defines values for HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOrigins.
+const (
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOriginsAPI        HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOrigins = "api"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOriginsAutomation HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOrigins = "automation"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOriginsCli        HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOrigins = "cli"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOriginsCodeScan   HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOrigins = "code_scan"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOriginsDesktop    HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOrigins = "desktop"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOriginsJira       HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOrigins = "jira"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOriginsLinear     HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOrigins = "linear"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOriginsOther      HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOrigins = "other"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOriginsSlack      HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOrigins = "slack"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOriginsTeams      HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOrigins = "teams"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOriginsWebapp     HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOrigins = "webapp"
+)
+
+// Defines values for HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory.
+const (
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategoryBugFixing                  HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory = "bug_fixing"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategoryCiCdAndDevops              HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory = "ci_cd_and_devops"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategoryCodeQualityAndSecurity     HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory = "code_quality_and_security"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategoryCodeReview                 HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory = "code_review"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategoryCodeReviewAndAnalysis      HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory = "code_review_and_analysis"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategoryDataAndAutomation          HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory = "data_and_automation"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategoryDocumentationAndContent    HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory = "documentation_and_content"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategoryFeatureDevelopment         HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory = "feature_development"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategoryMigrationsAndUpgrades      HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory = "migrations_and_upgrades"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategoryOther                      HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory = "other"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategoryProductionInvestigation    HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory = "production_investigation"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategoryRefactoringAndOptimization HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory = "refactoring_and_optimization"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategoryResearchAndExploration     HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory = "research_and_exploration"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategorySecurity                   HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory = "security"
+	HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategoryUnitTestGeneration         HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory = "unit_test_generation"
 )
 
 // Defines values for HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes.
@@ -787,6 +2015,46 @@ const (
 	TriageSession    HandleListAutomationsV3OrganizationsOrgIDAutomationsGetParamsAgentTypes = "triage_session"
 )
 
+// Defines values for HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsSeverity.
+const (
+	Critical HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsSeverity = "critical"
+	High     HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsSeverity = "high"
+	Low      HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsSeverity = "low"
+	Medium   HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsSeverity = "medium"
+)
+
+// Defines values for HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsStatus.
+const (
+	Dismissed HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsStatus = "dismissed"
+	Open      HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsStatus = "open"
+	Resolved  HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsStatus = "resolved"
+)
+
+// Defines values for HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsPayoff.
+const (
+	BigFix       HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsPayoff = "big_fix"
+	Deprioritize HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsPayoff = "deprioritize"
+	EasyFix      HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsPayoff = "easy_fix"
+	QuickWin     HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsPayoff = "quick_win"
+)
+
+// Defines values for HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParamsScanType.
+const (
+	Accessibility HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParamsScanType = "accessibility"
+	Cleanup       HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParamsScanType = "cleanup"
+	CodeQuality   HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParamsScanType = "code-quality"
+	Compliance    HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParamsScanType = "compliance"
+	DBQueries     HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParamsScanType = "db-queries"
+	DeadCode      HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParamsScanType = "dead-code"
+	General       HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParamsScanType = "general"
+	MigrationDocs HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParamsScanType = "migration-docs"
+	Performance   HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParamsScanType = "performance"
+	RedTeam       HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParamsScanType = "red-team"
+	Security      HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParamsScanType = "security"
+	Telemetry     HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParamsScanType = "telemetry"
+	TestCoverage  HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParamsScanType = "test-coverage"
+)
+
 // Defines values for ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGetParamsStatus.
 const (
 	Cancelled ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGetParamsStatus = "cancelled"
@@ -796,12 +2064,35 @@ const (
 	Succeeded ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGetParamsStatus = "succeeded"
 )
 
+// Defines values for HandleGetAiGatewayMetricsV3Beta1AiGatewayMetricsGetParamsAggregation.
+const (
+	Avg   HandleGetAiGatewayMetricsV3Beta1AiGatewayMetricsGetParamsAggregation = "avg"
+	P50   HandleGetAiGatewayMetricsV3Beta1AiGatewayMetricsGetParamsAggregation = "p50"
+	P90   HandleGetAiGatewayMetricsV3Beta1AiGatewayMetricsGetParamsAggregation = "p90"
+	P95   HandleGetAiGatewayMetricsV3Beta1AiGatewayMetricsGetParamsAggregation = "p95"
+	P99   HandleGetAiGatewayMetricsV3Beta1AiGatewayMetricsGetParamsAggregation = "p99"
+	Ratio HandleGetAiGatewayMetricsV3Beta1AiGatewayMetricsGetParamsAggregation = "ratio"
+	Sum   HandleGetAiGatewayMetricsV3Beta1AiGatewayMetricsGetParamsAggregation = "sum"
+)
+
+// Defines values for HandleGetEnterpriseGuardrailViolationsV3Beta1EnterpriseGuardrailViolationsGetParamsOrder.
+const (
+	HandleGetEnterpriseGuardrailViolationsV3Beta1EnterpriseGuardrailViolationsGetParamsOrderAsc  HandleGetEnterpriseGuardrailViolationsV3Beta1EnterpriseGuardrailViolationsGetParamsOrder = "asc"
+	HandleGetEnterpriseGuardrailViolationsV3Beta1EnterpriseGuardrailViolationsGetParamsOrderDesc HandleGetEnterpriseGuardrailViolationsV3Beta1EnterpriseGuardrailViolationsGetParamsOrder = "desc"
+)
+
+// Defines values for HandleGetOrgGuardrailViolationsV3Beta1EnterpriseOrganizationsOrgIDGuardrailViolationsGetParamsOrder.
+const (
+	HandleGetOrgGuardrailViolationsV3Beta1EnterpriseOrganizationsOrgIDGuardrailViolationsGetParamsOrderAsc  HandleGetOrgGuardrailViolationsV3Beta1EnterpriseOrganizationsOrgIDGuardrailViolationsGetParamsOrder = "asc"
+	HandleGetOrgGuardrailViolationsV3Beta1EnterpriseOrganizationsOrgIDGuardrailViolationsGetParamsOrderDesc HandleGetOrgGuardrailViolationsV3Beta1EnterpriseOrganizationsOrgIDGuardrailViolationsGetParamsOrder = "desc"
+)
+
 // Defines values for HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParamsStatus.
 const (
-	Active  HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParamsStatus = "active"
-	All     HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParamsStatus = "all"
-	Expired HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParamsStatus = "expired"
-	Revoked HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParamsStatus = "revoked"
+	HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParamsStatusActive  HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParamsStatus = "active"
+	HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParamsStatusAll     HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParamsStatus = "all"
+	HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParamsStatusExpired HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParamsStatus = "expired"
+	HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParamsStatusRevoked HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParamsStatus = "revoked"
 )
 
 // ACULimitResponse defines model for ACULimitResponse.
@@ -814,6 +2105,16 @@ type ACULimitResponse struct {
 
 // ACULimitResponseScope defines model for ACULimitResponse.Scope.
 type ACULimitResponseScope string
+
+// ActiveUserMetricsListResponse Validated list of active user metrics with ascending order and no overlapping periods.
+type ActiveUserMetricsListResponse = []ActiveUserMetricsResponse
+
+// ActiveUserMetricsResponse Single entry for active users over time.
+type ActiveUserMetricsResponse struct {
+	ActiveUsers int `json:"active_users"`
+	EndTime     int `json:"end_time"`
+	StartTime   int `json:"start_time"`
+}
 
 // ActorResponse A user or service-user principal attributed to an action or resource.
 type ActorResponse struct {
@@ -829,6 +2130,152 @@ type ActorResponse struct {
 
 // ActorResponseType Kind of principal.
 type ActorResponseType string
+
+// AcusByProduct ACUs per product for one day; the buckets sum to the day's “acus“.
+//
+// “devin“ is ACUs from Devin sessions a person or service user started,
+// including code-scan and on-call sessions. “automation“ is ACUs spent by
+// automations: sessions an automation started plus its code steps that run
+// without a session. “automation“ is “null“ where the per-product
+// breakdown is not available.
+type AcusByProduct struct {
+	Automation nullable.Nullable[float32] `json:"automation,omitempty"`
+	Cascade    float32                    `json:"cascade"`
+	Devin      float32                    `json:"devin"`
+	Review     nullable.Nullable[float32] `json:"review,omitempty"`
+	Terminal   float32                    `json:"terminal"`
+}
+
+// AiGatewayMetric defines model for AiGatewayMetric.
+type AiGatewayMetric string
+
+// AiGatewayMetricPointResponse defines model for AiGatewayMetricPointResponse.
+type AiGatewayMetricPointResponse struct {
+	// BucketDurationSeconds Actual complete bucket duration; null for boundary/in-progress or unknown-width buckets.
+	BucketDurationSeconds nullable.Nullable[int] `json:"bucket_duration_seconds"`
+
+	// PerMinute Counter per_second × 60 (including aggregate TPM); otherwise null.
+	PerMinute nullable.Nullable[float32] `json:"per_minute"`
+
+	// PerSecond Counter value / complete bucket duration (QPS or aggregate token/s); otherwise null.
+	PerSecond nullable.Nullable[float32] `json:"per_second"`
+
+	// Timestamp Actual bucket start, in Unix seconds.
+	Timestamp int `json:"timestamp"`
+
+	// Value Bucket value; null means no observation.
+	Value nullable.Nullable[float32] `json:"value"`
+}
+
+// AiGatewayMetricProvenanceResponse defines model for AiGatewayMetricProvenanceResponse.
+type AiGatewayMetricProvenanceResponse struct {
+	Environment AiGatewayMetricProvenanceResponseEnvironment `json:"environment"`
+
+	// Kind Counter, distribution, or derived ratio.
+	Kind AiGatewayMetricProvenanceResponseKind `json:"kind"`
+
+	// MetricName Source OTel instrument exported to Datadog.
+	MetricName string                                  `json:"metric_name"`
+	Scope      AiGatewayMetricProvenanceResponseScope  `json:"scope"`
+	Source     AiGatewayMetricProvenanceResponseSource `json:"source"`
+}
+
+// AiGatewayMetricProvenanceResponseEnvironment defines model for AiGatewayMetricProvenanceResponse.Environment.
+type AiGatewayMetricProvenanceResponseEnvironment string
+
+// AiGatewayMetricProvenanceResponseKind Counter, distribution, or derived ratio.
+type AiGatewayMetricProvenanceResponseKind string
+
+// AiGatewayMetricProvenanceResponseScope defines model for AiGatewayMetricProvenanceResponse.Scope.
+type AiGatewayMetricProvenanceResponseScope string
+
+// AiGatewayMetricProvenanceResponseSource defines model for AiGatewayMetricProvenanceResponse.Source.
+type AiGatewayMetricProvenanceResponseSource string
+
+// AiGatewayMetricSeriesResponse defines model for AiGatewayMetricSeriesResponse.
+type AiGatewayMetricSeriesResponse struct {
+	// Dimensions Fixed metric-specific dimensions.
+	Dimensions map[string]string `json:"dimensions"`
+
+	// Points Time-ordered actual buckets.
+	Points []AiGatewayMetricPointResponse `json:"points"`
+}
+
+// AiGatewayMetricsResponse defines model for AiGatewayMetricsResponse.
+type AiGatewayMetricsResponse struct {
+	Aggregation AiGatewayMetricsResponseAggregation `json:"aggregation"`
+
+	// EffectiveIntervalSeconds Observed timestamp spacing; null if fewer than two timestamps.
+	EffectiveIntervalSeconds nullable.Nullable[int]            `json:"effective_interval_seconds"`
+	Metric                   AiGatewayMetric                   `json:"metric"`
+	Provenance               AiGatewayMetricProvenanceResponse `json:"provenance"`
+	RequestedIntervalSeconds int                               `json:"requested_interval_seconds"`
+
+	// Sampled OTel measurements are independent of trace sampling; not lossless or billing-grade.
+	Sampled AiGatewayMetricsResponseSampled `json:"sampled"`
+	Series  []AiGatewayMetricSeriesResponse `json:"series"`
+
+	// TimeAfter Inclusive requested start.
+	TimeAfter int `json:"time_after"`
+
+	// TimeBefore Exclusive requested end.
+	TimeBefore int                          `json:"time_before"`
+	Unit       AiGatewayMetricsResponseUnit `json:"unit"`
+}
+
+// AiGatewayMetricsResponseAggregation defines model for AiGatewayMetricsResponse.Aggregation.
+type AiGatewayMetricsResponseAggregation string
+
+// AiGatewayMetricsResponseSampled OTel measurements are independent of trace sampling; not lossless or billing-grade.
+type AiGatewayMetricsResponseSampled bool
+
+// AiGatewayMetricsResponseUnit defines model for AiGatewayMetricsResponse.Unit.
+type AiGatewayMetricsResponseUnit string
+
+// AiGatewayModelResponse defines model for AiGatewayModelResponse.
+type AiGatewayModelResponse struct {
+	Currency AiGatewayModelResponseCurrency `json:"currency"`
+
+	// EffectiveEndDate Exclusive end of the matched pricing rule, as Unix seconds. Null for list prices or an open end.
+	EffectiveEndDate nullable.Nullable[int] `json:"effective_end_date,omitempty"`
+
+	// EffectiveStartDate Inclusive start of the matched pricing rule, as Unix seconds. Null for list prices or an open start.
+	EffectiveStartDate nullable.Nullable[int] `json:"effective_start_date,omitempty"`
+
+	// ID Id to send as `model` to the AI Gateway: a model family or a single model.
+	ID string `json:"id"`
+
+	// Members Model UIDs of the family's members, which all share this price and effective dates. Empty for a single model.
+	Members []string `json:"members"`
+
+	// Name Display name.
+	Name string `json:"name"`
+
+	// Price Token prices in USD per token, as decimal strings (for example
+	// "0.0000006" for 0.60 USD per million tokens).
+	Price AiGatewayTokenPricesResponse `json:"price"`
+	Unit  AiGatewayModelResponseUnit   `json:"unit"`
+}
+
+// AiGatewayModelResponseCurrency defines model for AiGatewayModelResponse.Currency.
+type AiGatewayModelResponseCurrency string
+
+// AiGatewayModelResponseUnit defines model for AiGatewayModelResponse.Unit.
+type AiGatewayModelResponseUnit string
+
+// AiGatewayModelsResponse defines model for AiGatewayModelsResponse.
+type AiGatewayModelsResponse struct {
+	Models []AiGatewayModelResponse `json:"models"`
+}
+
+// AiGatewayTokenPricesResponse Token prices in USD per token, as decimal strings (for example
+// "0.0000006" for 0.60 USD per million tokens).
+type AiGatewayTokenPricesResponse struct {
+	CacheRead  string `json:"cache_read"`
+	CacheWrite string `json:"cache_write"`
+	Input      string `json:"input"`
+	Output     string `json:"output"`
+}
 
 // APIKeyResponse Shared response model for API key details (used by both PAT and service user endpoints).
 type APIKeyResponse struct {
@@ -848,6 +2295,60 @@ type APIKeyWithTokenResponse struct {
 
 	// Token The raw API token. This is only shown once at creation/rotation time.
 	Token string `json:"token"`
+}
+
+// AttachmentResponse defines model for AttachmentResponse.
+type AttachmentResponse struct {
+	AttachmentID string `json:"attachment_id"`
+	Name         string `json:"name"`
+	URL          string `json:"url"`
+}
+
+// AuditLogAction defines model for AuditLogAction.
+type AuditLogAction string
+
+// AuditLogResponse defines model for AuditLogResponse.
+type AuditLogResponse struct {
+	// Action Known values are listed on the `action` filter. More may be added, so accept values you don't recognize.
+	Action          string                    `json:"action"`
+	AuditLogID      string                    `json:"audit_log_id"`
+	CreatedAt       int                       `json:"created_at"`
+	Data            map[string]interface{}    `json:"data"`
+	OrgID           nullable.Nullable[string] `json:"org_id"`
+	ServiceUserID   nullable.Nullable[string] `json:"service_user_id"`
+	ServiceUserName nullable.Nullable[string] `json:"service_user_name"`
+	UserEmail       nullable.Nullable[string] `json:"user_email"`
+	UserID          nullable.Nullable[string] `json:"user_id"`
+}
+
+// AutoScanScheduleCreateRequest Request to create a scan's recurring auto-scan schedule.
+type AutoScanScheduleCreateRequest struct {
+	// Effort Effort to apply to future incremental runs of the scan, including the scheduled ones: 'normal' or 'deep'. Omit to keep the scan's current effort. Rejected with 409 while a scan run is active.
+	Effort nullable.Nullable[AutoScanScheduleCreateRequestEffort] `json:"effort,omitempty"`
+
+	// Enabled Whether the schedule starts enabled.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Rrule iCal RRULE string (e.g. "FREQ=DAILY") driving the schedule on which new commits are scanned.
+	Rrule string `json:"rrule"`
+}
+
+// AutoScanScheduleCreateRequestEffort defines model for AutoScanScheduleCreateRequest.Effort.
+type AutoScanScheduleCreateRequestEffort string
+
+// AutoScanScheduleResponse The recurring auto-scan schedule configured for a code scan.
+type AutoScanScheduleResponse struct {
+	// AutomationID ID of the automation backing the schedule.
+	AutomationID string `json:"automation_id"`
+
+	// Enabled Whether the schedule is enabled.
+	Enabled bool `json:"enabled"`
+
+	// Rrule iCal RRULE string driving the schedule.
+	Rrule string `json:"rrule"`
+
+	// ScanID The scan the schedule belongs to.
+	ScanID string `json:"scan_id"`
 }
 
 // AutomationComparisonCondition defines model for AutomationComparisonCondition.
@@ -981,7 +2482,7 @@ type AutomationEmailNotificationWhen string
 type AutomationEmptyCondition struct {
 	Field    string                           `json:"field"`
 	Operator AutomationEmptyConditionOperator `json:"operator"`
-	Value    nullable.Nullable[interface{}]   `json:"value,omitempty"`
+	Value    nullable.Nullable[string]        `json:"value,omitempty"`
 }
 
 // AutomationEmptyConditionOperator defines model for AutomationEmptyCondition.Operator.
@@ -1091,8 +2592,8 @@ type AutomationMessageSessionAction struct {
 	Prompt string `json:"prompt"`
 
 	// TargetDevinID Must belong to the org; editing an automation containing this action requires write access to the target session (enable/disable-only edits exempt). Required unless auto_create is true, in which case it is set server-side once the first trigger creates the session; client-supplied values are ignored.
-	TargetDevinID nullable.Nullable[string]           `json:"target_devin_id,omitempty"`
-	Type          *AutomationMessageSessionActionType `json:"type,omitempty"`
+	TargetDevinID nullable.Nullable[string]          `json:"target_devin_id,omitempty"`
+	Type          AutomationMessageSessionActionType `json:"type"`
 }
 
 // AutomationMessageSessionActionType defines model for AutomationMessageSessionAction.Type.
@@ -1107,8 +2608,8 @@ type AutomationMessageSessionActionUpdate struct {
 	Prompt nullable.Nullable[string] `json:"prompt,omitempty"`
 
 	// TargetDevinID Must belong to the org; editing an automation containing this action requires write access to the target session (enable/disable-only edits exempt). Required unless auto_create is true, in which case it is set server-side once the first trigger creates the session; client-supplied values are ignored.
-	TargetDevinID nullable.Nullable[string]                 `json:"target_devin_id,omitempty"`
-	Type          *AutomationMessageSessionActionUpdateType `json:"type,omitempty"`
+	TargetDevinID nullable.Nullable[string]                `json:"target_devin_id,omitempty"`
+	Type          AutomationMessageSessionActionUpdateType `json:"type"`
 }
 
 // AutomationMessageSessionActionUpdateType defines model for AutomationMessageSessionActionUpdate.Type.
@@ -1117,9 +2618,9 @@ type AutomationMessageSessionActionUpdateType string
 // AutomationMonitorSessionAction defines model for AutomationMonitorSessionAction.
 type AutomationMonitorSessionAction struct {
 	// SetupPrompt Injected into the session's system prompt. Same reference-token grammar as prompt.
-	SetupPrompt        string                              `json:"setup_prompt"`
-	SlackMonitorConfig AutomationSlackMonitorConfig        `json:"slack_monitor_config"`
-	Type               *AutomationMonitorSessionActionType `json:"type,omitempty"`
+	SetupPrompt        string                             `json:"setup_prompt"`
+	SlackMonitorConfig AutomationSlackMonitorConfig       `json:"slack_monitor_config"`
+	Type               AutomationMonitorSessionActionType `json:"type"`
 }
 
 // AutomationMonitorSessionActionType defines model for AutomationMonitorSessionAction.Type.
@@ -1132,7 +2633,7 @@ type AutomationMonitorSessionActionUpdate struct {
 
 	// SlackMonitorConfig Requires exactly one slack:message trigger on the same channel. Required when creating or adding this action; on a merge-semantics update, omit it to keep the stored value (null is invalid).
 	SlackMonitorConfig nullable.Nullable[AutomationSlackMonitorConfig] `json:"slack_monitor_config,omitempty"`
-	Type               *AutomationMonitorSessionActionUpdateType       `json:"type,omitempty"`
+	Type               AutomationMonitorSessionActionUpdateType        `json:"type"`
 }
 
 // AutomationMonitorSessionActionUpdateType defines model for AutomationMonitorSessionActionUpdate.Type.
@@ -1264,7 +2765,7 @@ type AutomationResponseTeamsReplyAccess string
 
 // AutomationRunAsCreator defines model for AutomationRunAsCreator.
 type AutomationRunAsCreator struct {
-	Type *AutomationRunAsCreatorType `json:"type,omitempty"`
+	Type AutomationRunAsCreatorType `json:"type"`
 }
 
 // AutomationRunAsCreatorType defines model for AutomationRunAsCreator.Type.
@@ -1272,7 +2773,7 @@ type AutomationRunAsCreatorType string
 
 // AutomationRunAsOrganization defines model for AutomationRunAsOrganization.
 type AutomationRunAsOrganization struct {
-	Type *AutomationRunAsOrganizationType `json:"type,omitempty"`
+	Type AutomationRunAsOrganizationType `json:"type"`
 }
 
 // AutomationRunAsOrganizationType defines model for AutomationRunAsOrganization.Type.
@@ -1280,8 +2781,8 @@ type AutomationRunAsOrganizationType string
 
 // AutomationRunAsServiceUser defines model for AutomationRunAsServiceUser.
 type AutomationRunAsServiceUser struct {
-	ServiceUserID string                          `json:"service_user_id"`
-	Type          *AutomationRunAsServiceUserType `json:"type,omitempty"`
+	ServiceUserID string                         `json:"service_user_id"`
+	Type          AutomationRunAsServiceUserType `json:"type"`
 }
 
 // AutomationRunAsServiceUserType defines model for AutomationRunAsServiceUser.Type.
@@ -1349,7 +2850,7 @@ type AutomationSchemasResponse struct {
 // AutomationSchemasResponseAvailableDevinModes defines model for AutomationSchemasResponse.AvailableDevinModes.
 type AutomationSchemasResponseAvailableDevinModes string
 
-// AutomationSchemasResponseDefaultFallbackDevinMode Stable mode to prefill session_settings.fallback_devin_mode with when a research preview is selected: the organization's default mode when it is stable and available, else the first available stable mode; null when none is available.
+// AutomationSchemasResponseDefaultFallbackDevinMode defines model for AutomationSchemasResponse.DefaultFallbackDevinMode.
 type AutomationSchemasResponseDefaultFallbackDevinMode string
 
 // AutomationSchemasSecurityProfile The security profile that governs this organization's automation
@@ -1467,7 +2968,7 @@ type AutomationSessionSettingsInput struct {
 	NetPolicy         nullable.Nullable[AutomationNetPolicy]                             `json:"net_policy,omitempty"`
 }
 
-// AutomationSessionSettingsInputFallbackDevinMode Stable mode sessions start in when devin_mode is a research preview that is unavailable at run time. Required with a preview devin_mode (see schemas.default_fallback_devin_mode), rejected with a stable or null devin_mode; cleared with devin_mode.
+// AutomationSessionSettingsInputFallbackDevinMode defines model for AutomationSessionSettingsInput.FallbackDevinMode.
 type AutomationSessionSettingsInputFallbackDevinMode string
 
 // AutomationSessionSettingsOutput Applied to every session this automation spawns (including monitor
@@ -1481,7 +2982,7 @@ type AutomationSessionSettingsOutput struct {
 	NetPolicy         nullable.Nullable[AutomationNetPolicy]                              `json:"net_policy,omitempty"`
 }
 
-// AutomationSessionSettingsOutputFallbackDevinMode Stable mode sessions start in when devin_mode is a research preview that is unavailable at run time. Required with a preview devin_mode (see schemas.default_fallback_devin_mode), rejected with a stable or null devin_mode; cleared with devin_mode.
+// AutomationSessionSettingsOutputFallbackDevinMode defines model for AutomationSessionSettingsOutput.FallbackDevinMode.
 type AutomationSessionSettingsOutputFallbackDevinMode string
 
 // AutomationSessionSlackConfig defines model for AutomationSessionSlackConfig.
@@ -1528,9 +3029,9 @@ type AutomationSlackNotificationWhen string
 // AutomationStartSessionActionInput defines model for AutomationStartSessionAction-Input.
 type AutomationStartSessionActionInput struct {
 	// Prompt The single source of truth: plain text with inline reference tokens (@{owner}/{repo}, @{path}, @playbook:{id}, @skills:{name}, !{macro}, ${SECRET_NAME}). Kind-prefixed tokens are validated at save; unknown ids are a 400. The triggering event's payload is appended automatically.
-	Prompt  string                                 `json:"prompt"`
-	Session *AutomationSessionConfigInput          `json:"session,omitempty"`
-	Type    *AutomationStartSessionActionInputType `json:"type,omitempty"`
+	Prompt  string                                `json:"prompt"`
+	Session *AutomationSessionConfigInput         `json:"session,omitempty"`
+	Type    AutomationStartSessionActionInputType `json:"type"`
 }
 
 // AutomationStartSessionActionInputType defines model for AutomationStartSessionActionInput.Type.
@@ -1539,9 +3040,9 @@ type AutomationStartSessionActionInputType string
 // AutomationStartSessionActionOutput defines model for AutomationStartSessionAction-Output.
 type AutomationStartSessionActionOutput struct {
 	// Prompt The single source of truth: plain text with inline reference tokens (@{owner}/{repo}, @{path}, @playbook:{id}, @skills:{name}, !{macro}, ${SECRET_NAME}). Kind-prefixed tokens are validated at save; unknown ids are a 400. The triggering event's payload is appended automatically.
-	Prompt  string                                  `json:"prompt"`
-	Session *AutomationSessionConfigOutput          `json:"session,omitempty"`
-	Type    *AutomationStartSessionActionOutputType `json:"type,omitempty"`
+	Prompt  string                                 `json:"prompt"`
+	Session *AutomationSessionConfigOutput         `json:"session,omitempty"`
+	Type    AutomationStartSessionActionOutputType `json:"type"`
 }
 
 // AutomationStartSessionActionOutputType defines model for AutomationStartSessionActionOutput.Type.
@@ -1550,9 +3051,9 @@ type AutomationStartSessionActionOutputType string
 // AutomationStartSessionActionUpdate defines model for AutomationStartSessionActionUpdate.
 type AutomationStartSessionActionUpdate struct {
 	// Prompt The single source of truth: plain text with inline reference tokens (@{owner}/{repo}, @{path}, @playbook:{id}, @skills:{name}, !{macro}, ${SECRET_NAME}). Kind-prefixed tokens are validated at save; unknown ids are a 400. The triggering event's payload is appended automatically. Required when creating or adding this action; on a merge-semantics update, omit it to keep the stored value (null is invalid).
-	Prompt  nullable.Nullable[string]               `json:"prompt,omitempty"`
-	Session *AutomationSessionConfigInput           `json:"session,omitempty"`
-	Type    *AutomationStartSessionActionUpdateType `json:"type,omitempty"`
+	Prompt  nullable.Nullable[string]              `json:"prompt,omitempty"`
+	Session *AutomationSessionConfigInput          `json:"session,omitempty"`
+	Type    AutomationStartSessionActionUpdateType `json:"type"`
 }
 
 // AutomationStartSessionActionUpdateType defines model for AutomationStartSessionActionUpdate.Type.
@@ -1625,10 +3126,10 @@ type AutomationTools struct {
 	TeamsDmScope nullable.Nullable[AutomationToolsTeamsDmScope] `json:"teams_dm_scope,omitempty"`
 }
 
-// AutomationToolsSlackDmScope Allow spawned sessions to open 1:1 Slack DMs in the organization's connected workspaces. 'org_members' (enterprise accounts only) restricts DM targets to members of the organization; 'workspace' (non-enterprise accounts only) allows any eligible workspace member. Omit or null to disable DMs.
+// AutomationToolsSlackDmScope defines model for AutomationTools.SlackDmScope.
 type AutomationToolsSlackDmScope string
 
-// AutomationToolsTeamsDmScope Allow spawned sessions to open 1:1 Microsoft Teams DMs. DMs only reach users who installed the Devin app in Teams personally. Capped by Teams Default Access and the governing security profile.
+// AutomationToolsTeamsDmScope defines model for AutomationTools.TeamsDmScope.
 type AutomationToolsTeamsDmScope string
 
 // AutomationTriggerRequestInput defines model for AutomationTriggerRequest-Input.
@@ -1730,15 +3231,15 @@ type AutomationUpdateRequest_Actions_Item struct {
 	union json.RawMessage
 }
 
-// AutomationUpdateRequest_RunAs null resets to organization.
+// AutomationUpdateRequest_RunAs Identity the spawned sessions run under. organization: the org's automation identity. When the organization has a default service user for automations, sessions run as that service user and the response returns run_as service_user with its id; saving requires every permission that service user holds. Without one, creating an automation or saving an enabled one is rejected. MCP servers installed with a personal (user-scoped) connection that service user has not connected cannot be selected, and switching an automation to organization removes them from its selection. creator: personal automation — runs with the creator's own permissions and is visible only to the creator and org admins; rejected for service-user-created automations. service_user: runs as the given service user, with its roles, grants and ACU limits; requires permission to manage that service user. Required on create; null on update resets to organization.
 type AutomationUpdateRequest_RunAs struct {
 	union json.RawMessage
 }
 
-// AutomationUpdateRequestSlackReplyAccess null resets to slack_users.
+// AutomationUpdateRequestSlackReplyAccess defines model for AutomationUpdateRequest.SlackReplyAccess.
 type AutomationUpdateRequestSlackReplyAccess string
 
-// AutomationUpdateRequestTeamsReplyAccess null resets to teams_users.
+// AutomationUpdateRequestTeamsReplyAccess defines model for AutomationUpdateRequest.TeamsReplyAccess.
 type AutomationUpdateRequestTeamsReplyAccess string
 
 // AutomationWebhookResponse defines model for AutomationWebhookResponse.
@@ -1772,7 +3273,7 @@ type Blueprint struct {
 	UpdatedAt int                                `json:"updated_at"`
 }
 
-// BlueprintSource Where the YAML is authored: 'git' (synced from .devin/blueprint.yaml in the repo) or 'database' (edited via the API/UI). Always null for enterprise- and org-tier blueprints.
+// BlueprintSource defines model for Blueprint.Source.
 type BlueprintSource string
 
 // BlueprintType defines model for Blueprint.Type.
@@ -1797,6 +3298,11 @@ type BlueprintFileList struct {
 // BlueprintList List envelope for blueprints (returned in execution order).
 type BlueprintList struct {
 	Data []Blueprint `json:"data"`
+}
+
+// BodyHandleUploadAttachmentV3OrganizationsOrgIDAttachmentsPost defines model for Body_handle_upload_attachment_v3_organizations__org_id__attachments_post.
+type BodyHandleUploadAttachmentV3OrganizationsOrgIDAttachmentsPost struct {
+	File string `json:"file"`
 }
 
 // BodyUploadEnterpriseBlueprintFileEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDFilesPost defines model for Body_upload_enterprise_blueprint_file_endpoint_v3_enterprise_snapshot_setup_blueprints__blueprint_id__files_post.
@@ -1836,6 +3342,577 @@ type BulkIndexRepositoriesRequest struct {
 	Repositories []RepositoryIndexingItem `json:"repositories"`
 }
 
+// CancelCodeScanResponse A cancelled scan retained with its findings and schedule.
+type CancelCodeScanResponse struct {
+	// ScanID The cancelled scan.
+	ScanID string `json:"scan_id"`
+
+	// SessionID The archived scan session, or null for a queued scan.
+	SessionID nullable.Nullable[string] `json:"session_id"`
+
+	// Status Scan status after cancellation.
+	Status CancelCodeScanResponseStatus `json:"status"`
+}
+
+// CancelCodeScanResponseStatus Scan status after cancellation.
+type CancelCodeScanResponseStatus string
+
+// CategoryMetrics defines model for CategoryMetrics.
+type CategoryMetrics struct {
+	Acus          float32              `json:"acus"`
+	Category      string               `json:"category"`
+	SessionsCount int                  `json:"sessions_count"`
+	Subcategories []SubcategoryMetrics `json:"subcategories"`
+}
+
+// CodeScanAttachmentResponse A file attached to a code scan at creation.
+type CodeScanAttachmentResponse struct {
+	// Filename Name of the attached file.
+	Filename string `json:"filename"`
+
+	// URL Devin attachment URL of the file.
+	URL string `json:"url"`
+}
+
+// CodeScanCreateRequest Request body for starting a new code scan.
+type CodeScanCreateRequest struct {
+	// CommitSha Commit to check out before scanning.
+	CommitSha nullable.Nullable[string] `json:"commit_sha,omitempty"`
+
+	// DevinMode Agent the scan's sessions run on: 'fusion' or 'swe-2' (SWE-2 Max for 'deep' effort, SWE-2 High for 'normal'). Applies only when the mode is enabled for the organization; otherwise, and when omitted, the scan runs on the default agent.
+	DevinMode nullable.Nullable[CodeScanCreateRequestDevinMode] `json:"devin_mode,omitempty"`
+
+	// Effort Scan effort: 'normal' (default) uses lower model reasoning effort with larger investigation batches; 'deep' runs the full pipeline.
+	Effort nullable.Nullable[CodeScanCreateRequestEffort] `json:"effort,omitempty"`
+
+	// Host Git host of the repository, if known.
+	Host nullable.Nullable[string] `json:"host,omitempty"`
+
+	// Interactive When true, the scan pauses for user review between threat modeling and investigation.
+	Interactive *bool `json:"interactive,omitempty"`
+
+	// Locale BCP-47 language tag (e.g. 'ja') for the scan's user-facing output: finding titles, descriptions, and reports. Omitted means English.
+	Locale nullable.Nullable[string] `json:"locale,omitempty"`
+
+	// Platform Where the scan's sessions run: a platform label configured for the organization (e.g. 'linux', 'windows', 'macos') or the name of an outpost (BYOB) pool, case-insensitive; platforms take priority when a name matches both. Omitted means the organization default. Unrecognized values are rejected with a 400 whose error body lists the available platform labels and outpost pool names.
+	Platform nullable.Nullable[string] `json:"platform,omitempty"`
+
+	// ProfileID Scan profile to apply to the scan.
+	ProfileID nullable.Nullable[string] `json:"profile_id,omitempty"`
+
+	// RepoName Full name of the repository to scan. Provide exactly one of repo_name or repos.
+	RepoName nullable.Nullable[string] `json:"repo_name,omitempty"`
+
+	// Repos Repositories covered by one scan; the first entry is the scan's primary repository. Provide exactly one of repo_name or repos.
+	Repos nullable.Nullable[[]ScanRepoRequest] `json:"repos,omitempty"`
+
+	// ScanType Type of scan to run. Must match the profile's scan type when a profile is given; defaults to the profile's type, or 'security' for profile-less scans. Non-security types require a profile and are rejected without one.
+	ScanType nullable.Nullable[CodeScanCreateRequestScanType] `json:"scan_type,omitempty"`
+}
+
+// CodeScanCreateRequestDevinMode defines model for CodeScanCreateRequest.DevinMode.
+type CodeScanCreateRequestDevinMode string
+
+// CodeScanCreateRequestEffort defines model for CodeScanCreateRequest.Effort.
+type CodeScanCreateRequestEffort string
+
+// CodeScanCreateRequestScanType defines model for CodeScanCreateRequest.ScanType.
+type CodeScanCreateRequestScanType string
+
+// CodeScanEffortResponse Effort configured on a scan.
+type CodeScanEffortResponse struct {
+	// Effort Effort applied to future incremental runs of the scan.
+	Effort CodeScanEffortResponseEffort `json:"effort"`
+
+	// ScanID Unique identifier for the scan.
+	ScanID string `json:"scan_id"`
+}
+
+// CodeScanEffortResponseEffort Effort applied to future incremental runs of the scan.
+type CodeScanEffortResponseEffort string
+
+// CodeScanEffortUpdateRequest Request to change the effort configured on a scan.
+type CodeScanEffortUpdateRequest struct {
+	// Effort Effort to apply to future incremental runs of the scan: 'normal' uses lower model reasoning effort with larger investigation batches; 'deep' runs the full pipeline.
+	Effort CodeScanEffortUpdateRequestEffort `json:"effort"`
+}
+
+// CodeScanEffortUpdateRequestEffort Effort to apply to future incremental runs of the scan: 'normal' uses lower model reasoning effort with larger investigation batches; 'deep' runs the full pipeline.
+type CodeScanEffortUpdateRequestEffort string
+
+// CodeScanFindingResponse A single code scan finding.
+type CodeScanFindingResponse struct {
+	// Category Category (rule name) the finding was classified under, if any.
+	Category nullable.Nullable[string] `json:"category"`
+
+	// CodeOwners Code owners associated with the affected code.
+	CodeOwners []string `json:"code_owners"`
+
+	// CodeScanRunID Identifier of the scan run that produced the finding, if known.
+	CodeScanRunID nullable.Nullable[string] `json:"code_scan_run_id"`
+
+	// CreatedAt When the finding was created (unix seconds).
+	CreatedAt int `json:"created_at"`
+
+	// Description Detailed description of the vulnerability, if any.
+	Description nullable.Nullable[string] `json:"description"`
+
+	// DismissalReason Why the finding was dismissed (e.g. duplicate, false_positive), if it is dismissed and a reason was recorded.
+	DismissalReason nullable.Nullable[string] `json:"dismissal_reason,omitempty"`
+
+	// FindingID Unique identifier for the finding.
+	FindingID string `json:"finding_id"`
+
+	// FixEffort Size of the fix as rated by the scan: small or large. Null when the finding has not been rated.
+	FixEffort nullable.Nullable[CodeScanFindingResponseFixEffort] `json:"fix_effort,omitempty"`
+
+	// Note Additional note attached to the finding, if any.
+	Note nullable.Nullable[string] `json:"note"`
+
+	// OrchestratorSessionID Orchestrator session that ran the scan that produced the finding (the scan's Devin session), if any.
+	OrchestratorSessionID nullable.Nullable[string] `json:"orchestrator_session_id"`
+
+	// Payoff Severity x fix_effort quadrant: quick_win (critical/high, small fix), big_fix (critical/high, large fix), easy_fix (medium/low, small fix), deprioritize (medium/low, large fix). Null when unrated.
+	Payoff nullable.Nullable[CodeScanFindingResponsePayoff] `json:"payoff,omitempty"`
+
+	// PrURL URL of the remediation PR opened for this finding, if any.
+	PrURL nullable.Nullable[string] `json:"pr_url"`
+
+	// Recommendation Suggested remediation for the finding, if any.
+	Recommendation nullable.Nullable[string] `json:"recommendation"`
+
+	// ReferenceSnippets Code snippets referenced by the finding as supporting evidence.
+	ReferenceSnippets []CodeScanReferenceSnippetResponse `json:"reference_snippets"`
+
+	// RelatedFindingIds Finding IDs of the other links in a realized attack chain. Set only on the chain's sink finding.
+	RelatedFindingIds *[]string `json:"related_finding_ids,omitempty"`
+
+	// RepoName Repository the finding was reported in.
+	RepoName string `json:"repo_name"`
+
+	// ScanID Identifier of the scan that produced the finding.
+	ScanID string `json:"scan_id"`
+
+	// SessionID Session that remediated the finding (and opened the PR), if any.
+	SessionID nullable.Nullable[string] `json:"session_id"`
+
+	// Severity Severity of the finding: critical, high, medium, or low.
+	Severity CodeScanFindingResponseSeverity `json:"severity"`
+
+	// Status Finding status: open, dismissed, or resolved.
+	Status CodeScanFindingResponseStatus `json:"status"`
+
+	// ThreatID The linked threat.
+	ThreatID nullable.Nullable[string] `json:"threat_id,omitempty"`
+
+	// Title Title of the finding, if any.
+	Title nullable.Nullable[string] `json:"title"`
+
+	// UpdatedAt When the finding was last updated (unix seconds).
+	UpdatedAt int `json:"updated_at"`
+
+	// ValidationArtifacts Attachment URLs recorded by runtime validation.
+	ValidationArtifacts *[]string `json:"validation_artifacts,omitempty"`
+
+	// ValidationEvidence Evidence summary recorded by runtime validation, if any.
+	ValidationEvidence nullable.Nullable[string] `json:"validation_evidence,omitempty"`
+
+	// ValidationResult Recorded runtime validation outcome, if any: confirmed, false_positive, or inconclusive.
+	ValidationResult nullable.Nullable[CodeScanFindingResponseValidationResult] `json:"validation_result,omitempty"`
+
+	// ValidationSessionID Session that recorded the runtime validation outcome, if any.
+	ValidationSessionID nullable.Nullable[string] `json:"validation_session_id,omitempty"`
+}
+
+// CodeScanFindingResponseFixEffort defines model for CodeScanFindingResponse.FixEffort.
+type CodeScanFindingResponseFixEffort string
+
+// CodeScanFindingResponsePayoff defines model for CodeScanFindingResponse.Payoff.
+type CodeScanFindingResponsePayoff string
+
+// CodeScanFindingResponseSeverity Severity of the finding: critical, high, medium, or low.
+type CodeScanFindingResponseSeverity string
+
+// CodeScanFindingResponseStatus Finding status: open, dismissed, or resolved.
+type CodeScanFindingResponseStatus string
+
+// CodeScanFindingResponseValidationResult defines model for CodeScanFindingResponse.ValidationResult.
+type CodeScanFindingResponseValidationResult string
+
+// CodeScanFindingStatusResponse defines model for CodeScanFindingStatusResponse.
+type CodeScanFindingStatusResponse struct {
+	// FindingID Unique identifier for the finding.
+	FindingID string `json:"finding_id"`
+
+	// ScanID Scan that produced the finding.
+	ScanID string `json:"scan_id"`
+
+	// SessionID Linked remediation session, if any. Cleared when reopened.
+	SessionID nullable.Nullable[string] `json:"session_id"`
+
+	// Status Updated finding status.
+	Status CodeScanFindingStatusResponseStatus `json:"status"`
+}
+
+// CodeScanFindingStatusResponseStatus Updated finding status.
+type CodeScanFindingStatusResponseStatus string
+
+// CodeScanFindingStatusUpdateRequest defines model for CodeScanFindingStatusUpdateRequest.
+type CodeScanFindingStatusUpdateRequest struct {
+	// DismissalNote Free-form dismissal note; only stored when status is dismissed.
+	DismissalNote nullable.Nullable[string] `json:"dismissal_note,omitempty"`
+
+	// DismissalReason Why the finding was dismissed; only stored when status is dismissed.
+	DismissalReason nullable.Nullable[string] `json:"dismissal_reason,omitempty"`
+
+	// ResolutionNote How the finding was fixed; only stored when status is resolved.
+	ResolutionNote nullable.Nullable[string] `json:"resolution_note,omitempty"`
+
+	// Status New finding status. Reopening clears the remediation session link.
+	Status CodeScanFindingStatusUpdateRequestStatus `json:"status"`
+}
+
+// CodeScanFindingStatusUpdateRequestStatus New finding status. Reopening clears the remediation session link.
+type CodeScanFindingStatusUpdateRequestStatus string
+
+// CodeScanFindingsSelection Filters selecting findings of a scan for a bulk status update.
+type CodeScanFindingsSelection struct {
+	// RepoName Only findings reported in this repository.
+	RepoName nullable.Nullable[string] `json:"repo_name,omitempty"`
+
+	// Severity Only findings with any of these severities (critical, high, medium, low).
+	Severity nullable.Nullable[[]CodeScanFindingsSelectionSeverity] `json:"severity,omitempty"`
+
+	// Status Only findings with this current status.
+	Status nullable.Nullable[CodeScanFindingsSelectionStatus] `json:"status,omitempty"`
+}
+
+// CodeScanFindingsSelectionSeverity defines model for CodeScanFindingsSelection.Severity.
+type CodeScanFindingsSelectionSeverity string
+
+// CodeScanFindingsSelectionStatus defines model for CodeScanFindingsSelection.Status.
+type CodeScanFindingsSelectionStatus string
+
+// CodeScanFindingsStatusResponse defines model for CodeScanFindingsStatusResponse.
+type CodeScanFindingsStatusResponse struct {
+	// Findings The updated findings: in request order with duplicates removed for `finding_ids`, by severity (critical first) for `select_all`.
+	Findings []CodeScanFindingStatusResponse `json:"findings"`
+}
+
+// CodeScanFindingsStatusUpdateRequest Findings of one scan to update. Provide exactly one of “finding_ids“
+// or “select_all“.
+type CodeScanFindingsStatusUpdateRequest struct {
+	// DismissalNote Free-form dismissal note applied to every finding; only stored when status is dismissed.
+	DismissalNote nullable.Nullable[string] `json:"dismissal_note,omitempty"`
+
+	// DismissalReason Why the findings were dismissed; only stored when status is dismissed.
+	DismissalReason nullable.Nullable[string] `json:"dismissal_reason,omitempty"`
+
+	// ExcludeFindingIds With `select_all`: findings to leave out of the selection.
+	ExcludeFindingIds *[]string `json:"exclude_finding_ids,omitempty"`
+
+	// FindingIds Findings to update; all must belong to the scan. The update is all or nothing: if any finding is missing, none is updated.
+	FindingIds nullable.Nullable[[]string] `json:"finding_ids,omitempty"`
+
+	// ResolutionNote How the findings were fixed, applied to every finding; only stored when status is resolved.
+	ResolutionNote nullable.Nullable[string] `json:"resolution_note,omitempty"`
+
+	// SelectAll Update every finding of the scan matching these filters, minus `exclude_finding_ids`. Fails with 400 when no finding or more than 1000 findings match.
+	SelectAll nullable.Nullable[CodeScanFindingsSelection] `json:"select_all,omitempty"`
+
+	// Status New status for every finding. Reopening clears the remediation session link.
+	Status CodeScanFindingsStatusUpdateRequestStatus `json:"status"`
+}
+
+// CodeScanFindingsStatusUpdateRequestStatus New status for every finding. Reopening clears the remediation session link.
+type CodeScanFindingsStatusUpdateRequestStatus string
+
+// CodeScanMetricsResponse Response model for code scan metrics.
+//
+// All metrics are scoped to code scans created within the specified time
+// range: findings and remediation PRs are attributed to the scan that
+// produced them.
+type CodeScanMetricsResponse struct {
+	// AvgPrOpenDurationSeconds Average time a PR is (or was) open, in seconds: creation to merge/close for finished PRs, creation to now for open PRs. Null when no PRs were created.
+	AvgPrOpenDurationSeconds nullable.Nullable[float32] `json:"avg_pr_open_duration_seconds"`
+
+	// AvgPrTimeToMergeSeconds Average time from PR creation to merge, in seconds. Null when no PRs have been merged.
+	AvgPrTimeToMergeSeconds nullable.Nullable[float32] `json:"avg_pr_time_to_merge_seconds"`
+
+	// OpenCriticalFindingsCount Number of open findings with critical severity.
+	OpenCriticalFindingsCount int `json:"open_critical_findings_count"`
+
+	// OpenHighFindingsCount Number of open findings with high severity.
+	OpenHighFindingsCount int `json:"open_high_findings_count"`
+
+	// OpenLowFindingsCount Number of open findings with low severity.
+	OpenLowFindingsCount int `json:"open_low_findings_count"`
+
+	// OpenMediumFindingsCount Number of open findings with medium severity.
+	OpenMediumFindingsCount int `json:"open_medium_findings_count"`
+
+	// PrsClosedCount Number of remediation PRs closed without being merged.
+	PrsClosedCount int `json:"prs_closed_count"`
+
+	// PrsCreatedCount Number of PRs created by the scans' remediation sessions.
+	PrsCreatedCount int `json:"prs_created_count"`
+
+	// PrsMergedCount Number of remediation PRs merged.
+	PrsMergedCount int `json:"prs_merged_count"`
+
+	// PrsOpenCount Number of remediation PRs currently in the open state.
+	PrsOpenCount int `json:"prs_open_count"`
+
+	// ReposScannedCount Number of distinct repositories scanned.
+	ReposScannedCount int `json:"repos_scanned_count"`
+
+	// ScansCount Number of code scans created within the specified time range.
+	ScansCount int `json:"scans_count"`
+}
+
+// CodeScanProfileDetailResponse Full details of a code scan profile, including its guidance.
+type CodeScanProfileDetailResponse struct {
+	// BatchSize Max files with signals per investigation batch, if set. Null means the scan uses the default. Can only be set on staging.
+	BatchSize nullable.Nullable[int] `json:"batch_size,omitempty"`
+
+	// CommunicationGuidance Guidance for the communication phase (acting on final findings, e.g. notifying owners or stakeholders), if any.
+	CommunicationGuidance nullable.Nullable[string] `json:"communication_guidance,omitempty"`
+
+	// CreatedAt When the profile was created (unix seconds).
+	CreatedAt int `json:"created_at"`
+
+	// Description Description of the profile, if any.
+	Description nullable.Nullable[string] `json:"description"`
+
+	// ExcludeGlobs Glob patterns of files to exclude from the scan, if any.
+	ExcludeGlobs nullable.Nullable[[]string] `json:"exclude_globs"`
+
+	// IncludeGlobs Glob patterns of files to include in the scan, if any.
+	IncludeGlobs nullable.Nullable[[]string] `json:"include_globs"`
+
+	// IngestionSourceGuidance Guidance describing the ingestion source, if any.
+	IngestionSourceGuidance nullable.Nullable[string] `json:"ingestion_source_guidance"`
+
+	// InvestigationGuidance Guidance for the investigation phase, if any.
+	InvestigationGuidance nullable.Nullable[string] `json:"investigation_guidance"`
+
+	// Mode Profile mode: discover or ingest.
+	Mode CodeScanProfileDetailResponseMode `json:"mode"`
+
+	// Name Name of the profile.
+	Name string `json:"name"`
+
+	// OrgID Organization that owns the profile. Null when the profile is shared account-wide.
+	OrgID nullable.Nullable[string] `json:"org_id"`
+
+	// PostIngestionGuidance Guidance for the post-ingestion phase, if any.
+	PostIngestionGuidance nullable.Nullable[string] `json:"post_ingestion_guidance"`
+
+	// ProfileID Unique identifier for the profile.
+	ProfileID string `json:"profile_id"`
+
+	// RemediationGuidance Guidance for the remediation phase, if any.
+	RemediationGuidance nullable.Nullable[string] `json:"remediation_guidance"`
+
+	// ReportGuidance Guidance for the report phase, if any.
+	ReportGuidance nullable.Nullable[string] `json:"report_guidance"`
+
+	// ScanPaths Repository-relative paths the scan is restricted to, if any. Null or empty means the whole repository.
+	ScanPaths nullable.Nullable[[]string] `json:"scan_paths,omitempty"`
+
+	// ScanType Type of scan the profile configures.
+	ScanType CodeScanProfileDetailResponseScanType `json:"scan_type"`
+
+	// ThreatModelGuidance Guidance describing the threat model, if any.
+	ThreatModelGuidance nullable.Nullable[string] `json:"threat_model_guidance"`
+
+	// TriageGuidance Guidance for the triage phase, if any.
+	TriageGuidance nullable.Nullable[string] `json:"triage_guidance"`
+
+	// TypeConfig Configuration specific to the profile's scan type, if any (e.g. a compliance profile's system, framework and criteria).
+	TypeConfig nullable.Nullable[map[string]interface{}] `json:"type_config,omitempty"`
+
+	// ValidationGuidance Guidance for the validation phase, if any.
+	ValidationGuidance nullable.Nullable[string] `json:"validation_guidance"`
+
+	// ValidationSeverities Finding severities runtime validation covers. Null means the default.
+	ValidationSeverities nullable.Nullable[[]CodeScanProfileDetailResponseValidationSeverities] `json:"validation_severities,omitempty"`
+
+	// Visibility Whether the profile is owned by a single organization or shared across the whole account.
+	Visibility CodeScanProfileDetailResponseVisibility `json:"visibility"`
+}
+
+// CodeScanProfileDetailResponseMode Profile mode: discover or ingest.
+type CodeScanProfileDetailResponseMode string
+
+// CodeScanProfileDetailResponseScanType Type of scan the profile configures.
+type CodeScanProfileDetailResponseScanType string
+
+// CodeScanProfileDetailResponseValidationSeverities defines model for CodeScanProfileDetailResponse.ValidationSeverities.
+type CodeScanProfileDetailResponseValidationSeverities string
+
+// CodeScanProfileDetailResponseVisibility Whether the profile is owned by a single organization or shared across the whole account.
+type CodeScanProfileDetailResponseVisibility string
+
+// CodeScanProfileResponse Summary of the profile a scan ran under.
+type CodeScanProfileResponse struct {
+	// Name Name of the profile.
+	Name string `json:"name"`
+
+	// ProfileID Unique identifier for the profile.
+	ProfileID string `json:"profile_id"`
+}
+
+// CodeScanProfileSummaryResponse Summary of a code scan profile, without its guidance.
+type CodeScanProfileSummaryResponse struct {
+	// CreatedAt When the profile was created (unix seconds).
+	CreatedAt int `json:"created_at"`
+
+	// Description Description of the profile, if any.
+	Description nullable.Nullable[string] `json:"description"`
+
+	// Mode Profile mode: discover or ingest.
+	Mode CodeScanProfileSummaryResponseMode `json:"mode"`
+
+	// Name Name of the profile.
+	Name string `json:"name"`
+
+	// OrgID Organization that owns the profile. Null when the profile is shared account-wide.
+	OrgID nullable.Nullable[string] `json:"org_id"`
+
+	// ProfileID Unique identifier for the profile.
+	ProfileID string `json:"profile_id"`
+
+	// ScanType Type of scan the profile configures.
+	ScanType CodeScanProfileSummaryResponseScanType `json:"scan_type"`
+
+	// Visibility Whether the profile is owned by a single organization or shared across the whole account.
+	Visibility CodeScanProfileSummaryResponseVisibility `json:"visibility"`
+}
+
+// CodeScanProfileSummaryResponseMode Profile mode: discover or ingest.
+type CodeScanProfileSummaryResponseMode string
+
+// CodeScanProfileSummaryResponseScanType Type of scan the profile configures.
+type CodeScanProfileSummaryResponseScanType string
+
+// CodeScanProfileSummaryResponseVisibility Whether the profile is owned by a single organization or shared across the whole account.
+type CodeScanProfileSummaryResponseVisibility string
+
+// CodeScanProfileSwitchRequest Request to switch the profile linked to a scan.
+type CodeScanProfileSwitchRequest struct {
+	// ProfileID Profile to apply to future incremental runs of the scan.
+	ProfileID string `json:"profile_id"`
+}
+
+// CodeScanProfileSwitchResponse Result of switching the profile linked to a scan.
+type CodeScanProfileSwitchResponse struct {
+	// Profile Summary of the profile a scan ran under.
+	Profile CodeScanProfileResponse `json:"profile"`
+
+	// ScanID Unique identifier for the scan.
+	ScanID string `json:"scan_id"`
+}
+
+// CodeScanReferenceSnippetResponse A code snippet referenced by a finding as supporting evidence.
+type CodeScanReferenceSnippetResponse struct {
+	// Code The referenced source code, if captured.
+	Code nullable.Nullable[string] `json:"code,omitempty"`
+
+	// Commentary Explanation of why this snippet is relevant to the finding.
+	Commentary string `json:"commentary"`
+
+	// EndLine Last line of the referenced range.
+	EndLine int `json:"end_line"`
+
+	// FilePath Path to the referenced file.
+	FilePath string `json:"file_path"`
+
+	// StartLine First line of the referenced range.
+	StartLine int `json:"start_line"`
+}
+
+// CodeScanResponse A single code scan.
+type CodeScanResponse struct {
+	// Attachments Files attached to the scan when it was created.
+	Attachments *[]CodeScanAttachmentResponse `json:"attachments,omitempty"`
+
+	// CreatedAt When the scan was created (unix seconds).
+	CreatedAt int `json:"created_at"`
+
+	// Effort Scan effort: 'normal' uses lower model reasoning effort with larger investigation batches; 'deep' runs the full pipeline.
+	Effort CodeScanResponseEffort `json:"effort"`
+
+	// Host Git host of the repository, if known.
+	Host nullable.Nullable[string] `json:"host"`
+
+	// OrgID Organization the scan belongs to.
+	OrgID string `json:"org_id"`
+
+	// OutpostPoolID Outpost pool the scan's sessions run on, if one is set.
+	OutpostPoolID nullable.Nullable[string] `json:"outpost_pool_id,omitempty"`
+
+	// Platform Hosted platform label the scan's sessions run on. Null when the scan runs on an outpost pool or the organization default.
+	Platform nullable.Nullable[string] `json:"platform,omitempty"`
+
+	// Profile Profile the scan ran under, if any.
+	Profile nullable.Nullable[CodeScanProfileResponse] `json:"profile"`
+
+	// RepoFullName Host-qualified identity of the primary repository (e.g. github.com/org/repo). Null for Perforce depots, which have no git host.
+	RepoFullName nullable.Nullable[string] `json:"repo_full_name,omitempty"`
+
+	// RepoName Primary repository of the scan. Multi-repo scans cover additional repositories not listed here.
+	RepoName string `json:"repo_name"`
+
+	// ScanID Unique identifier for the scan.
+	ScanID string `json:"scan_id"`
+
+	// ScanType Type of scan, stamped at creation.
+	ScanType CodeScanResponseScanType `json:"scan_type"`
+
+	// Status Scan status: waiting, pending, running, awaiting_user_input, completed, failed, or cancelled.
+	Status CodeScanResponseStatus `json:"status"`
+
+	// URL URL of the scan's page in the Devin webapp.
+	URL string `json:"url"`
+}
+
+// CodeScanResponseEffort Scan effort: 'normal' uses lower model reasoning effort with larger investigation batches; 'deep' runs the full pipeline.
+type CodeScanResponseEffort string
+
+// CodeScanResponseScanType Type of scan, stamped at creation.
+type CodeScanResponseScanType string
+
+// CodeScanResponseStatus Scan status: waiting, pending, running, awaiting_user_input, completed, failed, or cancelled.
+type CodeScanResponseStatus string
+
+// ConsumptionByDateResponse defines model for ConsumptionByDateResponse.
+type ConsumptionByDateResponse struct {
+	Acus float32 `json:"acus"`
+
+	// AcusByProduct ACUs per product for one day; the buckets sum to the day's ``acus``.
+	//
+	// ``devin`` is ACUs from Devin sessions a person or service user started,
+	// including code-scan and on-call sessions. ``automation`` is ACUs spent by
+	// automations: sessions an automation started plus its code steps that run
+	// without a session. ``automation`` is ``null`` where the per-product
+	// breakdown is not available.
+	AcusByProduct AcusByProduct `json:"acus_by_product"`
+	Date          int           `json:"date"`
+}
+
+// ConsumptionCycle defines model for ConsumptionCycle.
+type ConsumptionCycle struct {
+	After  int `json:"after"`
+	Before int `json:"before"`
+}
+
+// ConsumptionResponse defines model for ConsumptionResponse.
+type ConsumptionResponse struct {
+	ConsumptionByDate []ConsumptionByDateResponse `json:"consumption_by_date"`
+	TotalAcus         float32                     `json:"total_acus"`
+}
+
 // CreateAPIKeyRequest defines model for CreateApiKeyRequest.
 type CreateAPIKeyRequest struct {
 	// ExpiresAt Optional expiration as a UNIX timestamp in seconds. Must be in the future if provided.
@@ -1861,8 +3938,14 @@ type CreateOrgBlueprintBody struct {
 	Source nullable.Nullable[CreateOrgBlueprintBodySource] `json:"source,omitempty"`
 }
 
-// CreateOrgBlueprintBodySource Repo-tier only. 'git' reads .devin/blueprint.yaml (and its includes) from the repo's default branch and keeps the blueprint in sync with it; 'database' stores the YAML in Devin. Defaults to 'database' when omitted.
+// CreateOrgBlueprintBodySource defines model for CreateOrgBlueprintBody.Source.
 type CreateOrgBlueprintBodySource string
+
+// CursorPaginationParams defines model for CursorPaginationParams.
+type CursorPaginationParams struct {
+	After nullable.Nullable[string] `json:"after,omitempty"`
+	First *int                      `json:"first,omitempty"`
+}
 
 // DefaultTagRequest defines model for DefaultTagRequest.
 type DefaultTagRequest struct {
@@ -1872,6 +3955,107 @@ type DefaultTagRequest struct {
 // DefaultTagResponse defines model for DefaultTagResponse.
 type DefaultTagResponse struct {
 	DefaultTag nullable.Nullable[string] `json:"default_tag"`
+}
+
+// DevinBrainUserSelf Identity information for an authenticated Devin brain session.
+type DevinBrainUserSelf struct {
+	CreatorServiceUserID nullable.Nullable[string]       `json:"creator_service_user_id,omitempty"`
+	DevinID              string                          `json:"devin_id"`
+	OrgID                string                          `json:"org_id"`
+	PrincipalType        DevinBrainUserSelfPrincipalType `json:"principal_type"`
+	UserID               string                          `json:"user_id"`
+}
+
+// DevinBrainUserSelfPrincipalType defines model for DevinBrainUserSelf.PrincipalType.
+type DevinBrainUserSelfPrincipalType string
+
+// EnterpriseSecurityProfileDefaultSelection A two-state default: none (no default profile) or profile (pin
+// profile_id). There is no “inherit“ at the enterprise level — nothing
+// sits above the enterprise to inherit from.
+type EnterpriseSecurityProfileDefaultSelection struct {
+	// ProfileID Required when selection is 'profile'; must be omitted otherwise.
+	ProfileID nullable.Nullable[string]                          `json:"profile_id,omitempty"`
+	Selection EnterpriseSecurityProfileDefaultSelectionSelection `json:"selection"`
+}
+
+// EnterpriseSecurityProfileDefaultSelectionSelection defines model for EnterpriseSecurityProfileDefaultSelection.Selection.
+type EnterpriseSecurityProfileDefaultSelectionSelection string
+
+// EnterpriseSecurityProfileDefaultState Read view of the enterprise default binding.
+type EnterpriseSecurityProfileDefaultState struct {
+	ProfileID nullable.Nullable[string]                      `json:"profile_id,omitempty"`
+	Selection EnterpriseSecurityProfileDefaultStateSelection `json:"selection"`
+}
+
+// EnterpriseSecurityProfileDefaultStateSelection defines model for EnterpriseSecurityProfileDefaultState.Selection.
+type EnterpriseSecurityProfileDefaultStateSelection string
+
+// EnterpriseSecurityProfileResponse An enterprise-owned security profile, shared with every org in the
+// enterprise. The owning enterprise is implied by the caller's token.
+type EnterpriseSecurityProfileResponse struct {
+	CreatedAt int `json:"created_at"`
+
+	// DevinMcpReadOnly When true, sessions may only call read-only Devin MCP tools (no session creation, automation management, or other write operations).
+	DevinMcpReadOnly bool `json:"devin_mcp_read_only"`
+
+	// EnforcementLevel recommended profiles can be overridden by descendant bindings; mandatory profiles are a floor that descendant policies only narrow.
+	EnforcementLevel EnterpriseSecurityProfileResponseEnforcementLevel `json:"enforcement_level"`
+	GitAccessLevel   EnterpriseSecurityProfileResponseGitAccessLevel   `json:"git_access_level"`
+
+	// McpConfig null = this profile has no MCP opinion.
+	McpConfig nullable.Nullable[SecurityProfileMcpConfig] `json:"mcp_config,omitempty"`
+	Name      string                                      `json:"name"`
+
+	// NetPolicy null = this profile has no network opinion (it does NOT mean deny-all).
+	NetPolicy nullable.Nullable[SecurityProfileNetPolicy] `json:"net_policy,omitempty"`
+
+	// ProfileID The security profile's ID.
+	ProfileID string `json:"profile_id"`
+
+	// RemoveGithubCliToken When true, the GitHub CLI token is removed from the session's machine, preventing direct GitHub API access.
+	RemoveGithubCliToken bool `json:"remove_github_cli_token"`
+
+	// SlackChannelAccess Ceiling on the Slack channels sessions governed by this profile may read and post in. null = this profile has no opinion and the organization's Slack setting applies.
+	SlackChannelAccess nullable.Nullable[SecurityProfileSlackChannelAccess] `json:"slack_channel_access,omitempty"`
+
+	// SlackDmScope Ceiling on who may DM Devin in Slack under this profile. null = this profile has no opinion and the organization's Slack setting applies. 'workspace' is narrowed to 'org_members' for enterprise accounts.
+	SlackDmScope nullable.Nullable[EnterpriseSecurityProfileResponseSlackDmScope] `json:"slack_dm_scope,omitempty"`
+
+	// TeamsChannelAccess Ceiling on the Microsoft Teams channels sessions governed by this profile may read and post in. null = this profile has no opinion and the organization's Teams Default Access applies.
+	TeamsChannelAccess nullable.Nullable[SecurityProfileTeamsChannelAccess] `json:"teams_channel_access,omitempty"`
+
+	// TeamsDmScope Ceiling on who Devin may DM in Microsoft Teams under this profile. null = this profile has no opinion and the organization's Teams Default Access applies.
+	TeamsDmScope nullable.Nullable[EnterpriseSecurityProfileResponseTeamsDmScope] `json:"teams_dm_scope,omitempty"`
+
+	// TeamsGroupChatScope Ceiling on which Teams group chats Devin may read under this profile; `origin_chat` = only the group chat the session was started from; null = no opinion, derived from the org's Teams Default Access like DMs.
+	TeamsGroupChatScope nullable.Nullable[EnterpriseSecurityProfileResponseTeamsGroupChatScope] `json:"teams_group_chat_scope,omitempty"`
+	UpdatedAt           int                                                                     `json:"updated_at"`
+}
+
+// EnterpriseSecurityProfileResponseEnforcementLevel recommended profiles can be overridden by descendant bindings; mandatory profiles are a floor that descendant policies only narrow.
+type EnterpriseSecurityProfileResponseEnforcementLevel string
+
+// EnterpriseSecurityProfileResponseGitAccessLevel defines model for EnterpriseSecurityProfileResponse.GitAccessLevel.
+type EnterpriseSecurityProfileResponseGitAccessLevel string
+
+// EnterpriseSecurityProfileResponseSlackDmScope defines model for EnterpriseSecurityProfileResponse.SlackDmScope.
+type EnterpriseSecurityProfileResponseSlackDmScope string
+
+// EnterpriseSecurityProfileResponseTeamsDmScope defines model for EnterpriseSecurityProfileResponse.TeamsDmScope.
+type EnterpriseSecurityProfileResponseTeamsDmScope string
+
+// EnterpriseSecurityProfileResponseTeamsGroupChatScope defines model for EnterpriseSecurityProfileResponse.TeamsGroupChatScope.
+type EnterpriseSecurityProfileResponseTeamsGroupChatScope string
+
+// EnterpriseSecurityProfileSettingsResponse defines model for EnterpriseSecurityProfileSettingsResponse.
+type EnterpriseSecurityProfileSettingsResponse struct {
+	// Default Read view of the enterprise default binding.
+	Default EnterpriseSecurityProfileDefaultState `json:"default"`
+}
+
+// EnterpriseSecurityProfileSettingsUpdateRequest PATCH semantics: omitted fields are left unchanged.
+type EnterpriseSecurityProfileSettingsUpdateRequest struct {
+	Default nullable.Nullable[EnterpriseSecurityProfileDefaultSelection] `json:"default,omitempty"`
 }
 
 // EnterpriseUser defines model for EnterpriseUser.
@@ -1983,6 +4167,31 @@ type GitPermissionUpdateRequest struct {
 	ReadOnly nullable.Nullable[bool] `json:"read_only,omitempty"`
 }
 
+// GuardrailViolationResponse defines model for GuardrailViolationResponse.
+type GuardrailViolationResponse struct {
+	ActionTaken     string                    `json:"action_taken"`
+	ConfidenceScore float32                   `json:"confidence_score"`
+	CreatedAt       int                       `json:"created_at"`
+	EventID         string                    `json:"event_id"`
+	GuardrailID     string                    `json:"guardrail_id"`
+	GuardrailName   string                    `json:"guardrail_name"`
+	OrgID           string                    `json:"org_id"`
+	Reasoning       string                    `json:"reasoning"`
+	SessionID       nullable.Nullable[string] `json:"session_id"`
+	UserMessage     string                    `json:"user_message"`
+	ViolationID     int                       `json:"violation_id"`
+}
+
+// HypervisorResponse defines model for HypervisorResponse.
+type HypervisorResponse struct {
+	CloudProviderInstanceID nullable.Nullable[string] `json:"cloud_provider_instance_id"`
+	CreatedAt               nullable.Nullable[int]    `json:"created_at"`
+	HypervisorID            string                    `json:"hypervisor_id"`
+	LastHeartbeat           nullable.Nullable[int]    `json:"last_heartbeat"`
+	Status                  string                    `json:"status"`
+	UtilizationPercentage   float32                   `json:"utilization_percentage"`
+}
+
 // IdpGroup defines model for IdpGroup.
 type IdpGroup struct {
 	IdpGroupName    string           `json:"idp_group_name"`
@@ -2078,6 +4287,12 @@ type KnowledgeNoteResponse struct {
 // KnowledgeNoteResponseAccessType defines model for KnowledgeNoteResponse.AccessType.
 type KnowledgeNoteResponseAccessType string
 
+// NewScanBudget defines model for NewScanBudget.
+type NewScanBudget struct {
+	// AcuLimit Per-cycle ACU limit of a new budget that pays for the scan, its child sessions and its remediations.
+	AcuLimit int `json:"acu_limit"`
+}
+
 // OncallEventSchemaResponse defines model for OncallEventSchemaResponse.
 type OncallEventSchemaResponse struct {
 	Category  string `json:"category"`
@@ -2150,7 +4365,7 @@ type OncallResponderCreateRequest_RunAs struct {
 // OncallResponderCreateRequestSlackReplyAccess Who may reply into existing triage sessions from Slack threads: devin_users, slack_users (the organization's connected Slack workspaces), or external_slack_users (also Slack Connect users). Slack responders only.
 type OncallResponderCreateRequestSlackReplyAccess string
 
-// OncallResponderCreateRequestTeamsReplyAccess Teams responders: who may reply into existing triage sessions from Teams threads: devin_users or teams_users. Omitted = teams_users.
+// OncallResponderCreateRequestTeamsReplyAccess defines model for OncallResponderCreateRequest.TeamsReplyAccess.
 type OncallResponderCreateRequestTeamsReplyAccess string
 
 // OncallResponderCreateRequestTriageIssueType What the responder triages, which sets its issue workflow and triage behavior: 'alerts' for monitoring alerts and pages; 'bugs' for bug reports and support questions.
@@ -2224,7 +4439,7 @@ type OncallResponderResponseSource string
 // OncallResponderResponseTeamsReplyAccess Teams responders: who may reply into existing triage sessions from Teams threads: devin_users (linked Devin accounts only) or teams_users (anyone in the organization's connected Microsoft tenant; the default).
 type OncallResponderResponseTeamsReplyAccess string
 
-// OncallResponderResponseTriageIssueType What the responder triages: alerts or bugs (see OncallResponderCreateRequest.triage_issue_type). Null for a legacy responder created without one.
+// OncallResponderResponseTriageIssueType defines model for OncallResponderResponse.TriageIssueType.
 type OncallResponderResponseTriageIssueType string
 
 // OncallResponderUpdateRequest Partial update (RFC 7396-style): omitted fields and omitted group
@@ -2261,15 +4476,15 @@ type OncallResponderUpdateRequest struct {
 	Triggers nullable.Nullable[[]OncallTriggerRequest] `json:"triggers,omitempty"`
 }
 
-// OncallResponderUpdateRequest_RunAs Omitted -> preserve the responder's existing run_as; null resets to organization.
+// OncallResponderUpdateRequest_RunAs Identity triage sessions run under: organization, creator, or a service user (requires permission to manage that service user).
 type OncallResponderUpdateRequest_RunAs struct {
 	union json.RawMessage
 }
 
-// OncallResponderUpdateRequestSlackReplyAccess Omitted -> preserve the responder's existing setting; null resets to slack_users.
+// OncallResponderUpdateRequestSlackReplyAccess defines model for OncallResponderUpdateRequest.SlackReplyAccess.
 type OncallResponderUpdateRequestSlackReplyAccess string
 
-// OncallResponderUpdateRequestTeamsReplyAccess Teams responders. Omitted -> preserve; null resets to teams_users.
+// OncallResponderUpdateRequestTeamsReplyAccess defines model for OncallResponderUpdateRequest.TeamsReplyAccess.
 type OncallResponderUpdateRequestTeamsReplyAccess string
 
 // OncallSchemasResponse defines model for OncallSchemasResponse.
@@ -2311,7 +4526,7 @@ type OncallSchemasResponse struct {
 	TeamsConnected *bool `json:"teams_connected,omitempty"`
 
 	// UpdateSemantics PATCH semantics: omitted fields / group members keep their stored values, explicit nulls clear, lists replace wholesale.
-	UpdateSemantics *OncallSchemasResponseUpdateSemantics `json:"update_semantics,omitempty"`
+	UpdateSemantics OncallSchemasResponseUpdateSemantics `json:"update_semantics"`
 
 	// WebhookRespondersEnabled Whether webhook responders (one webhook:incoming trigger) are available to this organization.
 	WebhookRespondersEnabled *bool `json:"webhook_responders_enabled,omitempty"`
@@ -2320,7 +4535,7 @@ type OncallSchemasResponse struct {
 // OncallSchemasResponseAvailableDevinModes defines model for OncallSchemasResponse.AvailableDevinModes.
 type OncallSchemasResponseAvailableDevinModes string
 
-// OncallSchemasResponseDefaultDevinMode Mode applied to new responders / incidents when session_settings.devin_mode is omitted: the best of ultra > fusion > normal the organization can use, or null when none of those is available and sessions inherit the organization default.
+// OncallSchemasResponseDefaultDevinMode defines model for OncallSchemasResponse.DefaultDevinMode.
 type OncallSchemasResponseDefaultDevinMode string
 
 // OncallSchemasResponseUpdateSemantics PATCH semantics: omitted fields / group members keep their stored values, explicit nulls clear, lists replace wholesale.
@@ -2342,7 +4557,7 @@ type OncallSessionSettingsInput struct {
 	NetPolicy nullable.Nullable[AutomationNetPolicy] `json:"net_policy,omitempty"`
 }
 
-// OncallSessionSettingsInputDevinMode Mode for spawned sessions: normal, fusion, fast, ultra, or lite. Omitted on create = the best mode the run identity can spawn (Ultra, else Fusion, else Normal); explicit null = org default.
+// OncallSessionSettingsInputDevinMode defines model for OncallSessionSettingsInput.DevinMode.
 type OncallSessionSettingsInputDevinMode string
 
 // OncallSessionSettingsOutput Per-session settings for the sessions a responder / incident spawns.
@@ -2354,7 +4569,7 @@ type OncallSessionSettingsOutput struct {
 	NetPolicy nullable.Nullable[AutomationNetPolicy] `json:"net_policy,omitempty"`
 }
 
-// OncallSessionSettingsOutputDevinMode Mode for spawned sessions: normal, fusion, fast, ultra, or lite. Omitted on create = the best mode the run identity can spawn (Ultra, else Fusion, else Normal); explicit null = org default.
+// OncallSessionSettingsOutputDevinMode defines model for OncallSessionSettingsOutput.DevinMode.
 type OncallSessionSettingsOutputDevinMode string
 
 // OncallSessionSettingsPatch defines model for OncallSessionSettingsPatch.
@@ -2390,10 +4605,10 @@ type OncallTools struct {
 	TeamsDmScope nullable.Nullable[OncallToolsTeamsDmScope] `json:"teams_dm_scope,omitempty"`
 }
 
-// OncallToolsSlackDmScope Allow spawned sessions to open 1:1 Slack DMs in the organization's connected workspaces: 'org_members' (enterprise accounts) or 'workspace' (non-enterprise accounts). Omit or null to disable DMs. Responders only.
+// OncallToolsSlackDmScope defines model for OncallTools.SlackDmScope.
 type OncallToolsSlackDmScope string
 
-// OncallToolsTeamsDmScope Allow spawned sessions to open 1:1 Microsoft Teams DMs with users who installed the Devin app personally. Omit or null to disable DMs. Responders only.
+// OncallToolsTeamsDmScope defines model for OncallTools.TeamsDmScope.
 type OncallToolsTeamsDmScope string
 
 // OncallToolsPatch Merge-patch view of “tools“: only members present in the request
@@ -2441,6 +4656,81 @@ type OncallTriggerResponse struct {
 
 	// TriggerID Re-minted when triggers is replaced — not stable across edits.
 	TriggerID string `json:"trigger_id"`
+}
+
+// OrgCodeScanCreateRequest Request body for starting a new code scan.
+type OrgCodeScanCreateRequest struct {
+	// BoardID A finding board made ahead of the scan for it to adopt instead of getting a fresh one, so automations could be wired to it before the scan existed.
+	BoardID nullable.Nullable[string] `json:"board_id,omitempty"`
+
+	// CommitSha Commit to check out before scanning.
+	CommitSha nullable.Nullable[string] `json:"commit_sha,omitempty"`
+
+	// DevinMode Agent the scan's sessions run on: 'fusion' or 'swe-2' (SWE-2 Max for 'deep' effort, SWE-2 High for 'normal'). Applies only when the mode is enabled for the organization; otherwise, and when omitted, the scan runs on the default agent.
+	DevinMode nullable.Nullable[OrgCodeScanCreateRequestDevinMode] `json:"devin_mode,omitempty"`
+
+	// Effort Scan effort: 'normal' (default) uses lower model reasoning effort with larger investigation batches; 'deep' runs the full pipeline.
+	Effort nullable.Nullable[OrgCodeScanCreateRequestEffort] `json:"effort,omitempty"`
+
+	// Host Git host of the repository, if known.
+	Host nullable.Nullable[string] `json:"host,omitempty"`
+
+	// Interactive When true, the scan pauses for user review between threat modeling and investigation.
+	Interactive *bool `json:"interactive,omitempty"`
+
+	// Locale BCP-47 language tag (e.g. 'ja') for the scan's user-facing output: finding titles, descriptions, and reports. Omitted means English.
+	Locale nullable.Nullable[string] `json:"locale,omitempty"`
+
+	// NewBudget Give the scan its own ACU budget. Requires the ManageAccountServiceUsers and ManageAcuLimits permissions.
+	NewBudget nullable.Nullable[NewScanBudget] `json:"new_budget,omitempty"`
+
+	// Platform Where the scan's sessions run: a platform label configured for the organization (e.g. 'linux', 'windows', 'macos') or the name of an outpost (BYOB) pool, case-insensitive; platforms take priority when a name matches both. Omitted means the organization default. Unrecognized values are rejected with a 400 whose error body lists the available platform labels and outpost pool names.
+	Platform nullable.Nullable[string] `json:"platform,omitempty"`
+
+	// ProfileID Scan profile to apply to the scan.
+	ProfileID nullable.Nullable[string] `json:"profile_id,omitempty"`
+
+	// RepoName Full name of the repository to scan. Provide exactly one of repo_name or repos.
+	RepoName nullable.Nullable[string] `json:"repo_name,omitempty"`
+
+	// Repos Repositories covered by one scan; the first entry is the scan's primary repository. Provide exactly one of repo_name or repos.
+	Repos nullable.Nullable[[]ScanRepoRequest] `json:"repos,omitempty"`
+
+	// ScanType Type of scan to run. Must match the profile's scan type when a profile is given; defaults to the profile's type, or 'security' for profile-less scans. Non-security types require a profile and are rejected without one.
+	ScanType nullable.Nullable[OrgCodeScanCreateRequestScanType] `json:"scan_type,omitempty"`
+}
+
+// OrgCodeScanCreateRequestDevinMode defines model for OrgCodeScanCreateRequest.DevinMode.
+type OrgCodeScanCreateRequestDevinMode string
+
+// OrgCodeScanCreateRequestEffort defines model for OrgCodeScanCreateRequest.Effort.
+type OrgCodeScanCreateRequestEffort string
+
+// OrgCodeScanCreateRequestScanType defines model for OrgCodeScanCreateRequest.ScanType.
+type OrgCodeScanCreateRequestScanType string
+
+// OrgDefaultPlatformResponse The organization's default placement for new sessions.
+type OrgDefaultPlatformResponse struct {
+	// OutpostPoolID Outpost pool new sessions run on by default. Null when the default is a hosted platform or unset.
+	OutpostPoolID nullable.Nullable[string] `json:"outpost_pool_id"`
+
+	// OutpostPoolName Name of the default outpost pool. Null when the default is not an outpost pool, or the pool is no longer available to the organization.
+	OutpostPoolName nullable.Nullable[string] `json:"outpost_pool_name"`
+
+	// Platform Hosted platform label (e.g. 'linux', 'windows') new sessions run on by default. Null when the default is an outpost pool or unset.
+	Platform nullable.Nullable[string] `json:"platform"`
+}
+
+// OrgDefaultPlatformUpdateRequest Set the organization's default placement for new sessions.
+//
+// Send at most one of “platform“ and “outpost_pool_id“; send both as
+// null (for example “{}“) to clear the default.
+type OrgDefaultPlatformUpdateRequest struct {
+	// OutpostPoolID ID of a shared outpost pool available to the organization.
+	OutpostPoolID nullable.Nullable[string] `json:"outpost_pool_id,omitempty"`
+
+	// Platform A hosted platform label configured for the organization (e.g. 'linux', 'windows', 'macos') or the name of a shared outpost pool, case-insensitive; platforms take priority when a name matches both. Unrecognized values are rejected with a 400 that lists the available platforms and outpost pools.
+	Platform nullable.Nullable[string] `json:"platform,omitempty"`
 }
 
 // OrgGroupConfig defines model for OrgGroupConfig.
@@ -2506,6 +4796,19 @@ type PaginatedResponseAPIKeyResponse struct {
 	Total nullable.Nullable[int] `json:"total,omitempty"`
 }
 
+// PaginatedResponseAuditLogResponse defines model for PaginatedResponse_AuditLogResponse_.
+type PaginatedResponseAuditLogResponse struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool              `json:"has_next_page,omitempty"`
+	Items       []AuditLogResponse `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
 // PaginatedResponseAutomationResponse defines model for PaginatedResponse_AutomationResponse_.
 type PaginatedResponseAutomationResponse struct {
 	// EndCursor Cursor to fetch the next page, or None if this is the last page.
@@ -2527,6 +4830,71 @@ type PaginatedResponseBuild struct {
 	// HasNextPage Whether there are more items available after this page.
 	HasNextPage *bool   `json:"has_next_page,omitempty"`
 	Items       []Build `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
+// PaginatedResponseCodeScanFindingResponse defines model for PaginatedResponse_CodeScanFindingResponse_.
+type PaginatedResponseCodeScanFindingResponse struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool                     `json:"has_next_page,omitempty"`
+	Items       []CodeScanFindingResponse `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
+// PaginatedResponseCodeScanProfileSummaryResponse defines model for PaginatedResponse_CodeScanProfileSummaryResponse_.
+type PaginatedResponseCodeScanProfileSummaryResponse struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool                            `json:"has_next_page,omitempty"`
+	Items       []CodeScanProfileSummaryResponse `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
+// PaginatedResponseCodeScanResponse defines model for PaginatedResponse_CodeScanResponse_.
+type PaginatedResponseCodeScanResponse struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool              `json:"has_next_page,omitempty"`
+	Items       []CodeScanResponse `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
+// PaginatedResponseConsumptionCycle defines model for PaginatedResponse_ConsumptionCycle_.
+type PaginatedResponseConsumptionCycle struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool              `json:"has_next_page,omitempty"`
+	Items       []ConsumptionCycle `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
+// PaginatedResponseEnterpriseSecurityProfileResponse defines model for PaginatedResponse_EnterpriseSecurityProfileResponse_.
+type PaginatedResponseEnterpriseSecurityProfileResponse struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool                               `json:"has_next_page,omitempty"`
+	Items       []EnterpriseSecurityProfileResponse `json:"items"`
 
 	// Total Optional total count (can be omitted for performance).
 	Total nullable.Nullable[int] `json:"total,omitempty"`
@@ -2579,6 +4947,32 @@ type PaginatedResponseGitPermissionResponse struct {
 	// HasNextPage Whether there are more items available after this page.
 	HasNextPage *bool                   `json:"has_next_page,omitempty"`
 	Items       []GitPermissionResponse `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
+// PaginatedResponseGuardrailViolationResponse defines model for PaginatedResponse_GuardrailViolationResponse_.
+type PaginatedResponseGuardrailViolationResponse struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool                        `json:"has_next_page,omitempty"`
+	Items       []GuardrailViolationResponse `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
+// PaginatedResponseHypervisorResponse defines model for PaginatedResponse_HypervisorResponse_.
+type PaginatedResponseHypervisorResponse struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool                `json:"has_next_page,omitempty"`
+	Items       []HypervisorResponse `json:"items"`
 
 	// Total Optional total count (can be omitted for performance).
 	Total nullable.Nullable[int] `json:"total,omitempty"`
@@ -2740,6 +5134,19 @@ type PaginatedResponseSecretResponse struct {
 	Total nullable.Nullable[int] `json:"total,omitempty"`
 }
 
+// PaginatedResponseSecurityProfileResponse defines model for PaginatedResponse_SecurityProfileResponse_.
+type PaginatedResponseSecurityProfileResponse struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool                     `json:"has_next_page,omitempty"`
+	Items       []SecurityProfileResponse `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
 // PaginatedResponseServiceUser defines model for PaginatedResponse_ServiceUser_.
 type PaginatedResponseServiceUser struct {
 	// EndCursor Cursor to fetch the next page, or None if this is the last page.
@@ -2748,6 +5155,58 @@ type PaginatedResponseServiceUser struct {
 	// HasNextPage Whether there are more items available after this page.
 	HasNextPage *bool         `json:"has_next_page,omitempty"`
 	Items       []ServiceUser `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
+// PaginatedResponseSessionConsumptionResponse defines model for PaginatedResponse_SessionConsumptionResponse_.
+type PaginatedResponseSessionConsumptionResponse struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool                        `json:"has_next_page,omitempty"`
+	Items       []SessionConsumptionResponse `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
+// PaginatedResponseSessionInsightsResponse defines model for PaginatedResponse_SessionInsightsResponse_.
+type PaginatedResponseSessionInsightsResponse struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool                     `json:"has_next_page,omitempty"`
+	Items       []SessionInsightsResponse `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
+// PaginatedResponseSessionMessage defines model for PaginatedResponse_SessionMessage_.
+type PaginatedResponseSessionMessage struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool            `json:"has_next_page,omitempty"`
+	Items       []SessionMessage `json:"items"`
+
+	// Total Optional total count (can be omitted for performance).
+	Total nullable.Nullable[int] `json:"total,omitempty"`
+}
+
+// PaginatedResponseSessionResponse defines model for PaginatedResponse_SessionResponse_.
+type PaginatedResponseSessionResponse struct {
+	// EndCursor Cursor to fetch the next page, or None if this is the last page.
+	EndCursor nullable.Nullable[string] `json:"end_cursor,omitempty"`
+
+	// HasNextPage Whether there are more items available after this page.
+	HasNextPage *bool             `json:"has_next_page,omitempty"`
+	Items       []SessionResponse `json:"items"`
 
 	// Total Optional total count (can be omitted for performance).
 	Total nullable.Nullable[int] `json:"total,omitempty"`
@@ -2765,6 +5224,25 @@ type PaginatedResponseUser struct {
 	// Total Optional total count (can be omitted for performance).
 	Total nullable.Nullable[int] `json:"total,omitempty"`
 }
+
+// PatUserSelf Identity information for an authenticated PAT user.
+type PatUserSelf struct {
+	APIKeyID   string `json:"api_key_id"`
+	APIKeyName string `json:"api_key_name"`
+
+	// DevinSessionsOrgID Organization the caller's Devin Cloud sessions run in: the one named with x-cog-org-id, or without it the first organization visible to the user. Either way only an organization in which the user may use Devin sessions, and never an enterprise's primary organization. Null when there is none.
+	DevinSessionsOrgID nullable.Nullable[string] `json:"devin_sessions_org_id,omitempty"`
+	OrgID              nullable.Nullable[string] `json:"org_id,omitempty"`
+
+	// PrimaryBillingOrgID Organization the user's CLI and Desktop usage is billed to: the account's organization, or in an enterprise the user's primary billing organization. Null when there is none or the user may not use Devin sessions in it.
+	PrimaryBillingOrgID nullable.Nullable[string] `json:"primary_billing_org_id,omitempty"`
+	PrincipalType       PatUserSelfPrincipalType  `json:"principal_type"`
+	UserID              string                    `json:"user_id"`
+	UserName            string                    `json:"user_name"`
+}
+
+// PatUserSelfPrincipalType defines model for PatUserSelf.PrincipalType.
+type PatUserSelfPrincipalType string
 
 // PinBuildBody “POST /builds/{id}/pin“ body. Empty per spec.
 type PinBuildBody = map[string]interface{}
@@ -2805,6 +5283,60 @@ type PlaybookResponse struct {
 // PlaybookResponseAccessType defines model for PlaybookResponse.AccessType.
 type PlaybookResponseAccessType string
 
+// PrMetricsResponse Response model for PR metrics.
+type PrMetricsResponse struct {
+	// PrsClosedCount PRs Devin authored that were closed without merging.
+	PrsClosedCount int `json:"prs_closed_count"`
+
+	// PrsCreatedCount Total PRs Devin authored across all states (open + merged + closed).
+	PrsCreatedCount int `json:"prs_created_count"`
+
+	// PrsMergedCount PRs Devin authored that were merged.
+	PrsMergedCount int `json:"prs_merged_count"`
+
+	// PrsOpenedCount PRs Devin authored that are currently open.
+	PrsOpenedCount int `json:"prs_opened_count"`
+
+	// PrsTakenOverClosedCount PRs Devin took over that were closed without merging.
+	PrsTakenOverClosedCount *int `json:"prs_taken_over_closed_count,omitempty"`
+
+	// PrsTakenOverCount Total PRs Devin took over across all states (open + merged + closed). A take-over is when Devin pushed commits to a PR it did not originally create.
+	PrsTakenOverCount *int `json:"prs_taken_over_count,omitempty"`
+
+	// PrsTakenOverMergedCount PRs Devin took over that were merged.
+	PrsTakenOverMergedCount *int `json:"prs_taken_over_merged_count,omitempty"`
+
+	// PrsTakenOverOpenedCount PRs Devin took over that are currently open.
+	PrsTakenOverOpenedCount *int `json:"prs_taken_over_opened_count,omitempty"`
+}
+
+// PrReviewCreateRequest defines model for PrReviewCreateRequest.
+type PrReviewCreateRequest struct {
+	// PrURL Full URL of the pull/merge request to review (e.g. `https://github.com/owner/repo/pull/123`).
+	PrURL string `json:"pr_url"`
+}
+
+// PrReviewResponse defines model for PrReviewResponse.
+type PrReviewResponse struct {
+	// CommitSha Commit SHA of the PR head that will be reviewed.
+	CommitSha string `json:"commit_sha"`
+
+	// CreatedAt When the review was accepted.
+	CreatedAt time.Time `json:"created_at"`
+
+	// PrNumber Pull/merge request number.
+	PrNumber int `json:"pr_number"`
+
+	// RepoPath Normalized host-prefixed repo path (e.g. `github.com/owner/repo`).
+	RepoPath string `json:"repo_path"`
+
+	// Status Current review status. Newly accepted reviews start as `pending`.
+	Status PrReviewResponseStatus `json:"status"`
+}
+
+// PrReviewResponseStatus Current review status. Newly accepted reviews start as `pending`.
+type PrReviewResponseStatus string
+
 // PresignedDownload Reusable presigned-URL response (10-minute TTL).
 type PresignedDownload struct {
 	// ExpiresAt Unix timestamp at which the URL expires.
@@ -2841,6 +5373,77 @@ type ProblemDetail struct {
 	// Type A URI reference identifying the problem type.
 	Type *string `json:"type,omitempty"`
 }
+
+// QueueResponse Response model for queue endpoint.
+type QueueResponse struct {
+	QueueSize int                 `json:"queue_size"`
+	Status    QueueResponseStatus `json:"status"`
+}
+
+// QueueResponseStatus defines model for QueueResponse.Status.
+type QueueResponseStatus string
+
+// RecoverCodeScanResponse A failed code scan whose session was told to continue.
+type RecoverCodeScanResponse struct {
+	// ScanID The recovered scan.
+	ScanID string `json:"scan_id"`
+
+	// SessionID The scan's session, which was sent a message to continue.
+	SessionID string `json:"session_id"`
+
+	// Status Scan status after the request: ``running`` once recovered, or the status the scan's session reported in the meantime.
+	Status string `json:"status"`
+}
+
+// RemediateFindingResponse The remediation session launched for a code scan finding.
+type RemediateFindingResponse struct {
+	// FindingID The finding that is being remediated.
+	FindingID string `json:"finding_id"`
+
+	// SessionID ID of the Devin session launched to remediate the finding.
+	SessionID string `json:"session_id"`
+}
+
+// RemediateFindingsRequest Findings of one scan to hand to a single Devin session.
+//
+// Provide exactly one of “finding_ids“ or “select_all“.
+type RemediateFindingsRequest struct {
+	// Branch Base branch for remediation pull requests; defaults to the repository default branch.
+	Branch nullable.Nullable[string] `json:"branch,omitempty"`
+
+	// ExcludeFindingIds With `select_all`: findings to leave out of the selection.
+	ExcludeFindingIds *[]string `json:"exclude_finding_ids,omitempty"`
+
+	// FindingIds Findings to remediate together; all must belong to the scan and be open, and may span repositories.
+	FindingIds nullable.Nullable[[]string] `json:"finding_ids,omitempty"`
+
+	// SelectAll Remediate every open finding of the scan matching these filters that does not already have a remediation session, minus `exclude_finding_ids`. Findings the filters match but which are closed or already being remediated are skipped and counted in `skipped_count`. Fails with 400 when more than 1000 findings match.
+	SelectAll nullable.Nullable[RemediateFindingsSelection] `json:"select_all,omitempty"`
+}
+
+// RemediateFindingsResponse The Devin session launched for a batch of code scan findings.
+type RemediateFindingsResponse struct {
+	// FindingIds The findings being remediated: in request order for `finding_ids`, by severity (critical first) for `select_all`.
+	FindingIds []string `json:"finding_ids"`
+
+	// SessionID ID of the Devin session launched for the findings. A batch of two or more findings gets a planner session that groups them and launches a fix session (one branch, one pull request) per group; each finding's `session_id` and `pr_url` then point at its fix session. A single finding gets a fix session directly.
+	SessionID string `json:"session_id"`
+
+	// SkippedCount Findings matched by `select_all` but left out because they are closed or already have a remediation session. Always 0 for `finding_ids`.
+	SkippedCount *int `json:"skipped_count,omitempty"`
+}
+
+// RemediateFindingsSelection Filters selecting every remediable finding of a scan.
+type RemediateFindingsSelection struct {
+	// RepoName Only findings reported in this repository.
+	RepoName nullable.Nullable[string] `json:"repo_name,omitempty"`
+
+	// Severity Only findings with any of these severities (critical, high, medium, low).
+	Severity nullable.Nullable[[]RemediateFindingsSelectionSeverity] `json:"severity,omitempty"`
+}
+
+// RemediateFindingsSelectionSeverity defines model for RemediateFindingsSelection.Severity.
+type RemediateFindingsSelectionSeverity string
 
 // RemoveRepositoriesRequest defines model for RemoveRepositoriesRequest.
 type RemoveRepositoriesRequest struct {
@@ -2934,6 +5537,24 @@ type RotateAPIKeyRequest struct {
 
 	// RevokeCurrent Whether to revoke the current key. Set to False for graceful rollover.
 	RevokeCurrent *bool `json:"revoke_current,omitempty"`
+}
+
+// ScanNewCommitsResponse An incremental (diff) scan run recorded for a code scan.
+type ScanNewCommitsResponse struct {
+	// ScanID The scan the incremental run belongs to.
+	ScanID string `json:"scan_id"`
+
+	// Status Scan status after the request: ``waiting`` once the run is enqueued, or ``completed`` when no new commits landed since the last scan and the run was recorded without starting a session.
+	Status string `json:"status"`
+}
+
+// ScanRepoRequest A repository to include in a multi-repo scan.
+type ScanRepoRequest struct {
+	// Host Git host of the repository, if known.
+	Host nullable.Nullable[string] `json:"host,omitempty"`
+
+	// RepoName Full name of the repository to scan.
+	RepoName string `json:"repo_name"`
 }
 
 // ScheduleCreateRequest defines model for ScheduleCreateRequest.
@@ -3049,6 +5670,11 @@ type ScheduleUpdateRequestNotifyOn string
 // ScheduleUpdateRequestScheduleType defines model for ScheduleUpdateRequest.ScheduleType.
 type ScheduleUpdateRequestScheduleType string
 
+// SearchMetricsResponse Response model for search metrics.
+type SearchMetricsResponse struct {
+	SearchesCreatedCount int `json:"searches_created_count"`
+}
+
 // SecretCreateRequest defines model for SecretCreateRequest.
 type SecretCreateRequest struct {
 	IsSensitive *bool                     `json:"is_sensitive,omitempty"`
@@ -3081,6 +5707,259 @@ type SecretResponseAccessType string
 // SecretResponseSecretType defines model for SecretResponse.SecretType.
 type SecretResponseSecretType string
 
+// SecurityProfileCreateRequest defines model for SecurityProfileCreateRequest.
+type SecurityProfileCreateRequest struct {
+	DevinMcpReadOnly *bool                                         `json:"devin_mcp_read_only,omitempty"`
+	EnforcementLevel *SecurityProfileCreateRequestEnforcementLevel `json:"enforcement_level,omitempty"`
+	GitAccessLevel   *SecurityProfileCreateRequestGitAccessLevel   `json:"git_access_level,omitempty"`
+	McpConfig        nullable.Nullable[SecurityProfileMcpConfig]   `json:"mcp_config,omitempty"`
+	Name             string                                        `json:"name"`
+
+	// NetPolicy Omitted = an allow list containing only the git integration host (the same default the Security Profiles UI starts from); explicit null = this profile has no network opinion (it does NOT mean deny-all). Because the default allow list does not include api.github.com, a request with remove_github_cli_token=false must supply net_policy explicitly (or null).
+	NetPolicy            nullable.Nullable[SecurityProfileNetPolicy] `json:"net_policy,omitempty"`
+	RemoveGithubCliToken *bool                                       `json:"remove_github_cli_token,omitempty"`
+
+	// SlackChannelAccess Omitted or null = this profile has no Slack channel opinion (the organization's Slack setting applies).
+	SlackChannelAccess nullable.Nullable[SecurityProfileSlackChannelAccess] `json:"slack_channel_access,omitempty"`
+
+	// SlackDmScope Omitted or null = this profile has no Slack DM opinion (the organization's Slack setting applies).
+	SlackDmScope nullable.Nullable[SecurityProfileCreateRequestSlackDmScope] `json:"slack_dm_scope,omitempty"`
+
+	// TeamsChannelAccess Omitted or null = this profile has no Teams channel opinion (the organization's Teams Default Access applies).
+	TeamsChannelAccess nullable.Nullable[SecurityProfileTeamsChannelAccess] `json:"teams_channel_access,omitempty"`
+
+	// TeamsDmScope Omitted or null = this profile has no Teams DM opinion (the organization's Teams Default Access applies).
+	TeamsDmScope nullable.Nullable[SecurityProfileCreateRequestTeamsDmScope] `json:"teams_dm_scope,omitempty"`
+
+	// TeamsGroupChatScope Omitted or null = this profile has no Teams group-chat opinion (derived from the organization's Teams Default Access like DMs).
+	TeamsGroupChatScope nullable.Nullable[SecurityProfileCreateRequestTeamsGroupChatScope] `json:"teams_group_chat_scope,omitempty"`
+}
+
+// SecurityProfileCreateRequestEnforcementLevel defines model for SecurityProfileCreateRequest.EnforcementLevel.
+type SecurityProfileCreateRequestEnforcementLevel string
+
+// SecurityProfileCreateRequestGitAccessLevel defines model for SecurityProfileCreateRequest.GitAccessLevel.
+type SecurityProfileCreateRequestGitAccessLevel string
+
+// SecurityProfileCreateRequestSlackDmScope defines model for SecurityProfileCreateRequest.SlackDmScope.
+type SecurityProfileCreateRequestSlackDmScope string
+
+// SecurityProfileCreateRequestTeamsDmScope defines model for SecurityProfileCreateRequest.TeamsDmScope.
+type SecurityProfileCreateRequestTeamsDmScope string
+
+// SecurityProfileCreateRequestTeamsGroupChatScope defines model for SecurityProfileCreateRequest.TeamsGroupChatScope.
+type SecurityProfileCreateRequestTeamsGroupChatScope string
+
+// SecurityProfileDefaultSelection A tri-state default: inherit (no binding of its own — fall through to
+// the ancestor's default), none (explicit opt-out: no profile, even when an
+// ancestor has a recommended default), or profile (pin profile_id).
+//
+// An opt-out cannot escape a mandatory ancestor profile: it is stored
+// faithfully but has no effect while the mandatory profile exists.
+type SecurityProfileDefaultSelection struct {
+	// ProfileID Required when selection is 'profile'; must be omitted otherwise.
+	ProfileID nullable.Nullable[string]                `json:"profile_id,omitempty"`
+	Selection SecurityProfileDefaultSelectionSelection `json:"selection"`
+}
+
+// SecurityProfileDefaultSelectionSelection defines model for SecurityProfileDefaultSelection.Selection.
+type SecurityProfileDefaultSelectionSelection string
+
+// SecurityProfileDefaultState Read view of one stored default binding.
+type SecurityProfileDefaultState struct {
+	ProfileID nullable.Nullable[string] `json:"profile_id,omitempty"`
+
+	// ProfileScope Owning scope of the pinned profile. Set only when selection is 'profile'; an org default may pin an enterprise-shared profile.
+	ProfileScope nullable.Nullable[SecurityProfileDefaultStateProfileScope] `json:"profile_scope,omitempty"`
+	Selection    SecurityProfileDefaultStateSelection                       `json:"selection"`
+}
+
+// SecurityProfileDefaultStateProfileScope defines model for SecurityProfileDefaultState.ProfileScope.
+type SecurityProfileDefaultStateProfileScope string
+
+// SecurityProfileDefaultStateSelection defines model for SecurityProfileDefaultState.Selection.
+type SecurityProfileDefaultStateSelection string
+
+// SecurityProfileHostnameDestination defines model for SecurityProfileHostnameDestination.
+type SecurityProfileHostnameDestination struct {
+	Hostname string `json:"hostname"`
+}
+
+// SecurityProfileIpv4Destination defines model for SecurityProfileIpv4Destination.
+type SecurityProfileIpv4Destination struct {
+	Ipv4 string `json:"ipv4"`
+}
+
+// SecurityProfileIpv6Destination defines model for SecurityProfileIpv6Destination.
+type SecurityProfileIpv6Destination struct {
+	Ipv6 string `json:"ipv6"`
+}
+
+// SecurityProfileMcpConfig defines model for SecurityProfileMcpConfig.
+type SecurityProfileMcpConfig struct {
+	// Servers MCP servers sessions governed by this profile may use, keyed by slug: a marketplace slug (the slug field of the mcp-servers resource, e.g. 'github', 'notion') or an installation's slug. When a custom installation shares a slug with a marketplace server, the custom installation wins.
+	Servers []string `json:"servers"`
+}
+
+// SecurityProfileNetPolicy defines model for SecurityProfileNetPolicy.
+type SecurityProfileNetPolicy struct {
+	// Allow Allowed destinations; anything not listed is blocked. Hostname entries support wildcards (e.g. *.github.com). An empty list is a valid deny-all policy.
+	Allow []SecurityProfileNetPolicy_Allow_Item `json:"allow"`
+}
+
+// SecurityProfileNetPolicy_Allow_Item defines model for SecurityProfileNetPolicy.allow.Item.
+type SecurityProfileNetPolicy_Allow_Item struct {
+	union json.RawMessage
+}
+
+// SecurityProfileResponse An organization-owned security profile.
+type SecurityProfileResponse struct {
+	CreatedAt int `json:"created_at"`
+
+	// DevinMcpReadOnly When true, sessions may only call read-only Devin MCP tools (no session creation, automation management, or other write operations).
+	DevinMcpReadOnly bool `json:"devin_mcp_read_only"`
+
+	// EnforcementLevel recommended profiles can be overridden by descendant bindings; mandatory profiles are a floor that descendant policies only narrow.
+	EnforcementLevel SecurityProfileResponseEnforcementLevel `json:"enforcement_level"`
+	GitAccessLevel   SecurityProfileResponseGitAccessLevel   `json:"git_access_level"`
+
+	// McpConfig null = this profile has no MCP opinion.
+	McpConfig nullable.Nullable[SecurityProfileMcpConfig] `json:"mcp_config,omitempty"`
+	Name      string                                      `json:"name"`
+
+	// NetPolicy null = this profile has no network opinion (it does NOT mean deny-all).
+	NetPolicy nullable.Nullable[SecurityProfileNetPolicy] `json:"net_policy,omitempty"`
+	OrgID     string                                      `json:"org_id"`
+
+	// ProfileID The security profile's ID.
+	ProfileID string `json:"profile_id"`
+
+	// RemoveGithubCliToken When true, the GitHub CLI token is removed from the session's machine, preventing direct GitHub API access.
+	RemoveGithubCliToken bool `json:"remove_github_cli_token"`
+
+	// SlackChannelAccess Ceiling on the Slack channels sessions governed by this profile may read and post in. null = this profile has no opinion and the organization's Slack setting applies.
+	SlackChannelAccess nullable.Nullable[SecurityProfileSlackChannelAccess] `json:"slack_channel_access,omitempty"`
+
+	// SlackDmScope Ceiling on who may DM Devin in Slack under this profile. null = this profile has no opinion and the organization's Slack setting applies. 'workspace' is narrowed to 'org_members' for enterprise accounts.
+	SlackDmScope nullable.Nullable[SecurityProfileResponseSlackDmScope] `json:"slack_dm_scope,omitempty"`
+
+	// TeamsChannelAccess Ceiling on the Microsoft Teams channels sessions governed by this profile may read and post in. null = this profile has no opinion and the organization's Teams Default Access applies.
+	TeamsChannelAccess nullable.Nullable[SecurityProfileTeamsChannelAccess] `json:"teams_channel_access,omitempty"`
+
+	// TeamsDmScope Ceiling on who Devin may DM in Microsoft Teams under this profile. null = this profile has no opinion and the organization's Teams Default Access applies.
+	TeamsDmScope nullable.Nullable[SecurityProfileResponseTeamsDmScope] `json:"teams_dm_scope,omitempty"`
+
+	// TeamsGroupChatScope Ceiling on which Teams group chats Devin may read under this profile; `origin_chat` = only the group chat the session was started from; null = no opinion, derived from the org's Teams Default Access like DMs.
+	TeamsGroupChatScope nullable.Nullable[SecurityProfileResponseTeamsGroupChatScope] `json:"teams_group_chat_scope,omitempty"`
+	UpdatedAt           int                                                           `json:"updated_at"`
+}
+
+// SecurityProfileResponseEnforcementLevel recommended profiles can be overridden by descendant bindings; mandatory profiles are a floor that descendant policies only narrow.
+type SecurityProfileResponseEnforcementLevel string
+
+// SecurityProfileResponseGitAccessLevel defines model for SecurityProfileResponse.GitAccessLevel.
+type SecurityProfileResponseGitAccessLevel string
+
+// SecurityProfileResponseSlackDmScope defines model for SecurityProfileResponse.SlackDmScope.
+type SecurityProfileResponseSlackDmScope string
+
+// SecurityProfileResponseTeamsDmScope defines model for SecurityProfileResponse.TeamsDmScope.
+type SecurityProfileResponseTeamsDmScope string
+
+// SecurityProfileResponseTeamsGroupChatScope defines model for SecurityProfileResponse.TeamsGroupChatScope.
+type SecurityProfileResponseTeamsGroupChatScope string
+
+// SecurityProfileSettingsResponse defines model for SecurityProfileSettingsResponse.
+type SecurityProfileSettingsResponse struct {
+	// AutomationsDefault Read view of one stored default binding.
+	AutomationsDefault SecurityProfileDefaultState `json:"automations_default"`
+
+	// Default Read view of one stored default binding.
+	Default SecurityProfileDefaultState `json:"default"`
+}
+
+// SecurityProfileSettingsUpdateRequest PATCH semantics: omitted fields are left unchanged.
+type SecurityProfileSettingsUpdateRequest struct {
+	AutomationsDefault nullable.Nullable[SecurityProfileDefaultSelection] `json:"automations_default,omitempty"`
+	Default            nullable.Nullable[SecurityProfileDefaultSelection] `json:"default,omitempty"`
+}
+
+// SecurityProfileSlackChannel defines model for SecurityProfileSlackChannel.
+type SecurityProfileSlackChannel struct {
+	// ChannelID Slack channel ID.
+	ChannelID string `json:"channel_id"`
+
+	// TeamID Slack workspace (team) ID.
+	TeamID string `json:"team_id"`
+}
+
+// SecurityProfileSlackChannelAccess defines model for SecurityProfileSlackChannelAccess.
+type SecurityProfileSlackChannelAccess struct {
+	// Channels Channels allowed when mode is 'specific'; ignored (and returned empty) for the other modes.
+	Channels *[]SecurityProfileSlackChannel `json:"channels,omitempty"`
+
+	// Mode none = sessions may not read or post in any channel; specific = only the listed channels; all_public = any public channel the Slack app is a member of.
+	Mode SecurityProfileSlackChannelAccessMode `json:"mode"`
+}
+
+// SecurityProfileSlackChannelAccessMode none = sessions may not read or post in any channel; specific = only the listed channels; all_public = any public channel the Slack app is a member of.
+type SecurityProfileSlackChannelAccessMode string
+
+// SecurityProfileTeamsChannel defines model for SecurityProfileTeamsChannel.
+type SecurityProfileTeamsChannel struct {
+	// ChannelID Teams channel ID ('19:...@thread.tacv2').
+	ChannelID string `json:"channel_id"`
+
+	// TeamID Entra group ID of the Microsoft Teams team.
+	TeamID string `json:"team_id"`
+}
+
+// SecurityProfileTeamsChannelAccess defines model for SecurityProfileTeamsChannelAccess.
+type SecurityProfileTeamsChannelAccess struct {
+	// Channels Channels allowed when mode is 'specific'; ignored (and returned empty) for the other modes.
+	Channels *[]SecurityProfileTeamsChannel `json:"channels,omitempty"`
+
+	// Mode none = sessions may not read or post in any channel; specific = only the listed channels; installed_teams = any channel of a team the Devin app is installed in.
+	Mode SecurityProfileTeamsChannelAccessMode `json:"mode"`
+}
+
+// SecurityProfileTeamsChannelAccessMode none = sessions may not read or post in any channel; specific = only the listed channels; installed_teams = any channel of a team the Devin app is installed in.
+type SecurityProfileTeamsChannelAccessMode string
+
+// SecurityProfileUpdateRequest PATCH semantics: omitted fields are left unchanged; explicit null
+// clears the nullable fields (net_policy, mcp_config, slack_channel_access,
+// slack_dm_scope, teams_channel_access, teams_dm_scope,
+// teams_group_chat_scope) and is rejected for the others.
+type SecurityProfileUpdateRequest struct {
+	DevinMcpReadOnly     nullable.Nullable[bool]                                            `json:"devin_mcp_read_only,omitempty"`
+	EnforcementLevel     nullable.Nullable[SecurityProfileUpdateRequestEnforcementLevel]    `json:"enforcement_level,omitempty"`
+	GitAccessLevel       nullable.Nullable[SecurityProfileUpdateRequestGitAccessLevel]      `json:"git_access_level,omitempty"`
+	McpConfig            nullable.Nullable[SecurityProfileMcpConfig]                        `json:"mcp_config,omitempty"`
+	Name                 nullable.Nullable[string]                                          `json:"name,omitempty"`
+	NetPolicy            nullable.Nullable[SecurityProfileNetPolicy]                        `json:"net_policy,omitempty"`
+	RemoveGithubCliToken nullable.Nullable[bool]                                            `json:"remove_github_cli_token,omitempty"`
+	SlackChannelAccess   nullable.Nullable[SecurityProfileSlackChannelAccess]               `json:"slack_channel_access,omitempty"`
+	SlackDmScope         nullable.Nullable[SecurityProfileUpdateRequestSlackDmScope]        `json:"slack_dm_scope,omitempty"`
+	TeamsChannelAccess   nullable.Nullable[SecurityProfileTeamsChannelAccess]               `json:"teams_channel_access,omitempty"`
+	TeamsDmScope         nullable.Nullable[SecurityProfileUpdateRequestTeamsDmScope]        `json:"teams_dm_scope,omitempty"`
+	TeamsGroupChatScope  nullable.Nullable[SecurityProfileUpdateRequestTeamsGroupChatScope] `json:"teams_group_chat_scope,omitempty"`
+}
+
+// SecurityProfileUpdateRequestEnforcementLevel defines model for SecurityProfileUpdateRequest.EnforcementLevel.
+type SecurityProfileUpdateRequestEnforcementLevel string
+
+// SecurityProfileUpdateRequestGitAccessLevel defines model for SecurityProfileUpdateRequest.GitAccessLevel.
+type SecurityProfileUpdateRequestGitAccessLevel string
+
+// SecurityProfileUpdateRequestSlackDmScope defines model for SecurityProfileUpdateRequest.SlackDmScope.
+type SecurityProfileUpdateRequestSlackDmScope string
+
+// SecurityProfileUpdateRequestTeamsDmScope defines model for SecurityProfileUpdateRequest.TeamsDmScope.
+type SecurityProfileUpdateRequestTeamsDmScope string
+
+// SecurityProfileUpdateRequestTeamsGroupChatScope defines model for SecurityProfileUpdateRequest.TeamsGroupChatScope.
+type SecurityProfileUpdateRequestTeamsGroupChatScope string
+
 // ServiceUser defines model for ServiceUser.
 type ServiceUser struct {
 	DeletedAt nullable.Nullable[int] `json:"deleted_at"`
@@ -3102,6 +5981,17 @@ type ServiceUserPreferences struct {
 	MemoryEnabled nullable.Nullable[bool] `json:"memory_enabled,omitempty"`
 }
 
+// ServiceUserSelf Identity information for an authenticated service user.
+type ServiceUserSelf struct {
+	OrgID           nullable.Nullable[string]    `json:"org_id,omitempty"`
+	PrincipalType   ServiceUserSelfPrincipalType `json:"principal_type"`
+	ServiceUserID   string                       `json:"service_user_id"`
+	ServiceUserName string                       `json:"service_user_name"`
+}
+
+// ServiceUserSelfPrincipalType defines model for ServiceUserSelf.PrincipalType.
+type ServiceUserSelfPrincipalType string
+
 // ServiceUserUpdateRequest defines model for ServiceUserUpdateRequest.
 type ServiceUserUpdateRequest struct {
 	// Preferences Switches to change; fields left out keep their value. A service user's preferences apply across the whole enterprise.
@@ -3116,6 +6006,484 @@ type ServiceUserUpdateRoleRequest struct {
 	RoleID string `json:"role_id"`
 }
 
+// SessionAttachment An attachment sent during a session.
+type SessionAttachment struct {
+	AttachmentID string                    `json:"attachment_id"`
+	ContentType  nullable.Nullable[string] `json:"content_type,omitempty"`
+	Name         string                    `json:"name"`
+	Source       SessionAttachmentSource   `json:"source"`
+	URL          string                    `json:"url"`
+}
+
+// SessionAttachmentSource defines model for SessionAttachment.Source.
+type SessionAttachmentSource string
+
+// SessionConsumptionResponse defines model for SessionConsumptionResponse.
+type SessionConsumptionResponse struct {
+	Acus float32 `json:"acus"`
+
+	// AcusByProduct ACUs per product for one day; the buckets sum to the day's ``acus``.
+	//
+	// ``devin`` is ACUs from Devin sessions a person or service user started,
+	// including code-scan and on-call sessions. ``automation`` is ACUs spent by
+	// automations: sessions an automation started plus its code steps that run
+	// without a session. ``automation`` is ``null`` where the per-product
+	// breakdown is not available.
+	AcusByProduct AcusByProduct `json:"acus_by_product"`
+	Date          int           `json:"date"`
+
+	// SessionID Session ID, without the devin- prefix.
+	SessionID string `json:"session_id"`
+}
+
+// SessionCountsByOrigin Session counts by origin type, exposed on the v3 metrics API.
+//
+// A curated subset of `SessionOrigin`: legacy origins (cli,
+// vscode_extension, devin_spaces) are intentionally not surfaced.
+// Counts for sessions with a `scheduled` DB origin roll into
+// `automation` via the canonical `db_origin_to_api` mapping, since
+// automations are a superset that schedules will migrate into.
+type SessionCountsByOrigin struct {
+	API        *int `json:"api,omitempty"`
+	Automation *int `json:"automation,omitempty"`
+	CodeScan   *int `json:"code_scan,omitempty"`
+	Desktop    *int `json:"desktop,omitempty"`
+	Jira       *int `json:"jira,omitempty"`
+	Linear     *int `json:"linear,omitempty"`
+	Slack      *int `json:"slack,omitempty"`
+	Teams      *int `json:"teams,omitempty"`
+	Webapp     *int `json:"webapp,omitempty"`
+}
+
+// SessionCountsBySize Session counts by size category.
+type SessionCountsBySize struct {
+	L  *int `json:"l,omitempty"`
+	M  *int `json:"m,omitempty"`
+	S  *int `json:"s,omitempty"`
+	Xl *int `json:"xl,omitempty"`
+	Xs *int `json:"xs,omitempty"`
+}
+
+// SessionCreateRequest defines model for SessionCreateRequest.
+type SessionCreateRequest struct {
+	AttachmentUrls  nullable.Nullable[[]string] `json:"attachment_urls,omitempty"`
+	BypassApproval  nullable.Nullable[bool]     `json:"bypass_approval,omitempty"`
+	ChildPlaybookID nullable.Nullable[string]   `json:"child_playbook_id,omitempty"`
+	CreateAsUserID  nullable.Nullable[string]   `json:"create_as_user_id,omitempty"`
+
+	// DevinMode Override the Devin agent mode for the session. 'normal' uses the default Agent mode, 'fast' uses Fast mode, 'lite' uses Devin Lite, 'ultra' uses Devin Ultra, and 'fusion' uses Fusion. The other values select the agent mode of the same name in the web app. Preview modes are subject to the same feature flag and enterprise agent preview restrictions as the web app.
+	DevinMode    nullable.Nullable[SessionCreateRequestDevinMode] `json:"devin_mode,omitempty"`
+	KnowledgeIds nullable.Nullable[[]string]                      `json:"knowledge_ids,omitempty"`
+	MaxAcuLimit  nullable.Nullable[int]                           `json:"max_acu_limit,omitempty"`
+
+	// MemoryEnabled Set to false to keep memory off for this session and its child sessions: it does not read or write memory, and memory does not learn from its transcript. Omit it, or set it to true, to follow the owner's memory settings; true does not turn on memory that those settings keep off.
+	MemoryEnabled nullable.Nullable[bool] `json:"memory_enabled,omitempty"`
+
+	// Platform Override the VM platform for the session (e.g. 'windows'), or the name of an outpost (BYOB) pool to run the session on one of your own machines. When omitted (or set to 'inherit'), a session created by a parent Devin inherits the parent's placement — both its platform and its outpost pool, so an outpost-placed parent spawns children on the same pool; otherwise the organization default is used. Any value must match either a platform configured for your organization or an outpost pool name (case-insensitive) — built-in platforms take priority when a name matches both, and a personal outpost pool owned by the caller takes priority over an account-wide pool with the same name. Unrecognized values are rejected with a 400 whose error body lists the available platform labels and outpost pool names for the org.
+	Platform   nullable.Nullable[string]   `json:"platform,omitempty"`
+	PlaybookID nullable.Nullable[string]   `json:"playbook_id,omitempty"`
+	Prompt     string                      `json:"prompt"`
+	Repos      nullable.Nullable[[]string] `json:"repos,omitempty"`
+
+	// Resumable Whether to preserve the session's VM state after it stops so the session can be resumed. Set to false for disposable sessions.
+	Resumable *bool                       `json:"resumable,omitempty"`
+	SecretIds nullable.Nullable[[]string] `json:"secret_ids,omitempty"`
+
+	// SecurityProfile Attach a security profile to this session; omitted = default resolution applies (the playbook's security profile when one is bound, then the org/enterprise default). Requires the security-profile management permission.
+	SecurityProfile nullable.Nullable[SessionSecurityProfileSelection] `json:"security_profile,omitempty"`
+	SessionLinks    nullable.Nullable[[]string]                        `json:"session_links,omitempty"`
+	SessionSecrets  nullable.Nullable[[]SessionSecretInput]            `json:"session_secrets,omitempty"`
+
+	// StructuredOutputRequired When true (default), the agent MUST call provide_structured_output with is_final=true before its turn ends. When false, the tool is available but not required — it is not guaranteed to be called in a given turn.
+	StructuredOutputRequired nullable.Nullable[bool] `json:"structured_output_required,omitempty"`
+
+	// StructuredOutputSchema JSON Schema (Draft 7) for validating structured output. Max 64KB. Must be self-contained (no external $ref).
+	StructuredOutputSchema nullable.Nullable[map[string]interface{}] `json:"structured_output_schema,omitempty"`
+	Tags                   nullable.Nullable[[]string]               `json:"tags,omitempty"`
+	Title                  nullable.Nullable[string]                 `json:"title,omitempty"`
+}
+
+// SessionCreateRequestDevinMode defines model for SessionCreateRequest.DevinMode.
+type SessionCreateRequestDevinMode string
+
+// SessionInsightsActionItem defines model for SessionInsightsActionItem.
+type SessionInsightsActionItem struct {
+	ActionItem string                         `json:"action_item"`
+	IssueID    nullable.Nullable[string]      `json:"issue_id,omitempty"`
+	Type       *SessionInsightsActionItemType `json:"type,omitempty"`
+}
+
+// SessionInsightsActionItemType defines model for SessionInsightsActionItem.Type.
+type SessionInsightsActionItemType string
+
+// SessionInsightsAnalysis AI-generated analysis data from a completed session analysis.
+type SessionInsightsAnalysis struct {
+	ActionItems     *[]SessionInsightsActionItem                      `json:"action_items,omitempty"`
+	Classification  nullable.Nullable[SessionInsightsClassification]  `json:"classification,omitempty"`
+	Issues          *[]SessionInsightsIssue                           `json:"issues,omitempty"`
+	NoteUsage       nullable.Nullable[SessionInsightsNoteUsage]       `json:"note_usage,omitempty"`
+	SkillUsage      nullable.Nullable[SessionInsightsSkillUsage]      `json:"skill_usage,omitempty"`
+	SuggestedPrompt nullable.Nullable[SessionInsightsSuggestedPrompt] `json:"suggested_prompt,omitempty"`
+	Timeline        *[]SessionInsightsTimelineEvent                   `json:"timeline,omitempty"`
+}
+
+// SessionInsightsClassification defines model for SessionInsightsClassification.
+type SessionInsightsClassification struct {
+	Category             string    `json:"category"`
+	Confidence           float32   `json:"confidence"`
+	ProgrammingLanguages *[]string `json:"programming_languages,omitempty"`
+	ToolsAndFrameworks   *[]string `json:"tools_and_frameworks,omitempty"`
+}
+
+// SessionInsightsFeedbackItem defines model for SessionInsightsFeedbackItem.
+type SessionInsightsFeedbackItem struct {
+	Details string                    `json:"details"`
+	Excerpt string                    `json:"excerpt"`
+	IssueID nullable.Nullable[string] `json:"issue_id,omitempty"`
+	Summary string                    `json:"summary"`
+}
+
+// SessionInsightsGenerateResponse Response from triggering session insights generation.
+type SessionInsightsGenerateResponse struct {
+	// SessionID The session ID for which insights generation was triggered.
+	SessionID string `json:"session_id"`
+
+	// Status The status of the generation request.
+	Status string `json:"status"`
+}
+
+// SessionInsightsIssue defines model for SessionInsightsIssue.
+type SessionInsightsIssue struct {
+	ID     *string `json:"id,omitempty"`
+	Impact string  `json:"impact"`
+	Issue  string  `json:"issue"`
+	Label  string  `json:"label"`
+	Title  *string `json:"title,omitempty"`
+}
+
+// SessionInsightsNoteUsage defines model for SessionInsightsNoteUsage.
+type SessionInsightsNoteUsage struct {
+	BadUsages  *[]SessionInsightsNoteUsageItem `json:"bad_usages,omitempty"`
+	GoodUsages *[]SessionInsightsNoteUsageItem `json:"good_usages,omitempty"`
+}
+
+// SessionInsightsNoteUsageItem defines model for SessionInsightsNoteUsageItem.
+type SessionInsightsNoteUsageItem struct {
+	Message string `json:"message"`
+	NoteID  string `json:"note_id"`
+	Reason  string `json:"reason"`
+}
+
+// SessionInsightsResponse Session details augmented with quantitative metrics and AI analysis.
+//
+// Extends SessionResponse with additional fields that require extra queries.
+type SessionInsightsResponse struct {
+	AcusConsumed float32 `json:"acus_consumed"`
+
+	// Analysis AI-generated session analysis. None if analysis has not completed.
+	Analysis nullable.Nullable[SessionInsightsAnalysis] `json:"analysis,omitempty"`
+
+	// AnalysisStatus State of the most recent session analysis run: 'completed', 'started' (in progress) or 'failed'. None if analysis was never run. 'failed' distinguishes a run that errored from one that never happened; `analysis` may still hold an older completed result.
+	AnalysisStatus nullable.Nullable[SessionInsightsResponseAnalysisStatus] `json:"analysis_status,omitempty"`
+
+	// AutomationID ID of the automation that created this session, if any.
+	AutomationID nullable.Nullable[string] `json:"automation_id,omitempty"`
+
+	// Category The session's assigned use-case category, if categorisation has run. Only populated on get/list endpoints.
+	Category        nullable.Nullable[SessionInsightsResponseCategory] `json:"category,omitempty"`
+	ChildSessionIds nullable.Nullable[[]string]                        `json:"child_session_ids,omitempty"`
+	CreatedAt       int                                                `json:"created_at"`
+
+	// DevinMode The Devin agent mode the session was created with, after resolving org/user defaults and parent-session inheritance. None when the session runs an agent preview that has no mode equivalent.
+	DevinMode  nullable.Nullable[SessionInsightsResponseDevinMode] `json:"devin_mode,omitempty"`
+	IsArchived *bool                                               `json:"is_archived,omitempty"`
+
+	// NumDevinMessages Number of Devin messages sent during the session.
+	NumDevinMessages int `json:"num_devin_messages"`
+
+	// NumUserMessages Number of user messages sent during the session.
+	NumUserMessages int `json:"num_user_messages"`
+
+	// OnDemandUsage On-demand (overage) spend in USD for this session, excluding child sessions. Only populated for Teams plans; 0 when the session was fully covered by quota. Omitted for other plans. Only populated on get/list endpoints.
+	OnDemandUsage nullable.Nullable[float32] `json:"on_demand_usage,omitempty"`
+
+	// OrgID Owning organization. Null for detached sessions, which are owned by their creator's account rather than an organization.
+	OrgID nullable.Nullable[string] `json:"org_id"`
+
+	// Origin The origin from which the session was created.
+	Origin          nullable.Nullable[SessionInsightsResponseOrigin] `json:"origin,omitempty"`
+	ParentSessionID nullable.Nullable[string]                        `json:"parent_session_id,omitempty"`
+	PlaybookID      nullable.Nullable[string]                        `json:"playbook_id,omitempty"`
+	PullRequests    []SessionPullRequest                             `json:"pull_requests"`
+
+	// SecurityProfile The session's own security-profile binding. Only populated on get/list endpoints.
+	SecurityProfile nullable.Nullable[SessionSecurityProfileResponse] `json:"security_profile,omitempty"`
+	ServiceUserID   nullable.Nullable[string]                         `json:"service_user_id,omitempty"`
+	SessionID       string                                            `json:"session_id"`
+
+	// SessionSize Session size classification based on ACU usage and message count.
+	SessionSize SessionInsightsResponseSessionSize `json:"session_size"`
+	Status      SessionInsightsResponseStatus      `json:"status"`
+
+	// StatusDetail Additional detail about the session's current status. When status is 'running': 'working' (actively working), 'waiting_for_user' (needs user input), 'waiting_for_approval' (awaiting action approval in safe mode), or 'finished' (task complete). When status is 'suspended': the reason for suspension such as 'inactivity', 'user_request', 'usage_limit_exceeded', 'out_of_credits', 'out_of_quota', 'no_quota_allocation', 'payment_declined', 'org_usage_limit_exceeded', 'user_usage_limit_exceeded', 'total_session_limit_exceeded', 'contract_expired', or 'error'. Only populated on get/list endpoints.
+	StatusDetail nullable.Nullable[SessionInsightsResponseStatusDetail] `json:"status_detail,omitempty"`
+
+	// StructuredOutput Validated structured output from the session. Only populated on get/list endpoints.
+	StructuredOutput nullable.Nullable[map[string]interface{}] `json:"structured_output,omitempty"`
+
+	// Subcategory The session's assigned subcategory display name. 'Other' when a category is set but no subcategory was assigned or resolved. Only populated on get/list endpoints.
+	Subcategory nullable.Nullable[string] `json:"subcategory,omitempty"`
+	Tags        []string                  `json:"tags"`
+	Title       nullable.Nullable[string] `json:"title,omitempty"`
+	UpdatedAt   int                       `json:"updated_at"`
+	URL         string                    `json:"url"`
+	UserID      nullable.Nullable[string] `json:"user_id,omitempty"`
+}
+
+// SessionInsightsResponseAnalysisStatus defines model for SessionInsightsResponse.AnalysisStatus.
+type SessionInsightsResponseAnalysisStatus string
+
+// SessionInsightsResponseCategory defines model for SessionInsightsResponse.Category.
+type SessionInsightsResponseCategory string
+
+// SessionInsightsResponseDevinMode defines model for SessionInsightsResponse.DevinMode.
+type SessionInsightsResponseDevinMode string
+
+// SessionInsightsResponseOrigin defines model for SessionInsightsResponse.Origin.
+type SessionInsightsResponseOrigin string
+
+// SessionInsightsResponseSessionSize Session size classification based on ACU usage and message count.
+type SessionInsightsResponseSessionSize string
+
+// SessionInsightsResponseStatus defines model for SessionInsightsResponse.Status.
+type SessionInsightsResponseStatus string
+
+// SessionInsightsResponseStatusDetail defines model for SessionInsightsResponse.StatusDetail.
+type SessionInsightsResponseStatusDetail string
+
+// SessionInsightsSkillUsage defines model for SessionInsightsSkillUsage.
+type SessionInsightsSkillUsage struct {
+	BadUsages  *[]SessionInsightsSkillUsageItem `json:"bad_usages,omitempty"`
+	GoodUsages *[]SessionInsightsSkillUsageItem `json:"good_usages,omitempty"`
+}
+
+// SessionInsightsSkillUsageItem defines model for SessionInsightsSkillUsageItem.
+type SessionInsightsSkillUsageItem struct {
+	Reason       string `json:"reason"`
+	RepoOrigin   string `json:"repo_origin"`
+	SkillName    string `json:"skill_name"`
+	SkillRelPath string `json:"skill_rel_path"`
+}
+
+// SessionInsightsSuggestedPrompt defines model for SessionInsightsSuggestedPrompt.
+type SessionInsightsSuggestedPrompt struct {
+	FeedbackItems   *[]SessionInsightsFeedbackItem `json:"feedback_items,omitempty"`
+	OriginalPrompt  string                         `json:"original_prompt"`
+	SuggestedPrompt string                         `json:"suggested_prompt"`
+}
+
+// SessionInsightsTimelineEvent defines model for SessionInsightsTimelineEvent.
+type SessionInsightsTimelineEvent struct {
+	Color       *string                   `json:"color,omitempty"`
+	Description string                    `json:"description"`
+	IssueID     nullable.Nullable[string] `json:"issue_id,omitempty"`
+	Title       string                    `json:"title"`
+}
+
+// SessionMessage A message in a Devin session.
+type SessionMessage struct {
+	CreatedAt int    `json:"created_at"`
+	EventID   string `json:"event_id"`
+	Message   string `json:"message"`
+
+	// Origin The origin of the message, if available.
+	Origin nullable.Nullable[string] `json:"origin,omitempty"`
+	Source SessionMessageSource      `json:"source"`
+
+	// UserID The ID of the user who sent the message, if available.
+	UserID nullable.Nullable[string] `json:"user_id,omitempty"`
+
+	// Username The username of the user who sent the message, if available.
+	Username nullable.Nullable[string] `json:"username,omitempty"`
+}
+
+// SessionMessageSource defines model for SessionMessage.Source.
+type SessionMessageSource string
+
+// SessionMessageCreateRequest defines model for SessionMessageCreateRequest.
+type SessionMessageCreateRequest struct {
+	AttachmentUrls  nullable.Nullable[[]string] `json:"attachment_urls,omitempty"`
+	Message         string                      `json:"message"`
+	MessageAsUserID nullable.Nullable[string]   `json:"message_as_user_id,omitempty"`
+}
+
+// SessionMetricsResponse Response model for session metrics.
+type SessionMetricsResponse struct {
+	AvgAcusPerSession float32 `json:"avg_acus_per_session"`
+
+	// SessionsCreatedByOrigin Session counts by origin type, exposed on the v3 metrics API.
+	//
+	// A curated subset of `SessionOrigin`: legacy origins (cli,
+	// vscode_extension, devin_spaces) are intentionally not surfaced.
+	// Counts for sessions with a `scheduled` DB origin roll into
+	// `automation` via the canonical `db_origin_to_api` mapping, since
+	// automations are a superset that schedules will migrate into.
+	SessionsCreatedByOrigin SessionCountsByOrigin `json:"sessions_created_by_origin"`
+
+	// SessionsCreatedBySize Session counts by size category.
+	SessionsCreatedBySize            SessionCountsBySize `json:"sessions_created_by_size"`
+	SessionsCreatedCount             int                 `json:"sessions_created_count"`
+	SessionsCreatedWithPlaybookCount int                 `json:"sessions_created_with_playbook_count"`
+	SessionsCreatedWithSearchCount   int                 `json:"sessions_created_with_search_count"`
+
+	// SessionsWithMergedPrsBySize Session counts by size category.
+	SessionsWithMergedPrsBySize SessionCountsBySize `json:"sessions_with_merged_prs_by_size"`
+	SessionsWithMergedPrsCount  int                 `json:"sessions_with_merged_prs_count"`
+}
+
+// SessionPullRequest defines model for SessionPullRequest.
+type SessionPullRequest struct {
+	PrState nullable.Nullable[string] `json:"pr_state"`
+	PrURL   string                    `json:"pr_url"`
+}
+
+// SessionResponse defines model for SessionResponse.
+type SessionResponse struct {
+	AcusConsumed float32 `json:"acus_consumed"`
+
+	// AutomationID ID of the automation that created this session, if any.
+	AutomationID nullable.Nullable[string] `json:"automation_id,omitempty"`
+
+	// Category The session's assigned use-case category, if categorisation has run. Only populated on get/list endpoints.
+	Category        nullable.Nullable[SessionResponseCategory] `json:"category,omitempty"`
+	ChildSessionIds nullable.Nullable[[]string]                `json:"child_session_ids,omitempty"`
+	CreatedAt       int                                        `json:"created_at"`
+
+	// DevinMode The Devin agent mode the session was created with, after resolving org/user defaults and parent-session inheritance. None when the session runs an agent preview that has no mode equivalent.
+	DevinMode  nullable.Nullable[SessionResponseDevinMode] `json:"devin_mode,omitempty"`
+	IsArchived *bool                                       `json:"is_archived,omitempty"`
+
+	// OnDemandUsage On-demand (overage) spend in USD for this session, excluding child sessions. Only populated for Teams plans; 0 when the session was fully covered by quota. Omitted for other plans. Only populated on get/list endpoints.
+	OnDemandUsage nullable.Nullable[float32] `json:"on_demand_usage,omitempty"`
+
+	// OrgID Owning organization. Null for detached sessions, which are owned by their creator's account rather than an organization.
+	OrgID nullable.Nullable[string] `json:"org_id"`
+
+	// Origin The origin from which the session was created.
+	Origin          nullable.Nullable[SessionResponseOrigin] `json:"origin,omitempty"`
+	ParentSessionID nullable.Nullable[string]                `json:"parent_session_id,omitempty"`
+	PlaybookID      nullable.Nullable[string]                `json:"playbook_id,omitempty"`
+	PullRequests    []SessionPullRequest                     `json:"pull_requests"`
+
+	// SecurityProfile The session's own security-profile binding. Only populated on get/list endpoints.
+	SecurityProfile nullable.Nullable[SessionSecurityProfileResponse] `json:"security_profile,omitempty"`
+	ServiceUserID   nullable.Nullable[string]                         `json:"service_user_id,omitempty"`
+	SessionID       string                                            `json:"session_id"`
+	Status          SessionResponseStatus                             `json:"status"`
+
+	// StatusDetail Additional detail about the session's current status. When status is 'running': 'working' (actively working), 'waiting_for_user' (needs user input), 'waiting_for_approval' (awaiting action approval in safe mode), or 'finished' (task complete). When status is 'suspended': the reason for suspension such as 'inactivity', 'user_request', 'usage_limit_exceeded', 'out_of_credits', 'out_of_quota', 'no_quota_allocation', 'payment_declined', 'org_usage_limit_exceeded', 'user_usage_limit_exceeded', 'total_session_limit_exceeded', 'contract_expired', or 'error'. Only populated on get/list endpoints.
+	StatusDetail nullable.Nullable[SessionResponseStatusDetail] `json:"status_detail,omitempty"`
+
+	// StructuredOutput Validated structured output from the session. Only populated on get/list endpoints.
+	StructuredOutput nullable.Nullable[map[string]interface{}] `json:"structured_output,omitempty"`
+
+	// Subcategory The session's assigned subcategory display name. 'Other' when a category is set but no subcategory was assigned or resolved. Only populated on get/list endpoints.
+	Subcategory nullable.Nullable[string] `json:"subcategory,omitempty"`
+	Tags        []string                  `json:"tags"`
+	Title       nullable.Nullable[string] `json:"title,omitempty"`
+	UpdatedAt   int                       `json:"updated_at"`
+	URL         string                    `json:"url"`
+	UserID      nullable.Nullable[string] `json:"user_id,omitempty"`
+}
+
+// SessionResponseCategory defines model for SessionResponse.Category.
+type SessionResponseCategory string
+
+// SessionResponseDevinMode defines model for SessionResponse.DevinMode.
+type SessionResponseDevinMode string
+
+// SessionResponseOrigin defines model for SessionResponse.Origin.
+type SessionResponseOrigin string
+
+// SessionResponseStatus defines model for SessionResponse.Status.
+type SessionResponseStatus string
+
+// SessionResponseStatusDetail defines model for SessionResponse.StatusDetail.
+type SessionResponseStatusDetail string
+
+// SessionSecretInput Input model for a session secret provided via API.
+type SessionSecretInput struct {
+	Key       string `json:"key"`
+	Sensitive *bool  `json:"sensitive,omitempty"`
+	Value     string `json:"value"`
+}
+
+// SessionSecurityProfileResponse defines model for SessionSecurityProfileResponse.
+type SessionSecurityProfileResponse struct {
+	ProfileID nullable.Nullable[string] `json:"profile_id,omitempty"`
+
+	// Selection The session's own binding: inherit (no binding of its own), none (explicit opt-out), or profile (pins profile_id). The effective configuration resolves the full governing chain (enterprise -> org -> automation/playbook -> session); an opt-out cannot escape a mandatory org/enterprise profile.
+	Selection SessionSecurityProfileResponseSelection `json:"selection"`
+}
+
+// SessionSecurityProfileResponseSelection The session's own binding: inherit (no binding of its own), none (explicit opt-out), or profile (pins profile_id). The effective configuration resolves the full governing chain (enterprise -> org -> automation/playbook -> session); an opt-out cannot escape a mandatory org/enterprise profile.
+type SessionSecurityProfileResponseSelection string
+
+// SessionSecurityProfileSelection An explicit security-profile selection for a new session.
+type SessionSecurityProfileSelection struct {
+	// ProfileID Security profile to attach to the session; must belong to your organization or, for enterprise organizations, its enterprise. null records an explicit opt-out (no profile, even when the org or enterprise has a default).
+	ProfileID nullable.Nullable[string] `json:"profile_id,omitempty"`
+}
+
+// SessionTagsResponse defines model for SessionTagsResponse.
+type SessionTagsResponse struct {
+	Tags []string `json:"tags"`
+}
+
+// SessionTagsUpdateRequest defines model for SessionTagsUpdateRequest.
+type SessionTagsUpdateRequest struct {
+	Tags []string `json:"tags"`
+}
+
+// SessionsByCategoryResponse defines model for SessionsByCategoryResponse.
+type SessionsByCategoryResponse struct {
+	Categories []CategoryMetrics `json:"categories"`
+}
+
+// SessionsQueryParams defines model for SessionsQueryParams.
+type SessionsQueryParams struct {
+	After nullable.Nullable[string] `json:"after,omitempty"`
+
+	// AutomationIds Filter to sessions created by any of these automations
+	AutomationIds nullable.Nullable[[]string]                     `json:"automation_ids,omitempty"`
+	Category      nullable.Nullable[SessionsQueryParamsCategory]  `json:"category,omitempty"`
+	CreatedAfter  nullable.Nullable[int]                          `json:"created_after,omitempty"`
+	CreatedBefore nullable.Nullable[int]                          `json:"created_before,omitempty"`
+	First         *int                                            `json:"first,omitempty"`
+	IsArchived    nullable.Nullable[bool]                         `json:"is_archived,omitempty"`
+	Origins       nullable.Nullable[[]SessionsQueryParamsOrigins] `json:"origins,omitempty"`
+
+	// ParentSessionID Filter to child sessions spawned by this parent session
+	ParentSessionID nullable.Nullable[string] `json:"parent_session_id,omitempty"`
+	PlaybookID      nullable.Nullable[string] `json:"playbook_id,omitempty"`
+
+	// RepoNames Filter by repository names (e.g., 'owner/repo')
+	RepoNames      nullable.Nullable[[]string] `json:"repo_names,omitempty"`
+	ScheduleID     nullable.Nullable[string]   `json:"schedule_id,omitempty"`
+	ServiceUserIds nullable.Nullable[[]string] `json:"service_user_ids,omitempty"`
+	SessionIds     nullable.Nullable[[]string] `json:"session_ids,omitempty"`
+	Tags           nullable.Nullable[[]string] `json:"tags,omitempty"`
+	UpdatedAfter   nullable.Nullable[int]      `json:"updated_after,omitempty"`
+	UpdatedBefore  nullable.Nullable[int]      `json:"updated_before,omitempty"`
+	UserIds        nullable.Nullable[[]string] `json:"user_ids,omitempty"`
+}
+
+// SessionsQueryParamsCategory defines model for SessionsQueryParams.Category.
+type SessionsQueryParamsCategory string
+
+// SessionsQueryParamsOrigins defines model for SessionsQueryParams.Origins.
+type SessionsQueryParamsOrigins string
+
 // SkillReference One exact skill: the plugin that ships it plus the skill's name.
 type SkillReference struct {
 	// PluginIdentity The plugin that ships the skill: the id of a bundle uploaded by the organization, e.g. 'org-playbooks', or the URL of a git plugin, e.g. 'https://github.com/acme/tools'.
@@ -3123,6 +6491,44 @@ type SkillReference struct {
 
 	// SkillName Name of the skill inside that plugin.
 	SkillName string `json:"skill_name"`
+}
+
+// StartIngestionScanRequest Request body for starting an ingestion-mode code scan.
+//
+// Only accepts an ingestion (ingest-mode) scan profile: the profile is run
+// against the given repository (or repositories).
+type StartIngestionScanRequest struct {
+	// AttachmentUrls Devin attachment URLs to provide to the scan, e.g. files uploaded via the attachments API. The attachments must belong to the organization being scanned.
+	AttachmentUrls nullable.Nullable[[]string] `json:"attachment_urls,omitempty"`
+
+	// Effort Scan effort: 'normal' (default) uses lower model reasoning effort with larger triage and validation batches; 'deep' runs the full pipeline.
+	Effort nullable.Nullable[StartIngestionScanRequestEffort] `json:"effort,omitempty"`
+
+	// Host Git host of the repository, if known.
+	Host nullable.Nullable[string] `json:"host,omitempty"`
+
+	// Platform Where the scan's sessions run: a platform label configured for the organization (e.g. 'linux', 'windows', 'macos') or the name of an outpost (BYOB) pool, case-insensitive; platforms take priority when a name matches both. Omitted means the organization default. Unrecognized values are rejected with a 400 whose error body lists the available platform labels and outpost pool names.
+	Platform nullable.Nullable[string] `json:"platform,omitempty"`
+
+	// ProfileID Ingestion-mode scan profile to run. Must be an ingest profile; non-ingest profiles are rejected with 400.
+	ProfileID string `json:"profile_id"`
+
+	// RepoName Full name of the repository to scan. Provide exactly one of repo_name or repos.
+	RepoName nullable.Nullable[string] `json:"repo_name,omitempty"`
+
+	// Repos Repositories covered by one scan; the first entry is the scan's primary repository. Provide exactly one of repo_name or repos.
+	Repos nullable.Nullable[[]ScanRepoRequest] `json:"repos,omitempty"`
+}
+
+// StartIngestionScanRequestEffort defines model for StartIngestionScanRequest.Effort.
+type StartIngestionScanRequestEffort string
+
+// SubcategoryMetrics defines model for SubcategoryMetrics.
+type SubcategoryMetrics struct {
+	Acus          float32                   `json:"acus"`
+	DisplayName   string                    `json:"display_name"`
+	SessionsCount int                       `json:"sessions_count"`
+	SubcategoryID nullable.Nullable[string] `json:"subcategory_id"`
 }
 
 // TagsCreateRequest defines model for TagsCreateRequest.
@@ -3137,6 +6543,12 @@ type TagsResponse struct {
 
 // TriggerBuildBody “POST /builds“ body. Empty per spec; reserved for future fields.
 type TriggerBuildBody = map[string]interface{}
+
+// UnlinkFindingsSessionRequest defines model for UnlinkFindingsSessionRequest.
+type UnlinkFindingsSessionRequest struct {
+	// FindingIds Findings to unlink; all must belong to the scan.
+	FindingIds []string `json:"finding_ids"`
+}
 
 // UpdateACULimitRequest defines model for UpdateACULimitRequest.
 type UpdateACULimitRequest struct {
@@ -3172,8 +6584,16 @@ type UpdateOrgBlueprintBody struct {
 	Source nullable.Nullable[UpdateOrgBlueprintBodySource] `json:"source,omitempty"`
 }
 
-// UpdateOrgBlueprintBodySource If set, switches the repo's blueprint source. Only accepted on the repo's root blueprint (scoped blueprints inherit it). 'git' pulls .devin/blueprint.yaml from the default branch (404 if absent) and cannot be combined with 'contents'; 'database' keeps the current YAML (or 'contents', if given) and stops syncing from the repo. No-op when the blueprint is already in that mode.
+// UpdateOrgBlueprintBodySource defines model for UpdateOrgBlueprintBody.Source.
 type UpdateOrgBlueprintBodySource string
+
+// UsageMetrics defines model for UsageMetrics.
+type UsageMetrics struct {
+	PrsCreatedCount int `json:"prs_created_count"`
+	PrsMergedCount  int `json:"prs_merged_count"`
+	SearchesCount   int `json:"searches_count"`
+	SessionsCount   int `json:"sessions_count"`
+}
 
 // User defines model for User.
 type User struct {
@@ -3181,6 +6601,52 @@ type User struct {
 	Name            nullable.Nullable[string] `json:"name"`
 	RoleAssignments []RoleAssignment          `json:"role_assignments"`
 	UserID          string                    `json:"user_id"`
+}
+
+// UserBillingOrgAssignmentRequest defines model for UserBillingOrgAssignmentRequest.
+type UserBillingOrgAssignmentRequest struct {
+	// BillingOrgID Organization to bill the user's Devin Desktop and CLI usage to.
+	BillingOrgID string `json:"billing_org_id"`
+
+	// UserID ID of the enterprise user.
+	UserID string `json:"user_id"`
+}
+
+// UserBillingOrgAssignmentResponse defines model for UserBillingOrgAssignmentResponse.
+type UserBillingOrgAssignmentResponse struct {
+	// BillingOrgID Organization that the user's Devin Desktop and CLI usage now bills to.
+	BillingOrgID string `json:"billing_org_id"`
+
+	// UserID ID of the enterprise user.
+	UserID string `json:"user_id"`
+}
+
+// UserBillingOrgFailureReason defines model for UserBillingOrgFailureReason.
+type UserBillingOrgFailureReason string
+
+// UserBillingOrgFailureResponse defines model for UserBillingOrgFailureResponse.
+type UserBillingOrgFailureResponse struct {
+	// BillingOrgID Requested billing organization ID.
+	BillingOrgID string                      `json:"billing_org_id"`
+	Reason       UserBillingOrgFailureReason `json:"reason"`
+
+	// UserID ID of the user that was not updated.
+	UserID string `json:"user_id"`
+}
+
+// UserBillingOrgsUpdateRequest defines model for UserBillingOrgsUpdateRequest.
+type UserBillingOrgsUpdateRequest struct {
+	// Assignments Billing organization to set for each user. A user may appear only once.
+	Assignments []UserBillingOrgAssignmentRequest `json:"assignments"`
+}
+
+// UserBillingOrgsUpdateResponse defines model for UserBillingOrgsUpdateResponse.
+type UserBillingOrgsUpdateResponse struct {
+	// Assigned Assignments that were applied.
+	Assigned []UserBillingOrgAssignmentResponse `json:"assigned"`
+
+	// Failed Assignments that were skipped, with the reason. These users' billing organizations did not change.
+	Failed []UserBillingOrgFailureResponse `json:"failed"`
 }
 
 // UserBulkCreateRequest defines model for UserBulkCreateRequest.
@@ -3194,10 +6660,185 @@ type UserUpdateRoleRequest struct {
 	RoleID string `json:"role_id"`
 }
 
+// UserWithIdpRoles User with both direct and IDP-group-derived role assignments.
+type UserWithIdpRoles struct {
+	Email              nullable.Nullable[string] `json:"email"`
+	IdpRoleAssignments *[]IdpRoleAssignment      `json:"idp_role_assignments,omitempty"`
+	Name               nullable.Nullable[string] `json:"name"`
+	RoleAssignments    []RoleAssignment          `json:"role_assignments"`
+	UserID             string                    `json:"user_id"`
+}
+
+// V3RemediateFindingRequest defines model for V3RemediateFindingRequest.
+type V3RemediateFindingRequest struct {
+	// Branch Base branch for remediation pull requests; defaults to the repository default branch.
+	Branch nullable.Nullable[string] `json:"branch,omitempty"`
+}
+
+// WindsurfSessionUserSelf Identity information for an authenticated Windsurf session user.
+type WindsurfSessionUserSelf struct {
+	// DevinSessionsOrgID Organization the caller's Devin Cloud sessions run in: the one named with x-cog-org-id, or without it the first organization visible to the user. Either way only an organization in which the user may use Devin sessions, and never an enterprise's primary organization. Null when there is none.
+	DevinSessionsOrgID nullable.Nullable[string] `json:"devin_sessions_org_id,omitempty"`
+	OrgID              string                    `json:"org_id"`
+
+	// PrimaryBillingOrgID Organization the user's CLI and Desktop usage is billed to: the account's organization, or in an enterprise the user's primary billing organization. Null when there is none or the user may not use Devin sessions in it.
+	PrimaryBillingOrgID nullable.Nullable[string]            `json:"primary_billing_org_id,omitempty"`
+	PrincipalType       WindsurfSessionUserSelfPrincipalType `json:"principal_type"`
+	UserID              string                               `json:"user_id"`
+	UserName            nullable.Nullable[string]            `json:"user_name,omitempty"`
+}
+
+// WindsurfSessionUserSelfPrincipalType defines model for WindsurfSessionUserSelf.PrincipalType.
+type WindsurfSessionUserSelfPrincipalType string
+
+// HandleGetEnterpriseAuditLogsV3EnterpriseAuditLogsGetParams defines parameters for HandleGetEnterpriseAuditLogsV3EnterpriseAuditLogsGet.
+type HandleGetEnterpriseAuditLogsV3EnterpriseAuditLogsGetParams struct {
+	Order      *HandleGetEnterpriseAuditLogsV3EnterpriseAuditLogsGetParamsOrder `form:"order,omitempty" json:"order,omitempty"`
+	TimeBefore *int                                                             `form:"time_before,omitempty" json:"time_before,omitempty"`
+	TimeAfter  *int                                                             `form:"time_after,omitempty" json:"time_after,omitempty"`
+	After      *string                                                          `form:"after,omitempty" json:"after,omitempty"`
+	First      *int                                                             `form:"first,omitempty" json:"first,omitempty"`
+	Action     *AuditLogAction                                                  `form:"action,omitempty" json:"action,omitempty"`
+}
+
+// HandleGetEnterpriseAuditLogsV3EnterpriseAuditLogsGetParamsOrder defines parameters for HandleGetEnterpriseAuditLogsV3EnterpriseAuditLogsGet.
+type HandleGetEnterpriseAuditLogsV3EnterpriseAuditLogsGetParamsOrder string
+
+// HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParams defines parameters for HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGet.
+type HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParams struct {
+	After *string `form:"after,omitempty" json:"after,omitempty"`
+	First *int    `form:"first,omitempty" json:"first,omitempty"`
+
+	// Q Text search over finding title, description, and file path. Combines with other filters such as repo_name. Blank means no search. Returns 503 when search is unavailable for an organization.
+	Q *string `form:"q,omitempty" json:"q,omitempty"`
+
+	// ScanID Filter to findings produced by this scan.
+	ScanID *string `form:"scan_id,omitempty" json:"scan_id,omitempty"`
+
+	// RepoName Filter to findings reported in this repository.
+	RepoName *string `form:"repo_name,omitempty" json:"repo_name,omitempty"`
+
+	// Severity Filter to findings with any of these severities (critical, high, medium, low).
+	Severity *[]HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsSeverity `form:"severity,omitempty" json:"severity,omitempty"`
+
+	// Status Filter to findings with any of these statuses (open, dismissed, resolved).
+	Status *[]HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// Payoff Filter to findings in any of these payoff quadrants (quick_win, big_fix, easy_fix, deprioritize). Unrated findings (null fix_effort) never match.
+	Payoff *[]HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsPayoff `form:"payoff,omitempty" json:"payoff,omitempty"`
+
+	// CreatedAfter Findings created at or after this unix timestamp (seconds).
+	CreatedAfter *int `form:"created_after,omitempty" json:"created_after,omitempty"`
+
+	// CreatedBefore Findings created at or before this unix timestamp (seconds).
+	CreatedBefore *int `form:"created_before,omitempty" json:"created_before,omitempty"`
+
+	// UpdatedAfter Findings updated at or after this unix timestamp (seconds).
+	UpdatedAfter *int `form:"updated_after,omitempty" json:"updated_after,omitempty"`
+
+	// UpdatedBefore Findings updated at or before this unix timestamp (seconds).
+	UpdatedBefore *int `form:"updated_before,omitempty" json:"updated_before,omitempty"`
+
+	// OrgIds Filter to findings in these organizations.
+	OrgIds *[]string `form:"org_ids,omitempty" json:"org_ids,omitempty"`
+}
+
+// HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsSeverity defines parameters for HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGet.
+type HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsSeverity string
+
+// HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsStatus defines parameters for HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGet.
+type HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsStatus string
+
+// HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsPayoff defines parameters for HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGet.
+type HandleListCodeScanFindingsV3EnterpriseCodeScansFindingsGetParamsPayoff string
+
+// HandleGetCodeScanMetricsV3EnterpriseCodeScansMetricsGetParams defines parameters for HandleGetCodeScanMetricsV3EnterpriseCodeScansMetricsGet.
+type HandleGetCodeScanMetricsV3EnterpriseCodeScansMetricsGetParams struct {
+	TimeBefore int       `form:"time_before" json:"time_before"`
+	TimeAfter  int       `form:"time_after" json:"time_after"`
+	OrgIds     *[]string `form:"org_ids,omitempty" json:"org_ids,omitempty"`
+}
+
+// HandleListCodeScanProfilesV3EnterpriseCodeScansProfilesGetParams defines parameters for HandleListCodeScanProfilesV3EnterpriseCodeScansProfilesGet.
+type HandleListCodeScanProfilesV3EnterpriseCodeScansProfilesGetParams struct {
+	After *string `form:"after,omitempty" json:"after,omitempty"`
+	First *int    `form:"first,omitempty" json:"first,omitempty"`
+
+	// OrgIds Only return profiles visible to these organizations. Defaults to all organizations in the account.
+	OrgIds *[]string `form:"org_ids,omitempty" json:"org_ids,omitempty"`
+}
+
+// HandleListCodeScansV3EnterpriseCodeScansScansGetParams defines parameters for HandleListCodeScansV3EnterpriseCodeScansScansGet.
+type HandleListCodeScansV3EnterpriseCodeScansScansGetParams struct {
+	TimeBefore *int    `form:"time_before,omitempty" json:"time_before,omitempty"`
+	TimeAfter  *int    `form:"time_after,omitempty" json:"time_after,omitempty"`
+	After      *string `form:"after,omitempty" json:"after,omitempty"`
+	First      *int    `form:"first,omitempty" json:"first,omitempty"`
+
+	// ScanType Filter to scans of this scan type.
+	ScanType *HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanType `form:"scan_type,omitempty" json:"scan_type,omitempty"`
+
+	// RepoName Filter to scans that scanned this repository. Matches multi-repo scans even when the repository is not the scan's primary repo, so returned items may report a different repo_name.
+	RepoName *string `form:"repo_name,omitempty" json:"repo_name,omitempty"`
+
+	// OrgIds Filter to scans in these organizations.
+	OrgIds *[]string `form:"org_ids,omitempty" json:"org_ids,omitempty"`
+}
+
+// HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanType defines parameters for HandleListCodeScansV3EnterpriseCodeScansScansGet.
+type HandleListCodeScansV3EnterpriseCodeScansScansGetParamsScanType string
+
 // HandleGetDevinAcuLimitsV3EnterpriseConsumptionAcuLimitsDevinGetParams defines parameters for HandleGetDevinAcuLimitsV3EnterpriseConsumptionAcuLimitsDevinGet.
 type HandleGetDevinAcuLimitsV3EnterpriseConsumptionAcuLimitsDevinGetParams struct {
 	After *string `form:"after,omitempty" json:"after,omitempty"`
 	First *int    `form:"first,omitempty" json:"first,omitempty"`
+}
+
+// HandleGetConsumptionCyclesV3EnterpriseConsumptionCyclesGetParams defines parameters for HandleGetConsumptionCyclesV3EnterpriseConsumptionCyclesGet.
+type HandleGetConsumptionCyclesV3EnterpriseConsumptionCyclesGetParams struct {
+	After *string `form:"after,omitempty" json:"after,omitempty"`
+	First *int    `form:"first,omitempty" json:"first,omitempty"`
+}
+
+// HandleGetConsumptionDailyV3EnterpriseConsumptionDailyGetParams defines parameters for HandleGetConsumptionDailyV3EnterpriseConsumptionDailyGet.
+type HandleGetConsumptionDailyV3EnterpriseConsumptionDailyGetParams struct {
+	TimeBefore *int `form:"time_before,omitempty" json:"time_before,omitempty"`
+	TimeAfter  *int `form:"time_after,omitempty" json:"time_after,omitempty"`
+}
+
+// HandleGetOrgConsumptionDailyV3EnterpriseConsumptionDailyOrganizationsOrgIDGetParams defines parameters for HandleGetOrgConsumptionDailyV3EnterpriseConsumptionDailyOrganizationsOrgIDGet.
+type HandleGetOrgConsumptionDailyV3EnterpriseConsumptionDailyOrganizationsOrgIDGetParams struct {
+	TimeBefore *int `form:"time_before,omitempty" json:"time_before,omitempty"`
+	TimeAfter  *int `form:"time_after,omitempty" json:"time_after,omitempty"`
+}
+
+// HandleGetServiceUserConsumptionDailyV3EnterpriseConsumptionDailyServiceUsersServiceUserIDGetParams defines parameters for HandleGetServiceUserConsumptionDailyV3EnterpriseConsumptionDailyServiceUsersServiceUserIDGet.
+type HandleGetServiceUserConsumptionDailyV3EnterpriseConsumptionDailyServiceUsersServiceUserIDGetParams struct {
+	TimeBefore *int `form:"time_before,omitempty" json:"time_before,omitempty"`
+	TimeAfter  *int `form:"time_after,omitempty" json:"time_after,omitempty"`
+}
+
+// HandleListSessionConsumptionDailyV3EnterpriseConsumptionDailySessionsGetParams defines parameters for HandleListSessionConsumptionDailyV3EnterpriseConsumptionDailySessionsGet.
+type HandleListSessionConsumptionDailyV3EnterpriseConsumptionDailySessionsGetParams struct {
+	// TimeBefore End of the reporting window in positive Unix seconds, at most 100 days after time_after.
+	TimeBefore int `form:"time_before" json:"time_before"`
+
+	// TimeAfter Start of the reporting window in positive Unix seconds.
+	TimeAfter int     `form:"time_after" json:"time_after"`
+	After     *string `form:"after,omitempty" json:"after,omitempty"`
+	First     *int    `form:"first,omitempty" json:"first,omitempty"`
+}
+
+// HandleGetSessionConsumptionDailyV3EnterpriseConsumptionDailySessionsSessionIDGetParams defines parameters for HandleGetSessionConsumptionDailyV3EnterpriseConsumptionDailySessionsSessionIDGet.
+type HandleGetSessionConsumptionDailyV3EnterpriseConsumptionDailySessionsSessionIDGetParams struct {
+	TimeBefore *int `form:"time_before,omitempty" json:"time_before,omitempty"`
+	TimeAfter  *int `form:"time_after,omitempty" json:"time_after,omitempty"`
+}
+
+// HandleGetUserConsumptionDailyV3EnterpriseConsumptionDailyUsersUserIDGetParams defines parameters for HandleGetUserConsumptionDailyV3EnterpriseConsumptionDailyUsersUserIDGet.
+type HandleGetUserConsumptionDailyV3EnterpriseConsumptionDailyUsersUserIDGetParams struct {
+	TimeBefore *int `form:"time_before,omitempty" json:"time_before,omitempty"`
+	TimeAfter  *int `form:"time_after,omitempty" json:"time_after,omitempty"`
 }
 
 // HandleGetGitConnectionsV3EnterpriseGitProvidersConnectionsGetParams defines parameters for HandleGetGitConnectionsV3EnterpriseGitProvidersConnectionsGet.
@@ -3212,6 +6853,16 @@ type HandleListGitConnectionRepositoriesV3EnterpriseGitProvidersConnectionsConne
 	First      *int    `form:"first,omitempty" json:"first,omitempty"`
 	FilterName *string `form:"filter_name,omitempty" json:"filter_name,omitempty"`
 }
+
+// HandleGetHypervisorsV3EnterpriseHypervisorsGetParams defines parameters for HandleGetHypervisorsV3EnterpriseHypervisorsGet.
+type HandleGetHypervisorsV3EnterpriseHypervisorsGetParams struct {
+	After  *string                                                     `form:"after,omitempty" json:"after,omitempty"`
+	First  *int                                                        `form:"first,omitempty" json:"first,omitempty"`
+	Status *HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+}
+
+// HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatus defines parameters for HandleGetHypervisorsV3EnterpriseHypervisorsGet.
+type HandleGetHypervisorsV3EnterpriseHypervisorsGetParamsStatus string
 
 // HandleListAccountIdpGroupsV3EnterpriseIdpGroupsGetParams defines parameters for HandleListAccountIdpGroupsV3EnterpriseIdpGroupsGet.
 type HandleListAccountIdpGroupsV3EnterpriseIdpGroupsGetParams struct {
@@ -3265,11 +6916,103 @@ type HandleListEnterpriseUsersV3EnterpriseMembersUsersGetParams struct {
 	Email *string `form:"email,omitempty" json:"email,omitempty"`
 }
 
+// HandleGetActiveUsersMetricsV3EnterpriseMetricsActiveUsersGetParams defines parameters for HandleGetActiveUsersMetricsV3EnterpriseMetricsActiveUsersGet.
+type HandleGetActiveUsersMetricsV3EnterpriseMetricsActiveUsersGetParams struct {
+	TimeBefore  int       `form:"time_before" json:"time_before"`
+	TimeAfter   int       `form:"time_after" json:"time_after"`
+	OrgIds      *[]string `form:"org_ids,omitempty" json:"org_ids,omitempty"`
+	MinSessions *int      `form:"min_sessions,omitempty" json:"min_sessions,omitempty"`
+	MinSearches *int      `form:"min_searches,omitempty" json:"min_searches,omitempty"`
+}
+
+// HandleGetDauMetricsV3EnterpriseMetricsDauGetParams defines parameters for HandleGetDauMetricsV3EnterpriseMetricsDauGet.
+type HandleGetDauMetricsV3EnterpriseMetricsDauGetParams struct {
+	TimeBefore  int       `form:"time_before" json:"time_before"`
+	TimeAfter   int       `form:"time_after" json:"time_after"`
+	OrgIds      *[]string `form:"org_ids,omitempty" json:"org_ids,omitempty"`
+	MinSessions *int      `form:"min_sessions,omitempty" json:"min_sessions,omitempty"`
+	MinSearches *int      `form:"min_searches,omitempty" json:"min_searches,omitempty"`
+}
+
+// HandleGetMauMetricsV3EnterpriseMetricsMauGetParams defines parameters for HandleGetMauMetricsV3EnterpriseMetricsMauGet.
+type HandleGetMauMetricsV3EnterpriseMetricsMauGetParams struct {
+	TimeBefore  int       `form:"time_before" json:"time_before"`
+	TimeAfter   int       `form:"time_after" json:"time_after"`
+	OrgIds      *[]string `form:"org_ids,omitempty" json:"org_ids,omitempty"`
+	MinSessions *int      `form:"min_sessions,omitempty" json:"min_sessions,omitempty"`
+	MinSearches *int      `form:"min_searches,omitempty" json:"min_searches,omitempty"`
+}
+
+// HandleGetPrMetricsV3EnterpriseMetricsPrsGetParams defines parameters for HandleGetPrMetricsV3EnterpriseMetricsPrsGet.
+type HandleGetPrMetricsV3EnterpriseMetricsPrsGetParams struct {
+	UserIds        *[]string `form:"user_ids,omitempty" json:"user_ids,omitempty"`
+	ServiceUserIds *[]string `form:"service_user_ids,omitempty" json:"service_user_ids,omitempty"`
+	TimeBefore     int       `form:"time_before" json:"time_before"`
+	TimeAfter      int       `form:"time_after" json:"time_after"`
+	OrgIds         *[]string `form:"org_ids,omitempty" json:"org_ids,omitempty"`
+	PlaybookID     *string   `form:"playbook_id,omitempty" json:"playbook_id,omitempty"`
+}
+
+// HandleGetSearchMetricsV3EnterpriseMetricsSearchesGetParams defines parameters for HandleGetSearchMetricsV3EnterpriseMetricsSearchesGet.
+type HandleGetSearchMetricsV3EnterpriseMetricsSearchesGetParams struct {
+	TimeBefore int       `form:"time_before" json:"time_before"`
+	TimeAfter  int       `form:"time_after" json:"time_after"`
+	OrgIds     *[]string `form:"org_ids,omitempty" json:"org_ids,omitempty"`
+}
+
+// HandleGetSessionMetricsV3EnterpriseMetricsSessionsGetParams defines parameters for HandleGetSessionMetricsV3EnterpriseMetricsSessionsGet.
+type HandleGetSessionMetricsV3EnterpriseMetricsSessionsGetParams struct {
+	UserIds        *[]string `form:"user_ids,omitempty" json:"user_ids,omitempty"`
+	ServiceUserIds *[]string `form:"service_user_ids,omitempty" json:"service_user_ids,omitempty"`
+	TimeBefore     int       `form:"time_before" json:"time_before"`
+	TimeAfter      int       `form:"time_after" json:"time_after"`
+	OrgIds         *[]string `form:"org_ids,omitempty" json:"org_ids,omitempty"`
+	PlaybookID     *string   `form:"playbook_id,omitempty" json:"playbook_id,omitempty"`
+}
+
+// HandleGetSessionsByCategoryV3EnterpriseMetricsSessionsByCategoryGetParams defines parameters for HandleGetSessionsByCategoryV3EnterpriseMetricsSessionsByCategoryGet.
+type HandleGetSessionsByCategoryV3EnterpriseMetricsSessionsByCategoryGetParams struct {
+	TimeBefore int       `form:"time_before" json:"time_before"`
+	TimeAfter  int       `form:"time_after" json:"time_after"`
+	OrgIds     *[]string `form:"org_ids,omitempty" json:"org_ids,omitempty"`
+}
+
+// HandleGetUsageMetricsV3EnterpriseMetricsUsageGetParams defines parameters for HandleGetUsageMetricsV3EnterpriseMetricsUsageGet.
+type HandleGetUsageMetricsV3EnterpriseMetricsUsageGetParams struct {
+	TimeBefore *int `form:"time_before,omitempty" json:"time_before,omitempty"`
+	TimeAfter  *int `form:"time_after,omitempty" json:"time_after,omitempty"`
+}
+
+// HandleGetWauMetricsV3EnterpriseMetricsWauGetParams defines parameters for HandleGetWauMetricsV3EnterpriseMetricsWauGet.
+type HandleGetWauMetricsV3EnterpriseMetricsWauGetParams struct {
+	TimeBefore  int       `form:"time_before" json:"time_before"`
+	TimeAfter   int       `form:"time_after" json:"time_after"`
+	OrgIds      *[]string `form:"org_ids,omitempty" json:"org_ids,omitempty"`
+	MinSessions *int      `form:"min_sessions,omitempty" json:"min_sessions,omitempty"`
+	MinSearches *int      `form:"min_searches,omitempty" json:"min_searches,omitempty"`
+}
+
 // HandleGetOrganizationsV3EnterpriseOrganizationsGetParams defines parameters for HandleGetOrganizationsV3EnterpriseOrganizationsGet.
 type HandleGetOrganizationsV3EnterpriseOrganizationsGetParams struct {
 	After *string `form:"after,omitempty" json:"after,omitempty"`
 	First *int    `form:"first,omitempty" json:"first,omitempty"`
 }
+
+// HandleGetOrgAuditLogsV3EnterpriseOrganizationsOrgIDAuditLogsGetParams defines parameters for HandleGetOrgAuditLogsV3EnterpriseOrganizationsOrgIDAuditLogsGet.
+type HandleGetOrgAuditLogsV3EnterpriseOrganizationsOrgIDAuditLogsGetParams struct {
+	Order      *HandleGetOrgAuditLogsV3EnterpriseOrganizationsOrgIDAuditLogsGetParamsOrder `form:"order,omitempty" json:"order,omitempty"`
+	TimeBefore *int                                                                        `form:"time_before,omitempty" json:"time_before,omitempty"`
+	TimeAfter  *int                                                                        `form:"time_after,omitempty" json:"time_after,omitempty"`
+	After      *string                                                                     `form:"after,omitempty" json:"after,omitempty"`
+	First      *int                                                                        `form:"first,omitempty" json:"first,omitempty"`
+	Action     *AuditLogAction                                                             `form:"action,omitempty" json:"action,omitempty"`
+}
+
+// HandleGetOrgAuditLogsV3EnterpriseOrganizationsOrgIDAuditLogsGetParamsOrder defines parameters for HandleGetOrgAuditLogsV3EnterpriseOrganizationsOrgIDAuditLogsGet.
+type HandleGetOrgAuditLogsV3EnterpriseOrganizationsOrgIDAuditLogsGetParamsOrder string
+
+// HandleRemediateCodeScanFindingV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsFindingIDRemediatePostJSONBody defines parameters for HandleRemediateCodeScanFindingV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsFindingIDRemediatePost.
+type HandleRemediateCodeScanFindingV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsFindingIDRemediatePostJSONBody = V3RemediateFindingRequest
 
 // HandleGetOrganizationGitPermissionsV3EnterpriseOrganizationsOrgIDGitProvidersPermissionsGetParams defines parameters for HandleGetOrganizationGitPermissionsV3EnterpriseOrganizationsOrgIDGitProvidersPermissionsGet.
 type HandleGetOrganizationGitPermissionsV3EnterpriseOrganizationsOrgIDGitProvidersPermissionsGetParams struct {
@@ -3310,16 +7053,149 @@ type HandleListOrganizationUsersV3EnterpriseOrganizationsOrgIDMembersUsersGetPar
 	Email *string `form:"email,omitempty" json:"email,omitempty"`
 }
 
+// HandleGetOrganizationUsageMetricsV3EnterpriseOrganizationsOrgIDMetricsUsageGetParams defines parameters for HandleGetOrganizationUsageMetricsV3EnterpriseOrganizationsOrgIDMetricsUsageGet.
+type HandleGetOrganizationUsageMetricsV3EnterpriseOrganizationsOrgIDMetricsUsageGetParams struct {
+	TimeBefore *int `form:"time_before,omitempty" json:"time_before,omitempty"`
+	TimeAfter  *int `form:"time_after,omitempty" json:"time_after,omitempty"`
+}
+
 // HandleListPlaybooksV3EnterprisePlaybooksGetParams defines parameters for HandleListPlaybooksV3EnterprisePlaybooksGet.
 type HandleListPlaybooksV3EnterprisePlaybooksGetParams struct {
 	After *string `form:"after,omitempty" json:"after,omitempty"`
 	First *int    `form:"first,omitempty" json:"first,omitempty"`
 }
 
+// HandleGetPrReviewStatusV3EnterprisePrReviewsGetParams defines parameters for HandleGetPrReviewStatusV3EnterprisePrReviewsGet.
+type HandleGetPrReviewStatusV3EnterprisePrReviewsGetParams struct {
+	// PrURL Full URL of the pull/merge request to look up (e.g. `https://github.com/owner/repo/pull/123`).
+	PrURL string `form:"pr_url" json:"pr_url"`
+
+	// CommitSha Commit SHA to look up (full or short prefix). Defaults to the PR's current head commit when omitted.
+	CommitSha *string `form:"commit_sha,omitempty" json:"commit_sha,omitempty"`
+}
+
 // HandleGetRolesV3EnterpriseRolesGetParams defines parameters for HandleGetRolesV3EnterpriseRolesGet.
 type HandleGetRolesV3EnterpriseRolesGetParams struct {
 	After *string `form:"after,omitempty" json:"after,omitempty"`
 	First *int    `form:"first,omitempty" json:"first,omitempty"`
+}
+
+// HandleGetAccountSessionsV3EnterpriseSessionsGetParams defines parameters for HandleGetAccountSessionsV3EnterpriseSessionsGet.
+type HandleGetAccountSessionsV3EnterpriseSessionsGetParams struct {
+	After          *string                                                         `form:"after,omitempty" json:"after,omitempty"`
+	First          *int                                                            `form:"first,omitempty" json:"first,omitempty"`
+	SessionIds     *[]string                                                       `form:"session_ids,omitempty" json:"session_ids,omitempty"`
+	CreatedAfter   *int                                                            `form:"created_after,omitempty" json:"created_after,omitempty"`
+	CreatedBefore  *int                                                            `form:"created_before,omitempty" json:"created_before,omitempty"`
+	UpdatedAfter   *int                                                            `form:"updated_after,omitempty" json:"updated_after,omitempty"`
+	UpdatedBefore  *int                                                            `form:"updated_before,omitempty" json:"updated_before,omitempty"`
+	Tags           *[]string                                                       `form:"tags,omitempty" json:"tags,omitempty"`
+	PlaybookID     *string                                                         `form:"playbook_id,omitempty" json:"playbook_id,omitempty"`
+	Origins        *[]HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOrigins `form:"origins,omitempty" json:"origins,omitempty"`
+	ScheduleID     *string                                                         `form:"schedule_id,omitempty" json:"schedule_id,omitempty"`
+	UserIds        *[]string                                                       `form:"user_ids,omitempty" json:"user_ids,omitempty"`
+	ServiceUserIds *[]string                                                       `form:"service_user_ids,omitempty" json:"service_user_ids,omitempty"`
+
+	// RepoNames Filter by repository names (e.g., 'owner/repo')
+	RepoNames  *[]string                                                      `form:"repo_names,omitempty" json:"repo_names,omitempty"`
+	Category   *HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory `form:"category,omitempty" json:"category,omitempty"`
+	IsArchived *bool                                                          `form:"is_archived,omitempty" json:"is_archived,omitempty"`
+
+	// AutomationIds Filter to sessions created by any of these automations
+	AutomationIds *[]string `form:"automation_ids,omitempty" json:"automation_ids,omitempty"`
+
+	// ParentSessionID Filter to child sessions spawned by this parent session
+	ParentSessionID    *string   `form:"parent_session_id,omitempty" json:"parent_session_id,omitempty"`
+	OrgIds             *[]string `form:"org_ids,omitempty" json:"org_ids,omitempty"`
+	IncludeDeletedOrgs *bool     `form:"include_deleted_orgs,omitempty" json:"include_deleted_orgs,omitempty"`
+}
+
+// HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOrigins defines parameters for HandleGetAccountSessionsV3EnterpriseSessionsGet.
+type HandleGetAccountSessionsV3EnterpriseSessionsGetParamsOrigins string
+
+// HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory defines parameters for HandleGetAccountSessionsV3EnterpriseSessionsGet.
+type HandleGetAccountSessionsV3EnterpriseSessionsGetParamsCategory string
+
+// HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParams defines parameters for HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGet.
+type HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParams struct {
+	After          *string                                                                         `form:"after,omitempty" json:"after,omitempty"`
+	First          *int                                                                            `form:"first,omitempty" json:"first,omitempty"`
+	SessionIds     *[]string                                                                       `form:"session_ids,omitempty" json:"session_ids,omitempty"`
+	CreatedAfter   *int                                                                            `form:"created_after,omitempty" json:"created_after,omitempty"`
+	CreatedBefore  *int                                                                            `form:"created_before,omitempty" json:"created_before,omitempty"`
+	UpdatedAfter   *int                                                                            `form:"updated_after,omitempty" json:"updated_after,omitempty"`
+	UpdatedBefore  *int                                                                            `form:"updated_before,omitempty" json:"updated_before,omitempty"`
+	Tags           *[]string                                                                       `form:"tags,omitempty" json:"tags,omitempty"`
+	PlaybookID     *string                                                                         `form:"playbook_id,omitempty" json:"playbook_id,omitempty"`
+	Origins        *[]HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOrigins `form:"origins,omitempty" json:"origins,omitempty"`
+	ScheduleID     *string                                                                         `form:"schedule_id,omitempty" json:"schedule_id,omitempty"`
+	UserIds        *[]string                                                                       `form:"user_ids,omitempty" json:"user_ids,omitempty"`
+	ServiceUserIds *[]string                                                                       `form:"service_user_ids,omitempty" json:"service_user_ids,omitempty"`
+
+	// RepoNames Filter by repository names (e.g., 'owner/repo')
+	RepoNames  *[]string                                                                      `form:"repo_names,omitempty" json:"repo_names,omitempty"`
+	Category   *HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory `form:"category,omitempty" json:"category,omitempty"`
+	IsArchived *bool                                                                          `form:"is_archived,omitempty" json:"is_archived,omitempty"`
+
+	// AutomationIds Filter to sessions created by any of these automations
+	AutomationIds *[]string `form:"automation_ids,omitempty" json:"automation_ids,omitempty"`
+
+	// ParentSessionID Filter to child sessions spawned by this parent session
+	ParentSessionID    *string   `form:"parent_session_id,omitempty" json:"parent_session_id,omitempty"`
+	OrgIds             *[]string `form:"org_ids,omitempty" json:"org_ids,omitempty"`
+	IncludeDeletedOrgs *bool     `form:"include_deleted_orgs,omitempty" json:"include_deleted_orgs,omitempty"`
+}
+
+// HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOrigins defines parameters for HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGet.
+type HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsOrigins string
+
+// HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory defines parameters for HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGet.
+type HandleGetAccountSessionsInsightsV3EnterpriseSessionsInsightsGetParamsCategory string
+
+// HandleGetAccountSessionV3EnterpriseSessionsDevinIDGetParams defines parameters for HandleGetAccountSessionV3EnterpriseSessionsDevinIDGet.
+type HandleGetAccountSessionV3EnterpriseSessionsDevinIDGetParams struct {
+	OrgID *string `form:"org_id,omitempty" json:"org_id,omitempty"`
+}
+
+// HandleGetAccountSessionAttachmentsV3EnterpriseSessionsDevinIDAttachmentsGetParams defines parameters for HandleGetAccountSessionAttachmentsV3EnterpriseSessionsDevinIDAttachmentsGet.
+type HandleGetAccountSessionAttachmentsV3EnterpriseSessionsDevinIDAttachmentsGetParams struct {
+	OrgID *string `form:"org_id,omitempty" json:"org_id,omitempty"`
+}
+
+// HandleGetAccountSessionInsightsV3EnterpriseSessionsDevinIDInsightsGetParams defines parameters for HandleGetAccountSessionInsightsV3EnterpriseSessionsDevinIDInsightsGet.
+type HandleGetAccountSessionInsightsV3EnterpriseSessionsDevinIDInsightsGetParams struct {
+	OrgID *string `form:"org_id,omitempty" json:"org_id,omitempty"`
+}
+
+// HandleGenerateAccountSessionInsightsV3EnterpriseSessionsDevinIDInsightsGeneratePostParams defines parameters for HandleGenerateAccountSessionInsightsV3EnterpriseSessionsDevinIDInsightsGeneratePost.
+type HandleGenerateAccountSessionInsightsV3EnterpriseSessionsDevinIDInsightsGeneratePostParams struct {
+	OrgID *string `form:"org_id,omitempty" json:"org_id,omitempty"`
+}
+
+// HandleGetAccountSessionMessagesV3EnterpriseSessionsDevinIDMessagesGetParams defines parameters for HandleGetAccountSessionMessagesV3EnterpriseSessionsDevinIDMessagesGet.
+type HandleGetAccountSessionMessagesV3EnterpriseSessionsDevinIDMessagesGetParams struct {
+	Qs    CursorPaginationParams `form:"qs" json:"qs"`
+	OrgID *string                `form:"org_id,omitempty" json:"org_id,omitempty"`
+}
+
+// HandlePostAccountSessionMessageV3EnterpriseSessionsDevinIDMessagesPostParams defines parameters for HandlePostAccountSessionMessageV3EnterpriseSessionsDevinIDMessagesPost.
+type HandlePostAccountSessionMessageV3EnterpriseSessionsDevinIDMessagesPostParams struct {
+	OrgID *string `form:"org_id,omitempty" json:"org_id,omitempty"`
+}
+
+// HandleGetAccountSessionTagsV3EnterpriseSessionsDevinIDTagsGetParams defines parameters for HandleGetAccountSessionTagsV3EnterpriseSessionsDevinIDTagsGet.
+type HandleGetAccountSessionTagsV3EnterpriseSessionsDevinIDTagsGetParams struct {
+	OrgID *string `form:"org_id,omitempty" json:"org_id,omitempty"`
+}
+
+// HandleAppendAccountSessionTagsV3EnterpriseSessionsDevinIDTagsPostParams defines parameters for HandleAppendAccountSessionTagsV3EnterpriseSessionsDevinIDTagsPost.
+type HandleAppendAccountSessionTagsV3EnterpriseSessionsDevinIDTagsPostParams struct {
+	OrgID *string `form:"org_id,omitempty" json:"org_id,omitempty"`
+}
+
+// HandleReplaceAccountSessionTagsV3EnterpriseSessionsDevinIDTagsPutParams defines parameters for HandleReplaceAccountSessionTagsV3EnterpriseSessionsDevinIDTagsPut.
+type HandleReplaceAccountSessionTagsV3EnterpriseSessionsDevinIDTagsPutParams struct {
+	OrgID *string `form:"org_id,omitempty" json:"org_id,omitempty"`
 }
 
 // UploadEnterpriseBlueprintFileEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDFilesPostParams defines parameters for UploadEnterpriseBlueprintFileEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDFilesPost.
@@ -3347,6 +7223,107 @@ type HandleGetAutomationSchemasV3OrganizationsOrgIDAutomationsSchemasGetParams s
 	SecurityProfileID *string `form:"security_profile_id,omitempty" json:"security_profile_id,omitempty"`
 }
 
+// HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParams defines parameters for HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGet.
+type HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParams struct {
+	After *string `form:"after,omitempty" json:"after,omitempty"`
+	First *int    `form:"first,omitempty" json:"first,omitempty"`
+
+	// Q Text search over finding title, description, and file path. Combines with other filters such as repo_name. Blank means no search. Returns 503 when search is unavailable for an organization.
+	Q *string `form:"q,omitempty" json:"q,omitempty"`
+
+	// ScanID Filter to findings produced by this scan.
+	ScanID *string `form:"scan_id,omitempty" json:"scan_id,omitempty"`
+
+	// RepoName Filter to findings reported in this repository.
+	RepoName *string `form:"repo_name,omitempty" json:"repo_name,omitempty"`
+
+	// Severity Filter to findings with any of these severities (critical, high, medium, low).
+	Severity *[]HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsSeverity `form:"severity,omitempty" json:"severity,omitempty"`
+
+	// Status Filter to findings with any of these statuses (open, dismissed, resolved).
+	Status *[]HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// Payoff Filter to findings in any of these payoff quadrants (quick_win, big_fix, easy_fix, deprioritize). Unrated findings (null fix_effort) never match.
+	Payoff *[]HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsPayoff `form:"payoff,omitempty" json:"payoff,omitempty"`
+
+	// CreatedAfter Findings created at or after this unix timestamp (seconds).
+	CreatedAfter *int `form:"created_after,omitempty" json:"created_after,omitempty"`
+
+	// CreatedBefore Findings created at or before this unix timestamp (seconds).
+	CreatedBefore *int `form:"created_before,omitempty" json:"created_before,omitempty"`
+
+	// UpdatedAfter Findings updated at or after this unix timestamp (seconds).
+	UpdatedAfter *int `form:"updated_after,omitempty" json:"updated_after,omitempty"`
+
+	// UpdatedBefore Findings updated at or before this unix timestamp (seconds).
+	UpdatedBefore *int `form:"updated_before,omitempty" json:"updated_before,omitempty"`
+}
+
+// HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsSeverity defines parameters for HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGet.
+type HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsSeverity string
+
+// HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsStatus defines parameters for HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGet.
+type HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsStatus string
+
+// HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsPayoff defines parameters for HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGet.
+type HandleListCodeScanFindingsV3OrganizationsOrgIDCodeScansFindingsGetParamsPayoff string
+
+// HandleGetCodeScanMetricsV3OrganizationsOrgIDCodeScansMetricsGetParams defines parameters for HandleGetCodeScanMetricsV3OrganizationsOrgIDCodeScansMetricsGet.
+type HandleGetCodeScanMetricsV3OrganizationsOrgIDCodeScansMetricsGetParams struct {
+	TimeBefore int `form:"time_before" json:"time_before"`
+	TimeAfter  int `form:"time_after" json:"time_after"`
+}
+
+// HandleListCodeScanProfilesV3OrganizationsOrgIDCodeScansProfilesGetParams defines parameters for HandleListCodeScanProfilesV3OrganizationsOrgIDCodeScansProfilesGet.
+type HandleListCodeScanProfilesV3OrganizationsOrgIDCodeScansProfilesGetParams struct {
+	After *string `form:"after,omitempty" json:"after,omitempty"`
+	First *int    `form:"first,omitempty" json:"first,omitempty"`
+}
+
+// HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParams defines parameters for HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGet.
+type HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParams struct {
+	TimeBefore *int    `form:"time_before,omitempty" json:"time_before,omitempty"`
+	TimeAfter  *int    `form:"time_after,omitempty" json:"time_after,omitempty"`
+	After      *string `form:"after,omitempty" json:"after,omitempty"`
+	First      *int    `form:"first,omitempty" json:"first,omitempty"`
+
+	// ScanType Filter to scans of this scan type.
+	ScanType *HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParamsScanType `form:"scan_type,omitempty" json:"scan_type,omitempty"`
+
+	// RepoName Filter to scans that scanned this repository. Matches multi-repo scans even when the repository is not the scan's primary repo, so returned items may report a different repo_name.
+	RepoName *string `form:"repo_name,omitempty" json:"repo_name,omitempty"`
+}
+
+// HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParamsScanType defines parameters for HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGet.
+type HandleListCodeScansV3OrganizationsOrgIDCodeScansScansGetParamsScanType string
+
+// HandleRemediateCodeScanFindingV3OrganizationsOrgIDCodeScansScanIDFindingsFindingIDRemediatePostJSONBody defines parameters for HandleRemediateCodeScanFindingV3OrganizationsOrgIDCodeScansScanIDFindingsFindingIDRemediatePost.
+type HandleRemediateCodeScanFindingV3OrganizationsOrgIDCodeScansScanIDFindingsFindingIDRemediatePostJSONBody = V3RemediateFindingRequest
+
+// HandleGetConsumptionDailyV3OrganizationsOrgIDConsumptionDailyGetParams defines parameters for HandleGetConsumptionDailyV3OrganizationsOrgIDConsumptionDailyGet.
+type HandleGetConsumptionDailyV3OrganizationsOrgIDConsumptionDailyGetParams struct {
+	TimeBefore *int `form:"time_before,omitempty" json:"time_before,omitempty"`
+	TimeAfter  *int `form:"time_after,omitempty" json:"time_after,omitempty"`
+}
+
+// HandleGetServiceUserConsumptionDailyV3OrganizationsOrgIDConsumptionDailyServiceUsersServiceUserIDGetParams defines parameters for HandleGetServiceUserConsumptionDailyV3OrganizationsOrgIDConsumptionDailyServiceUsersServiceUserIDGet.
+type HandleGetServiceUserConsumptionDailyV3OrganizationsOrgIDConsumptionDailyServiceUsersServiceUserIDGetParams struct {
+	TimeBefore *int `form:"time_before,omitempty" json:"time_before,omitempty"`
+	TimeAfter  *int `form:"time_after,omitempty" json:"time_after,omitempty"`
+}
+
+// HandleGetSessionConsumptionDailyV3OrganizationsOrgIDConsumptionDailySessionsSessionIDGetParams defines parameters for HandleGetSessionConsumptionDailyV3OrganizationsOrgIDConsumptionDailySessionsSessionIDGet.
+type HandleGetSessionConsumptionDailyV3OrganizationsOrgIDConsumptionDailySessionsSessionIDGetParams struct {
+	TimeBefore *int `form:"time_before,omitempty" json:"time_before,omitempty"`
+	TimeAfter  *int `form:"time_after,omitempty" json:"time_after,omitempty"`
+}
+
+// HandleGetUserConsumptionDailyV3OrganizationsOrgIDConsumptionDailyUsersUserIDGetParams defines parameters for HandleGetUserConsumptionDailyV3OrganizationsOrgIDConsumptionDailyUsersUserIDGet.
+type HandleGetUserConsumptionDailyV3OrganizationsOrgIDConsumptionDailyUsersUserIDGetParams struct {
+	TimeBefore *int `form:"time_before,omitempty" json:"time_before,omitempty"`
+	TimeAfter  *int `form:"time_after,omitempty" json:"time_after,omitempty"`
+}
+
 // HandleListNotesV3OrganizationsOrgIDKnowledgeNotesGetParams defines parameters for HandleListNotesV3OrganizationsOrgIDKnowledgeNotesGet.
 type HandleListNotesV3OrganizationsOrgIDKnowledgeNotesGetParams struct {
 	After      *string `form:"after,omitempty" json:"after,omitempty"`
@@ -3354,6 +7331,68 @@ type HandleListNotesV3OrganizationsOrgIDKnowledgeNotesGetParams struct {
 	Search     *string `form:"search,omitempty" json:"search,omitempty"`
 	FolderPath *string `form:"folder_path,omitempty" json:"folder_path,omitempty"`
 	PinnedRepo *string `form:"pinned_repo,omitempty" json:"pinned_repo,omitempty"`
+}
+
+// HandleGetActiveUsersMetricsV3OrganizationsOrgIDMetricsActiveUsersGetParams defines parameters for HandleGetActiveUsersMetricsV3OrganizationsOrgIDMetricsActiveUsersGet.
+type HandleGetActiveUsersMetricsV3OrganizationsOrgIDMetricsActiveUsersGetParams struct {
+	TimeBefore  int  `form:"time_before" json:"time_before"`
+	TimeAfter   int  `form:"time_after" json:"time_after"`
+	MinSessions *int `form:"min_sessions,omitempty" json:"min_sessions,omitempty"`
+	MinSearches *int `form:"min_searches,omitempty" json:"min_searches,omitempty"`
+}
+
+// HandleGetDauMetricsV3OrganizationsOrgIDMetricsDauGetParams defines parameters for HandleGetDauMetricsV3OrganizationsOrgIDMetricsDauGet.
+type HandleGetDauMetricsV3OrganizationsOrgIDMetricsDauGetParams struct {
+	TimeBefore  int  `form:"time_before" json:"time_before"`
+	TimeAfter   int  `form:"time_after" json:"time_after"`
+	MinSessions *int `form:"min_sessions,omitempty" json:"min_sessions,omitempty"`
+	MinSearches *int `form:"min_searches,omitempty" json:"min_searches,omitempty"`
+}
+
+// HandleGetMauMetricsV3OrganizationsOrgIDMetricsMauGetParams defines parameters for HandleGetMauMetricsV3OrganizationsOrgIDMetricsMauGet.
+type HandleGetMauMetricsV3OrganizationsOrgIDMetricsMauGetParams struct {
+	TimeBefore  int  `form:"time_before" json:"time_before"`
+	TimeAfter   int  `form:"time_after" json:"time_after"`
+	MinSessions *int `form:"min_sessions,omitempty" json:"min_sessions,omitempty"`
+	MinSearches *int `form:"min_searches,omitempty" json:"min_searches,omitempty"`
+}
+
+// HandleGetPrMetricsV3OrganizationsOrgIDMetricsPrsGetParams defines parameters for HandleGetPrMetricsV3OrganizationsOrgIDMetricsPrsGet.
+type HandleGetPrMetricsV3OrganizationsOrgIDMetricsPrsGetParams struct {
+	UserIds        *[]string `form:"user_ids,omitempty" json:"user_ids,omitempty"`
+	ServiceUserIds *[]string `form:"service_user_ids,omitempty" json:"service_user_ids,omitempty"`
+	TimeBefore     int       `form:"time_before" json:"time_before"`
+	TimeAfter      int       `form:"time_after" json:"time_after"`
+	PlaybookID     *string   `form:"playbook_id,omitempty" json:"playbook_id,omitempty"`
+}
+
+// HandleGetSearchMetricsV3OrganizationsOrgIDMetricsSearchesGetParams defines parameters for HandleGetSearchMetricsV3OrganizationsOrgIDMetricsSearchesGet.
+type HandleGetSearchMetricsV3OrganizationsOrgIDMetricsSearchesGetParams struct {
+	TimeBefore int `form:"time_before" json:"time_before"`
+	TimeAfter  int `form:"time_after" json:"time_after"`
+}
+
+// HandleGetSessionMetricsV3OrganizationsOrgIDMetricsSessionsGetParams defines parameters for HandleGetSessionMetricsV3OrganizationsOrgIDMetricsSessionsGet.
+type HandleGetSessionMetricsV3OrganizationsOrgIDMetricsSessionsGetParams struct {
+	UserIds        *[]string `form:"user_ids,omitempty" json:"user_ids,omitempty"`
+	ServiceUserIds *[]string `form:"service_user_ids,omitempty" json:"service_user_ids,omitempty"`
+	TimeBefore     int       `form:"time_before" json:"time_before"`
+	TimeAfter      int       `form:"time_after" json:"time_after"`
+	PlaybookID     *string   `form:"playbook_id,omitempty" json:"playbook_id,omitempty"`
+}
+
+// HandleGetUsageMetricsV3OrganizationsOrgIDMetricsUsageGetParams defines parameters for HandleGetUsageMetricsV3OrganizationsOrgIDMetricsUsageGet.
+type HandleGetUsageMetricsV3OrganizationsOrgIDMetricsUsageGetParams struct {
+	TimeBefore *int `form:"time_before,omitempty" json:"time_before,omitempty"`
+	TimeAfter  *int `form:"time_after,omitempty" json:"time_after,omitempty"`
+}
+
+// HandleGetWauMetricsV3OrganizationsOrgIDMetricsWauGetParams defines parameters for HandleGetWauMetricsV3OrganizationsOrgIDMetricsWauGet.
+type HandleGetWauMetricsV3OrganizationsOrgIDMetricsWauGetParams struct {
+	TimeBefore  int  `form:"time_before" json:"time_before"`
+	TimeAfter   int  `form:"time_after" json:"time_after"`
+	MinSessions *int `form:"min_sessions,omitempty" json:"min_sessions,omitempty"`
+	MinSearches *int `form:"min_searches,omitempty" json:"min_searches,omitempty"`
 }
 
 // HandleListRespondersV3OrganizationsOrgIDOncallRespondersGetParams defines parameters for HandleListRespondersV3OrganizationsOrgIDOncallRespondersGet.
@@ -3369,6 +7408,15 @@ type HandleListPlaybooksV3OrganizationsOrgIDPlaybooksGetParams struct {
 
 	// IncludeEnterprise Also return the enterprise-level playbooks shared with this organization (`access_type: enterprise`). They are read-only through the organization API.
 	IncludeEnterprise *bool `form:"include_enterprise,omitempty" json:"include_enterprise,omitempty"`
+}
+
+// HandleGetPrReviewStatusV3OrganizationsOrgIDPrReviewsGetParams defines parameters for HandleGetPrReviewStatusV3OrganizationsOrgIDPrReviewsGet.
+type HandleGetPrReviewStatusV3OrganizationsOrgIDPrReviewsGetParams struct {
+	// PrURL Full URL of the pull/merge request to look up (e.g. `https://github.com/owner/repo/pull/123`).
+	PrURL string `form:"pr_url" json:"pr_url"`
+
+	// CommitSha Commit SHA to look up (full or short prefix). Defaults to the PR's current head commit when omitted.
+	CommitSha *string `form:"commit_sha,omitempty" json:"commit_sha,omitempty"`
 }
 
 // HandleListRepositoriesV3OrganizationsOrgIDRepositoriesGetParams defines parameters for HandleListRepositoriesV3OrganizationsOrgIDRepositoriesGet.
@@ -3408,6 +7456,35 @@ type HandleListSecretsV3OrganizationsOrgIDSecretsGetParams struct {
 	First *int    `form:"first,omitempty" json:"first,omitempty"`
 }
 
+// HandleGetSessionsV3OrganizationsOrgIDSessionsGetParams defines parameters for HandleGetSessionsV3OrganizationsOrgIDSessionsGet.
+type HandleGetSessionsV3OrganizationsOrgIDSessionsGetParams struct {
+	Qs      SessionsQueryParams `form:"qs" json:"qs"`
+	DevinID *string             `form:"devin_id,omitempty" json:"devin_id,omitempty"`
+}
+
+// HandleCreateSessionV3OrganizationsOrgIDSessionsPostParams defines parameters for HandleCreateSessionV3OrganizationsOrgIDSessionsPost.
+type HandleCreateSessionV3OrganizationsOrgIDSessionsPostParams struct {
+	DevinID *string `form:"devin_id,omitempty" json:"devin_id,omitempty"`
+}
+
+// HandleGetSessionsInsightsV3OrganizationsOrgIDSessionsInsightsGetParams defines parameters for HandleGetSessionsInsightsV3OrganizationsOrgIDSessionsInsightsGet.
+type HandleGetSessionsInsightsV3OrganizationsOrgIDSessionsInsightsGetParams struct {
+	Qs      SessionsQueryParams `form:"qs" json:"qs"`
+	DevinID *string             `form:"devin_id,omitempty" json:"devin_id,omitempty"`
+}
+
+// HandleTerminateSessionV3OrganizationsOrgIDSessionsDevinIDDeleteParams defines parameters for HandleTerminateSessionV3OrganizationsOrgIDSessionsDevinIDDelete.
+type HandleTerminateSessionV3OrganizationsOrgIDSessionsDevinIDDeleteParams struct {
+	// Archive Whether to archive the Devin session
+	Archive *bool `form:"archive,omitempty" json:"archive,omitempty"`
+}
+
+// HandleGetSessionMessagesV3OrganizationsOrgIDSessionsDevinIDMessagesGetParams defines parameters for HandleGetSessionMessagesV3OrganizationsOrgIDSessionsDevinIDMessagesGet.
+type HandleGetSessionMessagesV3OrganizationsOrgIDSessionsDevinIDMessagesGetParams struct {
+	After *string `form:"after,omitempty" json:"after,omitempty"`
+	First *int    `form:"first,omitempty" json:"first,omitempty"`
+}
+
 // ListOrgBlueprintsV3OrganizationsOrgIDSnapshotSetupBlueprintsGetParams defines parameters for ListOrgBlueprintsV3OrganizationsOrgIDSnapshotSetupBlueprintsGet.
 type ListOrgBlueprintsV3OrganizationsOrgIDSnapshotSetupBlueprintsGetParams struct {
 	// RepoName Filter to a specific repository (e.g. 'org/repo').
@@ -3434,6 +7511,64 @@ type ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGetParams struct {
 // ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGetParamsStatus defines parameters for ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGet.
 type ListOrgBuildsV3OrganizationsOrgIDSnapshotSetupBuildsGetParamsStatus string
 
+// HandleGetAiGatewayMetricsV3Beta1AiGatewayMetricsGetParams defines parameters for HandleGetAiGatewayMetricsV3Beta1AiGatewayMetricsGet.
+type HandleGetAiGatewayMetricsV3Beta1AiGatewayMetricsGetParams struct {
+	// Metric The gateway measurement to query.
+	Metric AiGatewayMetric `form:"metric" json:"metric"`
+
+	// TimeAfter Inclusive start, in Unix seconds. Must be a multiple of interval_seconds.
+	TimeAfter int `form:"time_after" json:"time_after"`
+
+	// TimeBefore Exclusive end, in Unix seconds. Must be a multiple of interval_seconds.
+	TimeBefore int `form:"time_before" json:"time_before"`
+
+	// IntervalSeconds Requested bucket width; must evenly divide 86400. Datadog may return coarser buckets.
+	IntervalSeconds *int `form:"interval_seconds,omitempty" json:"interval_seconds,omitempty"`
+
+	// Model Model family such as kimi-k3 (every reasoning effort combined), or one model ID such as kimi-k3-high (case-insensitive). Omit for all models, reported by family.
+	Model *string `form:"model,omitempty" json:"model,omitempty"`
+
+	// Aggregation Counters: sum. Distributions: avg, p50, p90, p95 (default), p99. Streaming share: ratio.
+	Aggregation *HandleGetAiGatewayMetricsV3Beta1AiGatewayMetricsGetParamsAggregation `form:"aggregation,omitempty" json:"aggregation,omitempty"`
+}
+
+// HandleGetAiGatewayMetricsV3Beta1AiGatewayMetricsGetParamsAggregation defines parameters for HandleGetAiGatewayMetricsV3Beta1AiGatewayMetricsGet.
+type HandleGetAiGatewayMetricsV3Beta1AiGatewayMetricsGetParamsAggregation string
+
+// HandleGetEnterpriseGuardrailViolationsV3Beta1EnterpriseGuardrailViolationsGetParams defines parameters for HandleGetEnterpriseGuardrailViolationsV3Beta1EnterpriseGuardrailViolationsGet.
+type HandleGetEnterpriseGuardrailViolationsV3Beta1EnterpriseGuardrailViolationsGetParams struct {
+	Order       *HandleGetEnterpriseGuardrailViolationsV3Beta1EnterpriseGuardrailViolationsGetParamsOrder `form:"order,omitempty" json:"order,omitempty"`
+	TimeBefore  *int                                                                                      `form:"time_before,omitempty" json:"time_before,omitempty"`
+	TimeAfter   *int                                                                                      `form:"time_after,omitempty" json:"time_after,omitempty"`
+	After       *string                                                                                   `form:"after,omitempty" json:"after,omitempty"`
+	First       *int                                                                                      `form:"first,omitempty" json:"first,omitempty"`
+	SessionID   *string                                                                                   `form:"session_id,omitempty" json:"session_id,omitempty"`
+	GuardrailID *string                                                                                   `form:"guardrail_id,omitempty" json:"guardrail_id,omitempty"`
+}
+
+// HandleGetEnterpriseGuardrailViolationsV3Beta1EnterpriseGuardrailViolationsGetParamsOrder defines parameters for HandleGetEnterpriseGuardrailViolationsV3Beta1EnterpriseGuardrailViolationsGet.
+type HandleGetEnterpriseGuardrailViolationsV3Beta1EnterpriseGuardrailViolationsGetParamsOrder string
+
+// HandleGetOrgGuardrailViolationsV3Beta1EnterpriseOrganizationsOrgIDGuardrailViolationsGetParams defines parameters for HandleGetOrgGuardrailViolationsV3Beta1EnterpriseOrganizationsOrgIDGuardrailViolationsGet.
+type HandleGetOrgGuardrailViolationsV3Beta1EnterpriseOrganizationsOrgIDGuardrailViolationsGetParams struct {
+	Order       *HandleGetOrgGuardrailViolationsV3Beta1EnterpriseOrganizationsOrgIDGuardrailViolationsGetParamsOrder `form:"order,omitempty" json:"order,omitempty"`
+	TimeBefore  *int                                                                                                 `form:"time_before,omitempty" json:"time_before,omitempty"`
+	TimeAfter   *int                                                                                                 `form:"time_after,omitempty" json:"time_after,omitempty"`
+	After       *string                                                                                              `form:"after,omitempty" json:"after,omitempty"`
+	First       *int                                                                                                 `form:"first,omitempty" json:"first,omitempty"`
+	SessionID   *string                                                                                              `form:"session_id,omitempty" json:"session_id,omitempty"`
+	GuardrailID *string                                                                                              `form:"guardrail_id,omitempty" json:"guardrail_id,omitempty"`
+}
+
+// HandleGetOrgGuardrailViolationsV3Beta1EnterpriseOrganizationsOrgIDGuardrailViolationsGetParamsOrder defines parameters for HandleGetOrgGuardrailViolationsV3Beta1EnterpriseOrganizationsOrgIDGuardrailViolationsGet.
+type HandleGetOrgGuardrailViolationsV3Beta1EnterpriseOrganizationsOrgIDGuardrailViolationsGetParamsOrder string
+
+// HandleListSecurityProfilesV3Beta1EnterpriseSecurityProfilesGetParams defines parameters for HandleListSecurityProfilesV3Beta1EnterpriseSecurityProfilesGet.
+type HandleListSecurityProfilesV3Beta1EnterpriseSecurityProfilesGetParams struct {
+	After *string `form:"after,omitempty" json:"after,omitempty"`
+	First *int    `form:"first,omitempty" json:"first,omitempty"`
+}
+
 // HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParams defines parameters for HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGet.
 type HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParams struct {
 	Status *HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParamsStatus `form:"status,omitempty" json:"status,omitempty"`
@@ -3441,6 +7576,30 @@ type HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKe
 
 // HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParamsStatus defines parameters for HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGet.
 type HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParamsStatus string
+
+// HandleListOrganizationIdpUsersV3Beta1OrganizationsOrgIDMembersIdpUsersGetParams defines parameters for HandleListOrganizationIdpUsersV3Beta1OrganizationsOrgIDMembersIdpUsersGet.
+type HandleListOrganizationIdpUsersV3Beta1OrganizationsOrgIDMembersIdpUsersGetParams struct {
+	After *string `form:"after,omitempty" json:"after,omitempty"`
+	First *int    `form:"first,omitempty" json:"first,omitempty"`
+
+	// Email Filter by exact email address
+	Email *string `form:"email,omitempty" json:"email,omitempty"`
+}
+
+// HandleListOrganizationUsersV3Beta1OrganizationsOrgIDMembersUsersGetParams defines parameters for HandleListOrganizationUsersV3Beta1OrganizationsOrgIDMembersUsersGet.
+type HandleListOrganizationUsersV3Beta1OrganizationsOrgIDMembersUsersGetParams struct {
+	After *string `form:"after,omitempty" json:"after,omitempty"`
+	First *int    `form:"first,omitempty" json:"first,omitempty"`
+
+	// Email Filter by exact email address
+	Email *string `form:"email,omitempty" json:"email,omitempty"`
+}
+
+// HandleListSecurityProfilesV3Beta1OrganizationsOrgIDSecurityProfilesGetParams defines parameters for HandleListSecurityProfilesV3Beta1OrganizationsOrgIDSecurityProfilesGet.
+type HandleListSecurityProfilesV3Beta1OrganizationsOrgIDSecurityProfilesGetParams struct {
+	After *string `form:"after,omitempty" json:"after,omitempty"`
+	First *int    `form:"first,omitempty" json:"first,omitempty"`
+}
 
 // HandleSetOrgDevinAcuLimitV3EnterpriseConsumptionAcuLimitsDevinOrganizationsOrgIDPutJSONRequestBody defines body for HandleSetOrgDevinAcuLimitV3EnterpriseConsumptionAcuLimitsDevinOrganizationsOrgIDPut for application/json ContentType.
 type HandleSetOrgDevinAcuLimitV3EnterpriseConsumptionAcuLimitsDevinOrganizationsOrgIDPutJSONRequestBody = UpdateACULimitRequest
@@ -3475,6 +7634,9 @@ type HandleAssignEnterpriseServiceUserRoleV3EnterpriseMembersServiceUsersService
 // HandleBulkInviteEnterpriseUsersV3EnterpriseMembersUsersPostJSONRequestBody defines body for HandleBulkInviteEnterpriseUsersV3EnterpriseMembersUsersPost for application/json ContentType.
 type HandleBulkInviteEnterpriseUsersV3EnterpriseMembersUsersPostJSONRequestBody = UserBulkCreateRequest
 
+// HandleUpdateUserBillingOrgsV3EnterpriseMembersUsersBillingOrgsPutJSONRequestBody defines body for HandleUpdateUserBillingOrgsV3EnterpriseMembersUsersBillingOrgsPut for application/json ContentType.
+type HandleUpdateUserBillingOrgsV3EnterpriseMembersUsersBillingOrgsPutJSONRequestBody = UserBillingOrgsUpdateRequest
+
 // HandleUpdateEnterpriseUserRoleV3EnterpriseMembersUsersUserIDPatchJSONRequestBody defines body for HandleUpdateEnterpriseUserRoleV3EnterpriseMembersUsersUserIDPatch for application/json ContentType.
 type HandleUpdateEnterpriseUserRoleV3EnterpriseMembersUsersUserIDPatchJSONRequestBody = UserUpdateRoleRequest
 
@@ -3486,6 +7648,36 @@ type HandleCreateOrganizationV3EnterpriseOrganizationsPostJSONRequestBody = Orga
 
 // HandleUpdateOrganizationV3EnterpriseOrganizationsOrgIDPatchJSONRequestBody defines body for HandleUpdateOrganizationV3EnterpriseOrganizationsOrgIDPatch for application/json ContentType.
 type HandleUpdateOrganizationV3EnterpriseOrganizationsOrgIDPatchJSONRequestBody = OrganizationUpdateRequest
+
+// HandleStartCodeScanV3EnterpriseOrganizationsOrgIDCodeScansPostJSONRequestBody defines body for HandleStartCodeScanV3EnterpriseOrganizationsOrgIDCodeScansPost for application/json ContentType.
+type HandleStartCodeScanV3EnterpriseOrganizationsOrgIDCodeScansPostJSONRequestBody = CodeScanCreateRequest
+
+// HandleStartIngestionScanV3EnterpriseOrganizationsOrgIDCodeScansIngestionPostJSONRequestBody defines body for HandleStartIngestionScanV3EnterpriseOrganizationsOrgIDCodeScansIngestionPost for application/json ContentType.
+type HandleStartIngestionScanV3EnterpriseOrganizationsOrgIDCodeScansIngestionPostJSONRequestBody = StartIngestionScanRequest
+
+// HandleCreateAutoScanScheduleV3EnterpriseOrganizationsOrgIDCodeScansScanIDAutoScanPostJSONRequestBody defines body for HandleCreateAutoScanScheduleV3EnterpriseOrganizationsOrgIDCodeScansScanIDAutoScanPost for application/json ContentType.
+type HandleCreateAutoScanScheduleV3EnterpriseOrganizationsOrgIDCodeScansScanIDAutoScanPostJSONRequestBody = AutoScanScheduleCreateRequest
+
+// HandleUpdateCodeScanEffortV3EnterpriseOrganizationsOrgIDCodeScansScanIDEffortPutJSONRequestBody defines body for HandleUpdateCodeScanEffortV3EnterpriseOrganizationsOrgIDCodeScansScanIDEffortPut for application/json ContentType.
+type HandleUpdateCodeScanEffortV3EnterpriseOrganizationsOrgIDCodeScansScanIDEffortPutJSONRequestBody = CodeScanEffortUpdateRequest
+
+// HandleUpdateCodeScanFindingsStatusV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsPatchJSONRequestBody defines body for HandleUpdateCodeScanFindingsStatusV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsPatch for application/json ContentType.
+type HandleUpdateCodeScanFindingsStatusV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsPatchJSONRequestBody = CodeScanFindingsStatusUpdateRequest
+
+// HandleRemediateCodeScanFindingsV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsRemediatePostJSONRequestBody defines body for HandleRemediateCodeScanFindingsV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsRemediatePost for application/json ContentType.
+type HandleRemediateCodeScanFindingsV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsRemediatePostJSONRequestBody = RemediateFindingsRequest
+
+// HandleUnlinkCodeScanFindingsSessionV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsUnlinkSessionPostJSONRequestBody defines body for HandleUnlinkCodeScanFindingsSessionV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsUnlinkSessionPost for application/json ContentType.
+type HandleUnlinkCodeScanFindingsSessionV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsUnlinkSessionPostJSONRequestBody = UnlinkFindingsSessionRequest
+
+// HandleUpdateCodeScanFindingStatusV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsFindingIDPatchJSONRequestBody defines body for HandleUpdateCodeScanFindingStatusV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsFindingIDPatch for application/json ContentType.
+type HandleUpdateCodeScanFindingStatusV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsFindingIDPatchJSONRequestBody = CodeScanFindingStatusUpdateRequest
+
+// HandleRemediateCodeScanFindingV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsFindingIDRemediatePostJSONRequestBody defines body for HandleRemediateCodeScanFindingV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsFindingIDRemediatePost for application/json ContentType.
+type HandleRemediateCodeScanFindingV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsFindingIDRemediatePostJSONRequestBody = HandleRemediateCodeScanFindingV3EnterpriseOrganizationsOrgIDCodeScansScanIDFindingsFindingIDRemediatePostJSONBody
+
+// HandleSwitchCodeScanProfileV3EnterpriseOrganizationsOrgIDCodeScansScanIDProfilePutJSONRequestBody defines body for HandleSwitchCodeScanProfileV3EnterpriseOrganizationsOrgIDCodeScansScanIDProfilePut for application/json ContentType.
+type HandleSwitchCodeScanProfileV3EnterpriseOrganizationsOrgIDCodeScansScanIDProfilePutJSONRequestBody = CodeScanProfileSwitchRequest
 
 // HandleBulkCreateOrganizationGitPermissionsV3EnterpriseOrganizationsOrgIDGitProvidersPermissionsPostJSONRequestBody defines body for HandleBulkCreateOrganizationGitPermissionsV3EnterpriseOrganizationsOrgIDGitProvidersPermissionsPost for application/json ContentType.
 type HandleBulkCreateOrganizationGitPermissionsV3EnterpriseOrganizationsOrgIDGitProvidersPermissionsPostJSONRequestBody = GitPermissionBulkCreateRequest
@@ -3529,6 +7721,18 @@ type HandleCreatePlaybookV3EnterprisePlaybooksPostJSONRequestBody = PlaybookCrea
 // HandleUpdatePlaybookV3EnterprisePlaybooksPlaybookIDPutJSONRequestBody defines body for HandleUpdatePlaybookV3EnterprisePlaybooksPlaybookIDPut for application/json ContentType.
 type HandleUpdatePlaybookV3EnterprisePlaybooksPlaybookIDPutJSONRequestBody = PlaybookCreateRequest
 
+// HandleCreatePrReviewV3EnterprisePrReviewsPostJSONRequestBody defines body for HandleCreatePrReviewV3EnterprisePrReviewsPost for application/json ContentType.
+type HandleCreatePrReviewV3EnterprisePrReviewsPostJSONRequestBody = PrReviewCreateRequest
+
+// HandlePostAccountSessionMessageV3EnterpriseSessionsDevinIDMessagesPostJSONRequestBody defines body for HandlePostAccountSessionMessageV3EnterpriseSessionsDevinIDMessagesPost for application/json ContentType.
+type HandlePostAccountSessionMessageV3EnterpriseSessionsDevinIDMessagesPostJSONRequestBody = SessionMessageCreateRequest
+
+// HandleAppendAccountSessionTagsV3EnterpriseSessionsDevinIDTagsPostJSONRequestBody defines body for HandleAppendAccountSessionTagsV3EnterpriseSessionsDevinIDTagsPost for application/json ContentType.
+type HandleAppendAccountSessionTagsV3EnterpriseSessionsDevinIDTagsPostJSONRequestBody = SessionTagsUpdateRequest
+
+// HandleReplaceAccountSessionTagsV3EnterpriseSessionsDevinIDTagsPutJSONRequestBody defines body for HandleReplaceAccountSessionTagsV3EnterpriseSessionsDevinIDTagsPut for application/json ContentType.
+type HandleReplaceAccountSessionTagsV3EnterpriseSessionsDevinIDTagsPutJSONRequestBody = SessionTagsUpdateRequest
+
 // CreateEnterpriseBlueprintEndpointV3EnterpriseSnapshotSetupBlueprintsPostJSONRequestBody defines body for CreateEnterpriseBlueprintEndpointV3EnterpriseSnapshotSetupBlueprintsPost for application/json ContentType.
 type CreateEnterpriseBlueprintEndpointV3EnterpriseSnapshotSetupBlueprintsPostJSONRequestBody = CreateEnterpriseBlueprintBody
 
@@ -3538,11 +7742,44 @@ type UpdateEnterpriseBlueprintEndpointV3EnterpriseSnapshotSetupBlueprintsBluepri
 // UploadEnterpriseBlueprintFileEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDFilesPostMultipartRequestBody defines body for UploadEnterpriseBlueprintFileEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDFilesPost for multipart/form-data ContentType.
 type UploadEnterpriseBlueprintFileEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDFilesPostMultipartRequestBody = BodyUploadEnterpriseBlueprintFileEndpointV3EnterpriseSnapshotSetupBlueprintsBlueprintIDFilesPost
 
+// HandleUploadAttachmentV3OrganizationsOrgIDAttachmentsPostMultipartRequestBody defines body for HandleUploadAttachmentV3OrganizationsOrgIDAttachmentsPost for multipart/form-data ContentType.
+type HandleUploadAttachmentV3OrganizationsOrgIDAttachmentsPostMultipartRequestBody = BodyHandleUploadAttachmentV3OrganizationsOrgIDAttachmentsPost
+
 // HandleCreateAutomationV3OrganizationsOrgIDAutomationsPostJSONRequestBody defines body for HandleCreateAutomationV3OrganizationsOrgIDAutomationsPost for application/json ContentType.
 type HandleCreateAutomationV3OrganizationsOrgIDAutomationsPostJSONRequestBody = AutomationCreateRequest
 
 // HandleUpdateAutomationV3OrganizationsOrgIDAutomationsAutomationIDPatchJSONRequestBody defines body for HandleUpdateAutomationV3OrganizationsOrgIDAutomationsAutomationIDPatch for application/json ContentType.
 type HandleUpdateAutomationV3OrganizationsOrgIDAutomationsAutomationIDPatchJSONRequestBody = AutomationUpdateRequest
+
+// HandleStartCodeScanV3OrganizationsOrgIDCodeScansPostJSONRequestBody defines body for HandleStartCodeScanV3OrganizationsOrgIDCodeScansPost for application/json ContentType.
+type HandleStartCodeScanV3OrganizationsOrgIDCodeScansPostJSONRequestBody = OrgCodeScanCreateRequest
+
+// HandleStartIngestionScanV3OrganizationsOrgIDCodeScansIngestionPostJSONRequestBody defines body for HandleStartIngestionScanV3OrganizationsOrgIDCodeScansIngestionPost for application/json ContentType.
+type HandleStartIngestionScanV3OrganizationsOrgIDCodeScansIngestionPostJSONRequestBody = StartIngestionScanRequest
+
+// HandleCreateAutoScanScheduleV3OrganizationsOrgIDCodeScansScanIDAutoScanPostJSONRequestBody defines body for HandleCreateAutoScanScheduleV3OrganizationsOrgIDCodeScansScanIDAutoScanPost for application/json ContentType.
+type HandleCreateAutoScanScheduleV3OrganizationsOrgIDCodeScansScanIDAutoScanPostJSONRequestBody = AutoScanScheduleCreateRequest
+
+// HandleUpdateCodeScanEffortV3OrganizationsOrgIDCodeScansScanIDEffortPutJSONRequestBody defines body for HandleUpdateCodeScanEffortV3OrganizationsOrgIDCodeScansScanIDEffortPut for application/json ContentType.
+type HandleUpdateCodeScanEffortV3OrganizationsOrgIDCodeScansScanIDEffortPutJSONRequestBody = CodeScanEffortUpdateRequest
+
+// HandleUpdateCodeScanFindingsStatusV3OrganizationsOrgIDCodeScansScanIDFindingsPatchJSONRequestBody defines body for HandleUpdateCodeScanFindingsStatusV3OrganizationsOrgIDCodeScansScanIDFindingsPatch for application/json ContentType.
+type HandleUpdateCodeScanFindingsStatusV3OrganizationsOrgIDCodeScansScanIDFindingsPatchJSONRequestBody = CodeScanFindingsStatusUpdateRequest
+
+// HandleRemediateCodeScanFindingsV3OrganizationsOrgIDCodeScansScanIDFindingsRemediatePostJSONRequestBody defines body for HandleRemediateCodeScanFindingsV3OrganizationsOrgIDCodeScansScanIDFindingsRemediatePost for application/json ContentType.
+type HandleRemediateCodeScanFindingsV3OrganizationsOrgIDCodeScansScanIDFindingsRemediatePostJSONRequestBody = RemediateFindingsRequest
+
+// HandleUnlinkCodeScanFindingsSessionV3OrganizationsOrgIDCodeScansScanIDFindingsUnlinkSessionPostJSONRequestBody defines body for HandleUnlinkCodeScanFindingsSessionV3OrganizationsOrgIDCodeScansScanIDFindingsUnlinkSessionPost for application/json ContentType.
+type HandleUnlinkCodeScanFindingsSessionV3OrganizationsOrgIDCodeScansScanIDFindingsUnlinkSessionPostJSONRequestBody = UnlinkFindingsSessionRequest
+
+// HandleUpdateCodeScanFindingStatusV3OrganizationsOrgIDCodeScansScanIDFindingsFindingIDPatchJSONRequestBody defines body for HandleUpdateCodeScanFindingStatusV3OrganizationsOrgIDCodeScansScanIDFindingsFindingIDPatch for application/json ContentType.
+type HandleUpdateCodeScanFindingStatusV3OrganizationsOrgIDCodeScansScanIDFindingsFindingIDPatchJSONRequestBody = CodeScanFindingStatusUpdateRequest
+
+// HandleRemediateCodeScanFindingV3OrganizationsOrgIDCodeScansScanIDFindingsFindingIDRemediatePostJSONRequestBody defines body for HandleRemediateCodeScanFindingV3OrganizationsOrgIDCodeScansScanIDFindingsFindingIDRemediatePost for application/json ContentType.
+type HandleRemediateCodeScanFindingV3OrganizationsOrgIDCodeScansScanIDFindingsFindingIDRemediatePostJSONRequestBody = HandleRemediateCodeScanFindingV3OrganizationsOrgIDCodeScansScanIDFindingsFindingIDRemediatePostJSONBody
+
+// HandleSwitchCodeScanProfileV3OrganizationsOrgIDCodeScansScanIDProfilePutJSONRequestBody defines body for HandleSwitchCodeScanProfileV3OrganizationsOrgIDCodeScansScanIDProfilePut for application/json ContentType.
+type HandleSwitchCodeScanProfileV3OrganizationsOrgIDCodeScansScanIDProfilePutJSONRequestBody = CodeScanProfileSwitchRequest
 
 // HandleCreateNoteV3OrganizationsOrgIDKnowledgeNotesPostJSONRequestBody defines body for HandleCreateNoteV3OrganizationsOrgIDKnowledgeNotesPost for application/json ContentType.
 type HandleCreateNoteV3OrganizationsOrgIDKnowledgeNotesPostJSONRequestBody = KnowledgeNoteCreateRequest
@@ -3562,6 +7799,9 @@ type HandleCreatePlaybookV3OrganizationsOrgIDPlaybooksPostJSONRequestBody = Play
 // HandleUpdatePlaybookV3OrganizationsOrgIDPlaybooksPlaybookIDPutJSONRequestBody defines body for HandleUpdatePlaybookV3OrganizationsOrgIDPlaybooksPlaybookIDPut for application/json ContentType.
 type HandleUpdatePlaybookV3OrganizationsOrgIDPlaybooksPlaybookIDPutJSONRequestBody = PlaybookCreateRequest
 
+// HandleCreatePrReviewV3OrganizationsOrgIDPrReviewsPostJSONRequestBody defines body for HandleCreatePrReviewV3OrganizationsOrgIDPrReviewsPost for application/json ContentType.
+type HandleCreatePrReviewV3OrganizationsOrgIDPrReviewsPostJSONRequestBody = PrReviewCreateRequest
+
 // HandleBulkRemoveRepositoriesFromIndexingV3OrganizationsOrgIDRepositoriesIndexingDeleteJSONRequestBody defines body for HandleBulkRemoveRepositoriesFromIndexingV3OrganizationsOrgIDRepositoriesIndexingDelete for application/json ContentType.
 type HandleBulkRemoveRepositoriesFromIndexingV3OrganizationsOrgIDRepositoriesIndexingDeleteJSONRequestBody = RemoveRepositoriesRequest
 
@@ -3580,6 +7820,18 @@ type HandleUpdateScheduleV3OrganizationsOrgIDSchedulesScheduleIDPatchJSONRequest
 // HandleCreateSecretV3OrganizationsOrgIDSecretsPostJSONRequestBody defines body for HandleCreateSecretV3OrganizationsOrgIDSecretsPost for application/json ContentType.
 type HandleCreateSecretV3OrganizationsOrgIDSecretsPostJSONRequestBody = SecretCreateRequest
 
+// HandleCreateSessionV3OrganizationsOrgIDSessionsPostJSONRequestBody defines body for HandleCreateSessionV3OrganizationsOrgIDSessionsPost for application/json ContentType.
+type HandleCreateSessionV3OrganizationsOrgIDSessionsPostJSONRequestBody = SessionCreateRequest
+
+// HandlePostMessageV3OrganizationsOrgIDSessionsDevinIDMessagesPostJSONRequestBody defines body for HandlePostMessageV3OrganizationsOrgIDSessionsDevinIDMessagesPost for application/json ContentType.
+type HandlePostMessageV3OrganizationsOrgIDSessionsDevinIDMessagesPostJSONRequestBody = SessionMessageCreateRequest
+
+// HandleAppendSessionTagsV3OrganizationsOrgIDSessionsDevinIDTagsPostJSONRequestBody defines body for HandleAppendSessionTagsV3OrganizationsOrgIDSessionsDevinIDTagsPost for application/json ContentType.
+type HandleAppendSessionTagsV3OrganizationsOrgIDSessionsDevinIDTagsPostJSONRequestBody = SessionTagsUpdateRequest
+
+// HandleReplaceSessionTagsV3OrganizationsOrgIDSessionsDevinIDTagsPutJSONRequestBody defines body for HandleReplaceSessionTagsV3OrganizationsOrgIDSessionsDevinIDTagsPut for application/json ContentType.
+type HandleReplaceSessionTagsV3OrganizationsOrgIDSessionsDevinIDTagsPutJSONRequestBody = SessionTagsUpdateRequest
+
 // CreateOrgBlueprintV3OrganizationsOrgIDSnapshotSetupBlueprintsPostJSONRequestBody defines body for CreateOrgBlueprintV3OrganizationsOrgIDSnapshotSetupBlueprintsPost for application/json ContentType.
 type CreateOrgBlueprintV3OrganizationsOrgIDSnapshotSetupBlueprintsPostJSONRequestBody = CreateOrgBlueprintBody
 
@@ -3595,11 +7847,32 @@ type TriggerOrgBuildV3OrganizationsOrgIDSnapshotSetupBuildsPostJSONRequestBody =
 // PinOrgBuildV3OrganizationsOrgIDSnapshotSetupBuildsBuildIDPinPostJSONRequestBody defines body for PinOrgBuildV3OrganizationsOrgIDSnapshotSetupBuildsBuildIDPinPost for application/json ContentType.
 type PinOrgBuildV3OrganizationsOrgIDSnapshotSetupBuildsBuildIDPinPostJSONRequestBody = PinBuildBody
 
+// HandleUpdateSecurityProfileSettingsV3Beta1EnterpriseSecurityProfileSettingsPatchJSONRequestBody defines body for HandleUpdateSecurityProfileSettingsV3Beta1EnterpriseSecurityProfileSettingsPatch for application/json ContentType.
+type HandleUpdateSecurityProfileSettingsV3Beta1EnterpriseSecurityProfileSettingsPatchJSONRequestBody = EnterpriseSecurityProfileSettingsUpdateRequest
+
+// HandleCreateSecurityProfileV3Beta1EnterpriseSecurityProfilesPostJSONRequestBody defines body for HandleCreateSecurityProfileV3Beta1EnterpriseSecurityProfilesPost for application/json ContentType.
+type HandleCreateSecurityProfileV3Beta1EnterpriseSecurityProfilesPostJSONRequestBody = SecurityProfileCreateRequest
+
+// HandleUpdateSecurityProfileV3Beta1EnterpriseSecurityProfilesProfileIDPatchJSONRequestBody defines body for HandleUpdateSecurityProfileV3Beta1EnterpriseSecurityProfilesProfileIDPatch for application/json ContentType.
+type HandleUpdateSecurityProfileV3Beta1EnterpriseSecurityProfilesProfileIDPatchJSONRequestBody = SecurityProfileUpdateRequest
+
 // HandleCreateServiceUserAPIKeyV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysPostJSONRequestBody defines body for HandleCreateServiceUserAPIKeyV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysPost for application/json ContentType.
 type HandleCreateServiceUserAPIKeyV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysPostJSONRequestBody = CreateAPIKeyRequest
 
 // HandleRotateServiceUserAPIKeyV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysAPIKeyIDRotatePostJSONRequestBody defines body for HandleRotateServiceUserAPIKeyV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysAPIKeyIDRotatePost for application/json ContentType.
 type HandleRotateServiceUserAPIKeyV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysAPIKeyIDRotatePostJSONRequestBody = RotateAPIKeyRequest
+
+// HandleUpdateOrgDefaultPlatformV3Beta1OrganizationsOrgIDDefaultPlatformPutJSONRequestBody defines body for HandleUpdateOrgDefaultPlatformV3Beta1OrganizationsOrgIDDefaultPlatformPut for application/json ContentType.
+type HandleUpdateOrgDefaultPlatformV3Beta1OrganizationsOrgIDDefaultPlatformPutJSONRequestBody = OrgDefaultPlatformUpdateRequest
+
+// HandleUpdateSecurityProfileSettingsV3Beta1OrganizationsOrgIDSecurityProfileSettingsPatchJSONRequestBody defines body for HandleUpdateSecurityProfileSettingsV3Beta1OrganizationsOrgIDSecurityProfileSettingsPatch for application/json ContentType.
+type HandleUpdateSecurityProfileSettingsV3Beta1OrganizationsOrgIDSecurityProfileSettingsPatchJSONRequestBody = SecurityProfileSettingsUpdateRequest
+
+// HandleCreateSecurityProfileV3Beta1OrganizationsOrgIDSecurityProfilesPostJSONRequestBody defines body for HandleCreateSecurityProfileV3Beta1OrganizationsOrgIDSecurityProfilesPost for application/json ContentType.
+type HandleCreateSecurityProfileV3Beta1OrganizationsOrgIDSecurityProfilesPostJSONRequestBody = SecurityProfileCreateRequest
+
+// HandleUpdateSecurityProfileV3Beta1OrganizationsOrgIDSecurityProfilesProfileIDPatchJSONRequestBody defines body for HandleUpdateSecurityProfileV3Beta1OrganizationsOrgIDSecurityProfilesProfileIDPatch for application/json ContentType.
+type HandleUpdateSecurityProfileV3Beta1OrganizationsOrgIDSecurityProfilesProfileIDPatchJSONRequestBody = SecurityProfileUpdateRequest
 
 // AsAutomationComparisonConditionValue0 returns the union data inside the AutomationComparisonCondition_Value as a AutomationComparisonConditionValue0
 func (t AutomationComparisonCondition_Value) AsAutomationComparisonConditionValue0() (AutomationComparisonConditionValue0, error) {
@@ -3724,6 +7997,7 @@ func (t AutomationConditionGroup_All_Item) AsAutomationComparisonCondition() (Au
 
 // FromAutomationComparisonCondition overwrites any union data inside the AutomationConditionGroup_All_Item as the provided AutomationComparisonCondition
 func (t *AutomationConditionGroup_All_Item) FromAutomationComparisonCondition(v AutomationComparisonCondition) error {
+	v.Operator = "eq"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -3731,6 +8005,7 @@ func (t *AutomationConditionGroup_All_Item) FromAutomationComparisonCondition(v 
 
 // MergeAutomationComparisonCondition performs a merge with any union data inside the AutomationConditionGroup_All_Item, using the provided AutomationComparisonCondition
 func (t *AutomationConditionGroup_All_Item) MergeAutomationComparisonCondition(v AutomationComparisonCondition) error {
+	v.Operator = "eq"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -3750,6 +8025,7 @@ func (t AutomationConditionGroup_All_Item) AsAutomationStringCondition() (Automa
 
 // FromAutomationStringCondition overwrites any union data inside the AutomationConditionGroup_All_Item as the provided AutomationStringCondition
 func (t *AutomationConditionGroup_All_Item) FromAutomationStringCondition(v AutomationStringCondition) error {
+	v.Operator = "contains"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -3757,6 +8033,7 @@ func (t *AutomationConditionGroup_All_Item) FromAutomationStringCondition(v Auto
 
 // MergeAutomationStringCondition performs a merge with any union data inside the AutomationConditionGroup_All_Item, using the provided AutomationStringCondition
 func (t *AutomationConditionGroup_All_Item) MergeAutomationStringCondition(v AutomationStringCondition) error {
+	v.Operator = "contains"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -3776,6 +8053,7 @@ func (t AutomationConditionGroup_All_Item) AsAutomationNumericCondition() (Autom
 
 // FromAutomationNumericCondition overwrites any union data inside the AutomationConditionGroup_All_Item as the provided AutomationNumericCondition
 func (t *AutomationConditionGroup_All_Item) FromAutomationNumericCondition(v AutomationNumericCondition) error {
+	v.Operator = "gte"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -3783,6 +8061,7 @@ func (t *AutomationConditionGroup_All_Item) FromAutomationNumericCondition(v Aut
 
 // MergeAutomationNumericCondition performs a merge with any union data inside the AutomationConditionGroup_All_Item, using the provided AutomationNumericCondition
 func (t *AutomationConditionGroup_All_Item) MergeAutomationNumericCondition(v AutomationNumericCondition) error {
+	v.Operator = "gte"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -3802,6 +8081,7 @@ func (t AutomationConditionGroup_All_Item) AsAutomationEmptyCondition() (Automat
 
 // FromAutomationEmptyCondition overwrites any union data inside the AutomationConditionGroup_All_Item as the provided AutomationEmptyCondition
 func (t *AutomationConditionGroup_All_Item) FromAutomationEmptyCondition(v AutomationEmptyCondition) error {
+	v.Operator = "is_empty"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -3809,6 +8089,7 @@ func (t *AutomationConditionGroup_All_Item) FromAutomationEmptyCondition(v Autom
 
 // MergeAutomationEmptyCondition performs a merge with any union data inside the AutomationConditionGroup_All_Item, using the provided AutomationEmptyCondition
 func (t *AutomationConditionGroup_All_Item) MergeAutomationEmptyCondition(v AutomationEmptyCondition) error {
+	v.Operator = "is_empty"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -3828,6 +8109,7 @@ func (t AutomationConditionGroup_All_Item) AsAutomationRangeCondition() (Automat
 
 // FromAutomationRangeCondition overwrites any union data inside the AutomationConditionGroup_All_Item as the provided AutomationRangeCondition
 func (t *AutomationConditionGroup_All_Item) FromAutomationRangeCondition(v AutomationRangeCondition) error {
+	v.Operator = "between"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -3835,6 +8117,7 @@ func (t *AutomationConditionGroup_All_Item) FromAutomationRangeCondition(v Autom
 
 // MergeAutomationRangeCondition performs a merge with any union data inside the AutomationConditionGroup_All_Item, using the provided AutomationRangeCondition
 func (t *AutomationConditionGroup_All_Item) MergeAutomationRangeCondition(v AutomationRangeCondition) error {
+	v.Operator = "between"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -3854,6 +8137,7 @@ func (t AutomationConditionGroup_All_Item) AsAutomationListCondition() (Automati
 
 // FromAutomationListCondition overwrites any union data inside the AutomationConditionGroup_All_Item as the provided AutomationListCondition
 func (t *AutomationConditionGroup_All_Item) FromAutomationListCondition(v AutomationListCondition) error {
+	v.Operator = "in"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -3861,6 +8145,7 @@ func (t *AutomationConditionGroup_All_Item) FromAutomationListCondition(v Automa
 
 // MergeAutomationListCondition performs a merge with any union data inside the AutomationConditionGroup_All_Item, using the provided AutomationListCondition
 func (t *AutomationConditionGroup_All_Item) MergeAutomationListCondition(v AutomationListCondition) error {
+	v.Operator = "in"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -3880,6 +8165,7 @@ func (t AutomationConditionGroup_All_Item) AsAutomationMatchCondition() (Automat
 
 // FromAutomationMatchCondition overwrites any union data inside the AutomationConditionGroup_All_Item as the provided AutomationMatchCondition
 func (t *AutomationConditionGroup_All_Item) FromAutomationMatchCondition(v AutomationMatchCondition) error {
+	v.Operator = "not_matches"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -3887,6 +8173,7 @@ func (t *AutomationConditionGroup_All_Item) FromAutomationMatchCondition(v Autom
 
 // MergeAutomationMatchCondition performs a merge with any union data inside the AutomationConditionGroup_All_Item, using the provided AutomationMatchCondition
 func (t *AutomationConditionGroup_All_Item) MergeAutomationMatchCondition(v AutomationMatchCondition) error {
+	v.Operator = "not_matches"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -3906,6 +8193,7 @@ func (t AutomationConditionGroup_All_Item) AsAutomationRecurrenceCondition() (Au
 
 // FromAutomationRecurrenceCondition overwrites any union data inside the AutomationConditionGroup_All_Item as the provided AutomationRecurrenceCondition
 func (t *AutomationConditionGroup_All_Item) FromAutomationRecurrenceCondition(v AutomationRecurrenceCondition) error {
+	v.Operator = "recurrence"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -3913,6 +8201,7 @@ func (t *AutomationConditionGroup_All_Item) FromAutomationRecurrenceCondition(v 
 
 // MergeAutomationRecurrenceCondition performs a merge with any union data inside the AutomationConditionGroup_All_Item, using the provided AutomationRecurrenceCondition
 func (t *AutomationConditionGroup_All_Item) MergeAutomationRecurrenceCondition(v AutomationRecurrenceCondition) error {
+	v.Operator = "recurrence"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -3932,6 +8221,7 @@ func (t AutomationConditionGroup_All_Item) AsAutomationGlobCondition() (Automati
 
 // FromAutomationGlobCondition overwrites any union data inside the AutomationConditionGroup_All_Item as the provided AutomationGlobCondition
 func (t *AutomationConditionGroup_All_Item) FromAutomationGlobCondition(v AutomationGlobCondition) error {
+	v.Operator = "globs"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -3939,6 +8229,7 @@ func (t *AutomationConditionGroup_All_Item) FromAutomationGlobCondition(v Automa
 
 // MergeAutomationGlobCondition performs a merge with any union data inside the AutomationConditionGroup_All_Item, using the provided AutomationGlobCondition
 func (t *AutomationConditionGroup_All_Item) MergeAutomationGlobCondition(v AutomationGlobCondition) error {
+	v.Operator = "globs"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -3947,6 +8238,43 @@ func (t *AutomationConditionGroup_All_Item) MergeAutomationGlobCondition(v Autom
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
+}
+
+func (t AutomationConditionGroup_All_Item) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"operator"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t AutomationConditionGroup_All_Item) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "between":
+		return t.AsAutomationRangeCondition()
+	case "contains":
+		return t.AsAutomationStringCondition()
+	case "eq":
+		return t.AsAutomationComparisonCondition()
+	case "globs":
+		return t.AsAutomationGlobCondition()
+	case "gte":
+		return t.AsAutomationNumericCondition()
+	case "in":
+		return t.AsAutomationListCondition()
+	case "is_empty":
+		return t.AsAutomationEmptyCondition()
+	case "not_matches":
+		return t.AsAutomationMatchCondition()
+	case "recurrence":
+		return t.AsAutomationRecurrenceCondition()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
 }
 
 func (t AutomationConditionGroup_All_Item) MarshalJSON() ([]byte, error) {
@@ -3968,6 +8296,7 @@ func (t AutomationCreateRequest_Actions_Item) AsAutomationStartSessionActionInpu
 
 // FromAutomationStartSessionActionInput overwrites any union data inside the AutomationCreateRequest_Actions_Item as the provided AutomationStartSessionActionInput
 func (t *AutomationCreateRequest_Actions_Item) FromAutomationStartSessionActionInput(v AutomationStartSessionActionInput) error {
+	v.Type = "start_session"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -3975,6 +8304,7 @@ func (t *AutomationCreateRequest_Actions_Item) FromAutomationStartSessionActionI
 
 // MergeAutomationStartSessionActionInput performs a merge with any union data inside the AutomationCreateRequest_Actions_Item, using the provided AutomationStartSessionActionInput
 func (t *AutomationCreateRequest_Actions_Item) MergeAutomationStartSessionActionInput(v AutomationStartSessionActionInput) error {
+	v.Type = "start_session"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -3994,6 +8324,7 @@ func (t AutomationCreateRequest_Actions_Item) AsAutomationMessageSessionAction()
 
 // FromAutomationMessageSessionAction overwrites any union data inside the AutomationCreateRequest_Actions_Item as the provided AutomationMessageSessionAction
 func (t *AutomationCreateRequest_Actions_Item) FromAutomationMessageSessionAction(v AutomationMessageSessionAction) error {
+	v.Type = "message_session"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4001,6 +8332,7 @@ func (t *AutomationCreateRequest_Actions_Item) FromAutomationMessageSessionActio
 
 // MergeAutomationMessageSessionAction performs a merge with any union data inside the AutomationCreateRequest_Actions_Item, using the provided AutomationMessageSessionAction
 func (t *AutomationCreateRequest_Actions_Item) MergeAutomationMessageSessionAction(v AutomationMessageSessionAction) error {
+	v.Type = "message_session"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4020,6 +8352,7 @@ func (t AutomationCreateRequest_Actions_Item) AsAutomationMonitorSessionAction()
 
 // FromAutomationMonitorSessionAction overwrites any union data inside the AutomationCreateRequest_Actions_Item as the provided AutomationMonitorSessionAction
 func (t *AutomationCreateRequest_Actions_Item) FromAutomationMonitorSessionAction(v AutomationMonitorSessionAction) error {
+	v.Type = "monitor_session"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4027,6 +8360,7 @@ func (t *AutomationCreateRequest_Actions_Item) FromAutomationMonitorSessionActio
 
 // MergeAutomationMonitorSessionAction performs a merge with any union data inside the AutomationCreateRequest_Actions_Item, using the provided AutomationMonitorSessionAction
 func (t *AutomationCreateRequest_Actions_Item) MergeAutomationMonitorSessionAction(v AutomationMonitorSessionAction) error {
+	v.Type = "monitor_session"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4035,6 +8369,31 @@ func (t *AutomationCreateRequest_Actions_Item) MergeAutomationMonitorSessionActi
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
+}
+
+func (t AutomationCreateRequest_Actions_Item) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t AutomationCreateRequest_Actions_Item) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "message_session":
+		return t.AsAutomationMessageSessionAction()
+	case "monitor_session":
+		return t.AsAutomationMonitorSessionAction()
+	case "start_session":
+		return t.AsAutomationStartSessionActionInput()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
 }
 
 func (t AutomationCreateRequest_Actions_Item) MarshalJSON() ([]byte, error) {
@@ -4056,6 +8415,7 @@ func (t AutomationCreateRequest_RunAs) AsAutomationRunAsOrganization() (Automati
 
 // FromAutomationRunAsOrganization overwrites any union data inside the AutomationCreateRequest_RunAs as the provided AutomationRunAsOrganization
 func (t *AutomationCreateRequest_RunAs) FromAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	v.Type = "organization"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4063,6 +8423,7 @@ func (t *AutomationCreateRequest_RunAs) FromAutomationRunAsOrganization(v Automa
 
 // MergeAutomationRunAsOrganization performs a merge with any union data inside the AutomationCreateRequest_RunAs, using the provided AutomationRunAsOrganization
 func (t *AutomationCreateRequest_RunAs) MergeAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	v.Type = "organization"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4082,6 +8443,7 @@ func (t AutomationCreateRequest_RunAs) AsAutomationRunAsCreator() (AutomationRun
 
 // FromAutomationRunAsCreator overwrites any union data inside the AutomationCreateRequest_RunAs as the provided AutomationRunAsCreator
 func (t *AutomationCreateRequest_RunAs) FromAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	v.Type = "creator"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4089,6 +8451,7 @@ func (t *AutomationCreateRequest_RunAs) FromAutomationRunAsCreator(v AutomationR
 
 // MergeAutomationRunAsCreator performs a merge with any union data inside the AutomationCreateRequest_RunAs, using the provided AutomationRunAsCreator
 func (t *AutomationCreateRequest_RunAs) MergeAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	v.Type = "creator"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4108,6 +8471,7 @@ func (t AutomationCreateRequest_RunAs) AsAutomationRunAsServiceUser() (Automatio
 
 // FromAutomationRunAsServiceUser overwrites any union data inside the AutomationCreateRequest_RunAs as the provided AutomationRunAsServiceUser
 func (t *AutomationCreateRequest_RunAs) FromAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	v.Type = "service_user"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4115,6 +8479,7 @@ func (t *AutomationCreateRequest_RunAs) FromAutomationRunAsServiceUser(v Automat
 
 // MergeAutomationRunAsServiceUser performs a merge with any union data inside the AutomationCreateRequest_RunAs, using the provided AutomationRunAsServiceUser
 func (t *AutomationCreateRequest_RunAs) MergeAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	v.Type = "service_user"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4123,6 +8488,31 @@ func (t *AutomationCreateRequest_RunAs) MergeAutomationRunAsServiceUser(v Automa
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
+}
+
+func (t AutomationCreateRequest_RunAs) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t AutomationCreateRequest_RunAs) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "creator":
+		return t.AsAutomationRunAsCreator()
+	case "organization":
+		return t.AsAutomationRunAsOrganization()
+	case "service_user":
+		return t.AsAutomationRunAsServiceUser()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
 }
 
 func (t AutomationCreateRequest_RunAs) MarshalJSON() ([]byte, error) {
@@ -4294,6 +8684,7 @@ func (t AutomationResponse_Actions_Item) AsAutomationStartSessionActionOutput() 
 
 // FromAutomationStartSessionActionOutput overwrites any union data inside the AutomationResponse_Actions_Item as the provided AutomationStartSessionActionOutput
 func (t *AutomationResponse_Actions_Item) FromAutomationStartSessionActionOutput(v AutomationStartSessionActionOutput) error {
+	v.Type = "start_session"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4301,6 +8692,7 @@ func (t *AutomationResponse_Actions_Item) FromAutomationStartSessionActionOutput
 
 // MergeAutomationStartSessionActionOutput performs a merge with any union data inside the AutomationResponse_Actions_Item, using the provided AutomationStartSessionActionOutput
 func (t *AutomationResponse_Actions_Item) MergeAutomationStartSessionActionOutput(v AutomationStartSessionActionOutput) error {
+	v.Type = "start_session"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4320,6 +8712,7 @@ func (t AutomationResponse_Actions_Item) AsAutomationMessageSessionAction() (Aut
 
 // FromAutomationMessageSessionAction overwrites any union data inside the AutomationResponse_Actions_Item as the provided AutomationMessageSessionAction
 func (t *AutomationResponse_Actions_Item) FromAutomationMessageSessionAction(v AutomationMessageSessionAction) error {
+	v.Type = "message_session"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4327,6 +8720,7 @@ func (t *AutomationResponse_Actions_Item) FromAutomationMessageSessionAction(v A
 
 // MergeAutomationMessageSessionAction performs a merge with any union data inside the AutomationResponse_Actions_Item, using the provided AutomationMessageSessionAction
 func (t *AutomationResponse_Actions_Item) MergeAutomationMessageSessionAction(v AutomationMessageSessionAction) error {
+	v.Type = "message_session"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4346,6 +8740,7 @@ func (t AutomationResponse_Actions_Item) AsAutomationMonitorSessionAction() (Aut
 
 // FromAutomationMonitorSessionAction overwrites any union data inside the AutomationResponse_Actions_Item as the provided AutomationMonitorSessionAction
 func (t *AutomationResponse_Actions_Item) FromAutomationMonitorSessionAction(v AutomationMonitorSessionAction) error {
+	v.Type = "monitor_session"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4353,6 +8748,7 @@ func (t *AutomationResponse_Actions_Item) FromAutomationMonitorSessionAction(v A
 
 // MergeAutomationMonitorSessionAction performs a merge with any union data inside the AutomationResponse_Actions_Item, using the provided AutomationMonitorSessionAction
 func (t *AutomationResponse_Actions_Item) MergeAutomationMonitorSessionAction(v AutomationMonitorSessionAction) error {
+	v.Type = "monitor_session"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4361,6 +8757,31 @@ func (t *AutomationResponse_Actions_Item) MergeAutomationMonitorSessionAction(v 
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
+}
+
+func (t AutomationResponse_Actions_Item) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t AutomationResponse_Actions_Item) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "message_session":
+		return t.AsAutomationMessageSessionAction()
+	case "monitor_session":
+		return t.AsAutomationMonitorSessionAction()
+	case "start_session":
+		return t.AsAutomationStartSessionActionOutput()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
 }
 
 func (t AutomationResponse_Actions_Item) MarshalJSON() ([]byte, error) {
@@ -4382,6 +8803,7 @@ func (t AutomationResponse_RunAs) AsAutomationRunAsOrganization() (AutomationRun
 
 // FromAutomationRunAsOrganization overwrites any union data inside the AutomationResponse_RunAs as the provided AutomationRunAsOrganization
 func (t *AutomationResponse_RunAs) FromAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	v.Type = "organization"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4389,6 +8811,7 @@ func (t *AutomationResponse_RunAs) FromAutomationRunAsOrganization(v AutomationR
 
 // MergeAutomationRunAsOrganization performs a merge with any union data inside the AutomationResponse_RunAs, using the provided AutomationRunAsOrganization
 func (t *AutomationResponse_RunAs) MergeAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	v.Type = "organization"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4408,6 +8831,7 @@ func (t AutomationResponse_RunAs) AsAutomationRunAsCreator() (AutomationRunAsCre
 
 // FromAutomationRunAsCreator overwrites any union data inside the AutomationResponse_RunAs as the provided AutomationRunAsCreator
 func (t *AutomationResponse_RunAs) FromAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	v.Type = "creator"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4415,6 +8839,7 @@ func (t *AutomationResponse_RunAs) FromAutomationRunAsCreator(v AutomationRunAsC
 
 // MergeAutomationRunAsCreator performs a merge with any union data inside the AutomationResponse_RunAs, using the provided AutomationRunAsCreator
 func (t *AutomationResponse_RunAs) MergeAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	v.Type = "creator"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4434,6 +8859,7 @@ func (t AutomationResponse_RunAs) AsAutomationRunAsServiceUser() (AutomationRunA
 
 // FromAutomationRunAsServiceUser overwrites any union data inside the AutomationResponse_RunAs as the provided AutomationRunAsServiceUser
 func (t *AutomationResponse_RunAs) FromAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	v.Type = "service_user"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4441,6 +8867,7 @@ func (t *AutomationResponse_RunAs) FromAutomationRunAsServiceUser(v AutomationRu
 
 // MergeAutomationRunAsServiceUser performs a merge with any union data inside the AutomationResponse_RunAs, using the provided AutomationRunAsServiceUser
 func (t *AutomationResponse_RunAs) MergeAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	v.Type = "service_user"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4449,6 +8876,31 @@ func (t *AutomationResponse_RunAs) MergeAutomationRunAsServiceUser(v AutomationR
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
+}
+
+func (t AutomationResponse_RunAs) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t AutomationResponse_RunAs) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "creator":
+		return t.AsAutomationRunAsCreator()
+	case "organization":
+		return t.AsAutomationRunAsOrganization()
+	case "service_user":
+		return t.AsAutomationRunAsServiceUser()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
 }
 
 func (t AutomationResponse_RunAs) MarshalJSON() ([]byte, error) {
@@ -4470,6 +8922,7 @@ func (t AutomationTemplateResponse_Actions_Item) AsAutomationStartSessionActionO
 
 // FromAutomationStartSessionActionOutput overwrites any union data inside the AutomationTemplateResponse_Actions_Item as the provided AutomationStartSessionActionOutput
 func (t *AutomationTemplateResponse_Actions_Item) FromAutomationStartSessionActionOutput(v AutomationStartSessionActionOutput) error {
+	v.Type = "start_session"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4477,6 +8930,7 @@ func (t *AutomationTemplateResponse_Actions_Item) FromAutomationStartSessionActi
 
 // MergeAutomationStartSessionActionOutput performs a merge with any union data inside the AutomationTemplateResponse_Actions_Item, using the provided AutomationStartSessionActionOutput
 func (t *AutomationTemplateResponse_Actions_Item) MergeAutomationStartSessionActionOutput(v AutomationStartSessionActionOutput) error {
+	v.Type = "start_session"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4496,6 +8950,7 @@ func (t AutomationTemplateResponse_Actions_Item) AsAutomationMessageSessionActio
 
 // FromAutomationMessageSessionAction overwrites any union data inside the AutomationTemplateResponse_Actions_Item as the provided AutomationMessageSessionAction
 func (t *AutomationTemplateResponse_Actions_Item) FromAutomationMessageSessionAction(v AutomationMessageSessionAction) error {
+	v.Type = "message_session"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4503,6 +8958,7 @@ func (t *AutomationTemplateResponse_Actions_Item) FromAutomationMessageSessionAc
 
 // MergeAutomationMessageSessionAction performs a merge with any union data inside the AutomationTemplateResponse_Actions_Item, using the provided AutomationMessageSessionAction
 func (t *AutomationTemplateResponse_Actions_Item) MergeAutomationMessageSessionAction(v AutomationMessageSessionAction) error {
+	v.Type = "message_session"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4522,6 +8978,7 @@ func (t AutomationTemplateResponse_Actions_Item) AsAutomationMonitorSessionActio
 
 // FromAutomationMonitorSessionAction overwrites any union data inside the AutomationTemplateResponse_Actions_Item as the provided AutomationMonitorSessionAction
 func (t *AutomationTemplateResponse_Actions_Item) FromAutomationMonitorSessionAction(v AutomationMonitorSessionAction) error {
+	v.Type = "monitor_session"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4529,6 +8986,7 @@ func (t *AutomationTemplateResponse_Actions_Item) FromAutomationMonitorSessionAc
 
 // MergeAutomationMonitorSessionAction performs a merge with any union data inside the AutomationTemplateResponse_Actions_Item, using the provided AutomationMonitorSessionAction
 func (t *AutomationTemplateResponse_Actions_Item) MergeAutomationMonitorSessionAction(v AutomationMonitorSessionAction) error {
+	v.Type = "monitor_session"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4537,6 +8995,31 @@ func (t *AutomationTemplateResponse_Actions_Item) MergeAutomationMonitorSessionA
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
+}
+
+func (t AutomationTemplateResponse_Actions_Item) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t AutomationTemplateResponse_Actions_Item) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "message_session":
+		return t.AsAutomationMessageSessionAction()
+	case "monitor_session":
+		return t.AsAutomationMonitorSessionAction()
+	case "start_session":
+		return t.AsAutomationStartSessionActionOutput()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
 }
 
 func (t AutomationTemplateResponse_Actions_Item) MarshalJSON() ([]byte, error) {
@@ -4558,6 +9041,7 @@ func (t AutomationUpdateRequest_Actions_Item) AsAutomationStartSessionActionUpda
 
 // FromAutomationStartSessionActionUpdate overwrites any union data inside the AutomationUpdateRequest_Actions_Item as the provided AutomationStartSessionActionUpdate
 func (t *AutomationUpdateRequest_Actions_Item) FromAutomationStartSessionActionUpdate(v AutomationStartSessionActionUpdate) error {
+	v.Type = "start_session"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4565,6 +9049,7 @@ func (t *AutomationUpdateRequest_Actions_Item) FromAutomationStartSessionActionU
 
 // MergeAutomationStartSessionActionUpdate performs a merge with any union data inside the AutomationUpdateRequest_Actions_Item, using the provided AutomationStartSessionActionUpdate
 func (t *AutomationUpdateRequest_Actions_Item) MergeAutomationStartSessionActionUpdate(v AutomationStartSessionActionUpdate) error {
+	v.Type = "start_session"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4584,6 +9069,7 @@ func (t AutomationUpdateRequest_Actions_Item) AsAutomationMessageSessionActionUp
 
 // FromAutomationMessageSessionActionUpdate overwrites any union data inside the AutomationUpdateRequest_Actions_Item as the provided AutomationMessageSessionActionUpdate
 func (t *AutomationUpdateRequest_Actions_Item) FromAutomationMessageSessionActionUpdate(v AutomationMessageSessionActionUpdate) error {
+	v.Type = "message_session"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4591,6 +9077,7 @@ func (t *AutomationUpdateRequest_Actions_Item) FromAutomationMessageSessionActio
 
 // MergeAutomationMessageSessionActionUpdate performs a merge with any union data inside the AutomationUpdateRequest_Actions_Item, using the provided AutomationMessageSessionActionUpdate
 func (t *AutomationUpdateRequest_Actions_Item) MergeAutomationMessageSessionActionUpdate(v AutomationMessageSessionActionUpdate) error {
+	v.Type = "message_session"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4610,6 +9097,7 @@ func (t AutomationUpdateRequest_Actions_Item) AsAutomationMonitorSessionActionUp
 
 // FromAutomationMonitorSessionActionUpdate overwrites any union data inside the AutomationUpdateRequest_Actions_Item as the provided AutomationMonitorSessionActionUpdate
 func (t *AutomationUpdateRequest_Actions_Item) FromAutomationMonitorSessionActionUpdate(v AutomationMonitorSessionActionUpdate) error {
+	v.Type = "monitor_session"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4617,6 +9105,7 @@ func (t *AutomationUpdateRequest_Actions_Item) FromAutomationMonitorSessionActio
 
 // MergeAutomationMonitorSessionActionUpdate performs a merge with any union data inside the AutomationUpdateRequest_Actions_Item, using the provided AutomationMonitorSessionActionUpdate
 func (t *AutomationUpdateRequest_Actions_Item) MergeAutomationMonitorSessionActionUpdate(v AutomationMonitorSessionActionUpdate) error {
+	v.Type = "monitor_session"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4625,6 +9114,31 @@ func (t *AutomationUpdateRequest_Actions_Item) MergeAutomationMonitorSessionActi
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
+}
+
+func (t AutomationUpdateRequest_Actions_Item) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t AutomationUpdateRequest_Actions_Item) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "message_session":
+		return t.AsAutomationMessageSessionActionUpdate()
+	case "monitor_session":
+		return t.AsAutomationMonitorSessionActionUpdate()
+	case "start_session":
+		return t.AsAutomationStartSessionActionUpdate()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
 }
 
 func (t AutomationUpdateRequest_Actions_Item) MarshalJSON() ([]byte, error) {
@@ -4646,6 +9160,7 @@ func (t AutomationUpdateRequest_RunAs) AsAutomationRunAsOrganization() (Automati
 
 // FromAutomationRunAsOrganization overwrites any union data inside the AutomationUpdateRequest_RunAs as the provided AutomationRunAsOrganization
 func (t *AutomationUpdateRequest_RunAs) FromAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	v.Type = "organization"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4653,6 +9168,7 @@ func (t *AutomationUpdateRequest_RunAs) FromAutomationRunAsOrganization(v Automa
 
 // MergeAutomationRunAsOrganization performs a merge with any union data inside the AutomationUpdateRequest_RunAs, using the provided AutomationRunAsOrganization
 func (t *AutomationUpdateRequest_RunAs) MergeAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	v.Type = "organization"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4672,6 +9188,7 @@ func (t AutomationUpdateRequest_RunAs) AsAutomationRunAsCreator() (AutomationRun
 
 // FromAutomationRunAsCreator overwrites any union data inside the AutomationUpdateRequest_RunAs as the provided AutomationRunAsCreator
 func (t *AutomationUpdateRequest_RunAs) FromAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	v.Type = "creator"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4679,6 +9196,7 @@ func (t *AutomationUpdateRequest_RunAs) FromAutomationRunAsCreator(v AutomationR
 
 // MergeAutomationRunAsCreator performs a merge with any union data inside the AutomationUpdateRequest_RunAs, using the provided AutomationRunAsCreator
 func (t *AutomationUpdateRequest_RunAs) MergeAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	v.Type = "creator"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4698,6 +9216,7 @@ func (t AutomationUpdateRequest_RunAs) AsAutomationRunAsServiceUser() (Automatio
 
 // FromAutomationRunAsServiceUser overwrites any union data inside the AutomationUpdateRequest_RunAs as the provided AutomationRunAsServiceUser
 func (t *AutomationUpdateRequest_RunAs) FromAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	v.Type = "service_user"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4705,6 +9224,7 @@ func (t *AutomationUpdateRequest_RunAs) FromAutomationRunAsServiceUser(v Automat
 
 // MergeAutomationRunAsServiceUser performs a merge with any union data inside the AutomationUpdateRequest_RunAs, using the provided AutomationRunAsServiceUser
 func (t *AutomationUpdateRequest_RunAs) MergeAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	v.Type = "service_user"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4713,6 +9233,31 @@ func (t *AutomationUpdateRequest_RunAs) MergeAutomationRunAsServiceUser(v Automa
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
+}
+
+func (t AutomationUpdateRequest_RunAs) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t AutomationUpdateRequest_RunAs) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "creator":
+		return t.AsAutomationRunAsCreator()
+	case "organization":
+		return t.AsAutomationRunAsOrganization()
+	case "service_user":
+		return t.AsAutomationRunAsServiceUser()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
 }
 
 func (t AutomationUpdateRequest_RunAs) MarshalJSON() ([]byte, error) {
@@ -4734,6 +9279,7 @@ func (t OncallResponderCreateRequest_RunAs) AsAutomationRunAsOrganization() (Aut
 
 // FromAutomationRunAsOrganization overwrites any union data inside the OncallResponderCreateRequest_RunAs as the provided AutomationRunAsOrganization
 func (t *OncallResponderCreateRequest_RunAs) FromAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	v.Type = "organization"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4741,6 +9287,7 @@ func (t *OncallResponderCreateRequest_RunAs) FromAutomationRunAsOrganization(v A
 
 // MergeAutomationRunAsOrganization performs a merge with any union data inside the OncallResponderCreateRequest_RunAs, using the provided AutomationRunAsOrganization
 func (t *OncallResponderCreateRequest_RunAs) MergeAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	v.Type = "organization"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4760,6 +9307,7 @@ func (t OncallResponderCreateRequest_RunAs) AsAutomationRunAsCreator() (Automati
 
 // FromAutomationRunAsCreator overwrites any union data inside the OncallResponderCreateRequest_RunAs as the provided AutomationRunAsCreator
 func (t *OncallResponderCreateRequest_RunAs) FromAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	v.Type = "creator"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4767,6 +9315,7 @@ func (t *OncallResponderCreateRequest_RunAs) FromAutomationRunAsCreator(v Automa
 
 // MergeAutomationRunAsCreator performs a merge with any union data inside the OncallResponderCreateRequest_RunAs, using the provided AutomationRunAsCreator
 func (t *OncallResponderCreateRequest_RunAs) MergeAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	v.Type = "creator"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4786,6 +9335,7 @@ func (t OncallResponderCreateRequest_RunAs) AsAutomationRunAsServiceUser() (Auto
 
 // FromAutomationRunAsServiceUser overwrites any union data inside the OncallResponderCreateRequest_RunAs as the provided AutomationRunAsServiceUser
 func (t *OncallResponderCreateRequest_RunAs) FromAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	v.Type = "service_user"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4793,6 +9343,7 @@ func (t *OncallResponderCreateRequest_RunAs) FromAutomationRunAsServiceUser(v Au
 
 // MergeAutomationRunAsServiceUser performs a merge with any union data inside the OncallResponderCreateRequest_RunAs, using the provided AutomationRunAsServiceUser
 func (t *OncallResponderCreateRequest_RunAs) MergeAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	v.Type = "service_user"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4801,6 +9352,31 @@ func (t *OncallResponderCreateRequest_RunAs) MergeAutomationRunAsServiceUser(v A
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
+}
+
+func (t OncallResponderCreateRequest_RunAs) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t OncallResponderCreateRequest_RunAs) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "creator":
+		return t.AsAutomationRunAsCreator()
+	case "organization":
+		return t.AsAutomationRunAsOrganization()
+	case "service_user":
+		return t.AsAutomationRunAsServiceUser()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
 }
 
 func (t OncallResponderCreateRequest_RunAs) MarshalJSON() ([]byte, error) {
@@ -4822,6 +9398,7 @@ func (t OncallResponderResponse_RunAs) AsAutomationRunAsOrganization() (Automati
 
 // FromAutomationRunAsOrganization overwrites any union data inside the OncallResponderResponse_RunAs as the provided AutomationRunAsOrganization
 func (t *OncallResponderResponse_RunAs) FromAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	v.Type = "organization"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4829,6 +9406,7 @@ func (t *OncallResponderResponse_RunAs) FromAutomationRunAsOrganization(v Automa
 
 // MergeAutomationRunAsOrganization performs a merge with any union data inside the OncallResponderResponse_RunAs, using the provided AutomationRunAsOrganization
 func (t *OncallResponderResponse_RunAs) MergeAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	v.Type = "organization"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4848,6 +9426,7 @@ func (t OncallResponderResponse_RunAs) AsAutomationRunAsCreator() (AutomationRun
 
 // FromAutomationRunAsCreator overwrites any union data inside the OncallResponderResponse_RunAs as the provided AutomationRunAsCreator
 func (t *OncallResponderResponse_RunAs) FromAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	v.Type = "creator"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4855,6 +9434,7 @@ func (t *OncallResponderResponse_RunAs) FromAutomationRunAsCreator(v AutomationR
 
 // MergeAutomationRunAsCreator performs a merge with any union data inside the OncallResponderResponse_RunAs, using the provided AutomationRunAsCreator
 func (t *OncallResponderResponse_RunAs) MergeAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	v.Type = "creator"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4874,6 +9454,7 @@ func (t OncallResponderResponse_RunAs) AsAutomationRunAsServiceUser() (Automatio
 
 // FromAutomationRunAsServiceUser overwrites any union data inside the OncallResponderResponse_RunAs as the provided AutomationRunAsServiceUser
 func (t *OncallResponderResponse_RunAs) FromAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	v.Type = "service_user"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4881,6 +9462,7 @@ func (t *OncallResponderResponse_RunAs) FromAutomationRunAsServiceUser(v Automat
 
 // MergeAutomationRunAsServiceUser performs a merge with any union data inside the OncallResponderResponse_RunAs, using the provided AutomationRunAsServiceUser
 func (t *OncallResponderResponse_RunAs) MergeAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	v.Type = "service_user"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4889,6 +9471,31 @@ func (t *OncallResponderResponse_RunAs) MergeAutomationRunAsServiceUser(v Automa
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
+}
+
+func (t OncallResponderResponse_RunAs) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t OncallResponderResponse_RunAs) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "creator":
+		return t.AsAutomationRunAsCreator()
+	case "organization":
+		return t.AsAutomationRunAsOrganization()
+	case "service_user":
+		return t.AsAutomationRunAsServiceUser()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
 }
 
 func (t OncallResponderResponse_RunAs) MarshalJSON() ([]byte, error) {
@@ -4910,6 +9517,7 @@ func (t OncallResponderUpdateRequest_RunAs) AsAutomationRunAsOrganization() (Aut
 
 // FromAutomationRunAsOrganization overwrites any union data inside the OncallResponderUpdateRequest_RunAs as the provided AutomationRunAsOrganization
 func (t *OncallResponderUpdateRequest_RunAs) FromAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	v.Type = "organization"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4917,6 +9525,7 @@ func (t *OncallResponderUpdateRequest_RunAs) FromAutomationRunAsOrganization(v A
 
 // MergeAutomationRunAsOrganization performs a merge with any union data inside the OncallResponderUpdateRequest_RunAs, using the provided AutomationRunAsOrganization
 func (t *OncallResponderUpdateRequest_RunAs) MergeAutomationRunAsOrganization(v AutomationRunAsOrganization) error {
+	v.Type = "organization"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4936,6 +9545,7 @@ func (t OncallResponderUpdateRequest_RunAs) AsAutomationRunAsCreator() (Automati
 
 // FromAutomationRunAsCreator overwrites any union data inside the OncallResponderUpdateRequest_RunAs as the provided AutomationRunAsCreator
 func (t *OncallResponderUpdateRequest_RunAs) FromAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	v.Type = "creator"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4943,6 +9553,7 @@ func (t *OncallResponderUpdateRequest_RunAs) FromAutomationRunAsCreator(v Automa
 
 // MergeAutomationRunAsCreator performs a merge with any union data inside the OncallResponderUpdateRequest_RunAs, using the provided AutomationRunAsCreator
 func (t *OncallResponderUpdateRequest_RunAs) MergeAutomationRunAsCreator(v AutomationRunAsCreator) error {
+	v.Type = "creator"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4962,6 +9573,7 @@ func (t OncallResponderUpdateRequest_RunAs) AsAutomationRunAsServiceUser() (Auto
 
 // FromAutomationRunAsServiceUser overwrites any union data inside the OncallResponderUpdateRequest_RunAs as the provided AutomationRunAsServiceUser
 func (t *OncallResponderUpdateRequest_RunAs) FromAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	v.Type = "service_user"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -4969,6 +9581,7 @@ func (t *OncallResponderUpdateRequest_RunAs) FromAutomationRunAsServiceUser(v Au
 
 // MergeAutomationRunAsServiceUser performs a merge with any union data inside the OncallResponderUpdateRequest_RunAs, using the provided AutomationRunAsServiceUser
 func (t *OncallResponderUpdateRequest_RunAs) MergeAutomationRunAsServiceUser(v AutomationRunAsServiceUser) error {
+	v.Type = "service_user"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -4979,12 +9592,125 @@ func (t *OncallResponderUpdateRequest_RunAs) MergeAutomationRunAsServiceUser(v A
 	return err
 }
 
+func (t OncallResponderUpdateRequest_RunAs) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t OncallResponderUpdateRequest_RunAs) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "creator":
+		return t.AsAutomationRunAsCreator()
+	case "organization":
+		return t.AsAutomationRunAsOrganization()
+	case "service_user":
+		return t.AsAutomationRunAsServiceUser()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
 func (t OncallResponderUpdateRequest_RunAs) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
 func (t *OncallResponderUpdateRequest_RunAs) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsSecurityProfileHostnameDestination returns the union data inside the SecurityProfileNetPolicy_Allow_Item as a SecurityProfileHostnameDestination
+func (t SecurityProfileNetPolicy_Allow_Item) AsSecurityProfileHostnameDestination() (SecurityProfileHostnameDestination, error) {
+	var body SecurityProfileHostnameDestination
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSecurityProfileHostnameDestination overwrites any union data inside the SecurityProfileNetPolicy_Allow_Item as the provided SecurityProfileHostnameDestination
+func (t *SecurityProfileNetPolicy_Allow_Item) FromSecurityProfileHostnameDestination(v SecurityProfileHostnameDestination) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSecurityProfileHostnameDestination performs a merge with any union data inside the SecurityProfileNetPolicy_Allow_Item, using the provided SecurityProfileHostnameDestination
+func (t *SecurityProfileNetPolicy_Allow_Item) MergeSecurityProfileHostnameDestination(v SecurityProfileHostnameDestination) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSecurityProfileIpv4Destination returns the union data inside the SecurityProfileNetPolicy_Allow_Item as a SecurityProfileIpv4Destination
+func (t SecurityProfileNetPolicy_Allow_Item) AsSecurityProfileIpv4Destination() (SecurityProfileIpv4Destination, error) {
+	var body SecurityProfileIpv4Destination
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSecurityProfileIpv4Destination overwrites any union data inside the SecurityProfileNetPolicy_Allow_Item as the provided SecurityProfileIpv4Destination
+func (t *SecurityProfileNetPolicy_Allow_Item) FromSecurityProfileIpv4Destination(v SecurityProfileIpv4Destination) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSecurityProfileIpv4Destination performs a merge with any union data inside the SecurityProfileNetPolicy_Allow_Item, using the provided SecurityProfileIpv4Destination
+func (t *SecurityProfileNetPolicy_Allow_Item) MergeSecurityProfileIpv4Destination(v SecurityProfileIpv4Destination) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSecurityProfileIpv6Destination returns the union data inside the SecurityProfileNetPolicy_Allow_Item as a SecurityProfileIpv6Destination
+func (t SecurityProfileNetPolicy_Allow_Item) AsSecurityProfileIpv6Destination() (SecurityProfileIpv6Destination, error) {
+	var body SecurityProfileIpv6Destination
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSecurityProfileIpv6Destination overwrites any union data inside the SecurityProfileNetPolicy_Allow_Item as the provided SecurityProfileIpv6Destination
+func (t *SecurityProfileNetPolicy_Allow_Item) FromSecurityProfileIpv6Destination(v SecurityProfileIpv6Destination) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSecurityProfileIpv6Destination performs a merge with any union data inside the SecurityProfileNetPolicy_Allow_Item, using the provided SecurityProfileIpv6Destination
+func (t *SecurityProfileNetPolicy_Allow_Item) MergeSecurityProfileIpv6Destination(v SecurityProfileIpv6Destination) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t SecurityProfileNetPolicy_Allow_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *SecurityProfileNetPolicy_Allow_Item) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

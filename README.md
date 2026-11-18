@@ -111,6 +111,7 @@ resource "devin_org_idp_group_role" "engineering_member" {
 | `devin_service_users`   | Active service users in the enterprise           |
 | `devin_idp_groups`      | IdP groups registered with the enterprise        |
 | `devin_repositories`    | Repositories connected to an organization        |
+| `devin_sessions`        | Sessions of an organization                      |
 
 ## List resources (Terraform 1.14+)
 

@@ -173,7 +173,7 @@ func (r *enterpriseServiceUserAPIKeyResource) Read(ctx context.Context, req reso
 func (r *enterpriseServiceUserAPIKeyResource) findAPIKey(ctx context.Context, serviceUserID, apiKeyID string) (*api.APIKeyResponse, error) {
 	var page api.PaginatedResponseAPIKeyResponse
 	// Only active keys, so the response does not grow with every past rotation.
-	if err := r.client.Get(ctx, enterpriseServiceUserAPIKeysPath(serviceUserID)+"?status="+string(api.Active), &page); err != nil {
+	if err := r.client.Get(ctx, enterpriseServiceUserAPIKeysPath(serviceUserID)+"?status="+string(api.HandleListServiceUserAPIKeysV3Beta1EnterpriseServiceUsersServiceUserIDAPIKeysGetParamsStatusActive), &page); err != nil {
 		return nil, err
 	}
 	for i := range page.Items {

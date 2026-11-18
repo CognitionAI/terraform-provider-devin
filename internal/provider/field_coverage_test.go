@@ -186,10 +186,14 @@ var ignoredFields = map[string]map[string]string{
 		"indexing_status": "exposed as the 'indexing_enabled' flag; job details are runtime status",
 	}),
 	"organizations_data_source.go": paginationOnly,
+	"sessions_data_source.go": mergeIgnored(paginationOnly, map[string]string{
+		"security_profile": "session security-profile binding; niche enterprise field, not yet exposed",
+	}),
 }
 
 var additionalCoveredAPITypes = map[string][]string{
 	"knowledge_folders_data_source.go": {"FolderSummary", "FolderTreeResponse"},
+	"sessions_data_source.go":          {"SessionResponse"},
 }
 
 const paginationReason = "pagination envelope handled by the list machinery"
