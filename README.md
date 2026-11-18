@@ -1,6 +1,6 @@
 # Terraform Provider for Devin
 
-Manage Devin resources (organizations, git permissions, playbooks, knowledge notes, secrets, schedules, IP access lists, IdP group role mappings) via the [Devin v3 API](https://docs.devin.ai/api-reference/overview).
+Manage Devin resources (organizations, git permissions, playbooks, knowledge notes, secrets, automations, IP access lists, IdP group role mappings) via the [Devin v3 API](https://docs.devin.ai/api-reference/overview).
 
 Authenticates with enterprise or organization-level service user tokens (`cog_` prefix).
 
@@ -52,11 +52,23 @@ resource "devin_secret" "npm_token" {
   value  = var.npm_token
 }
 
-resource "devin_schedule" "nightly_triage" {
-  org_id    = devin_organization.team.org_id
-  name      = "Nightly issue triage"
-  prompt    = "Triage new GitHub issues and propose fixes for the easy ones."
-  frequency = "0 6 * * *"
+resource "devin_automation" "nightly_triage" {
+  org_id = devin_organization.team.org_id
+  name   = "Nightly issue triage"
+  triggers = jsonencode([{
+    event_type = "schedule:recurring"
+    conditions = {
+      any = [{ all = [{
+        field    = "rrule"
+        operator = "recurrence"
+        value    = "FREQ=DAILY;BYHOUR=6;BYMINUTE=0"
+      }] }]
+    }
+  }])
+  actions = jsonencode([{
+    type   = "start_session"
+    prompt = "Triage new GitHub issues and propose fixes for the easy ones."
+  }])
 }
 
 resource "devin_ip_access_list" "office" {
