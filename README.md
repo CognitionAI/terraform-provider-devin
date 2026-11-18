@@ -85,7 +85,9 @@ resource "devin_org_idp_group_role" "engineering_member" {
 | `devin_enterprise_playbook`          | Enterprise-level playbook shared across orgs                 |
 | `devin_enterprise_knowledge_note`    | Enterprise-level knowledge note shared across orgs           |
 | `devin_secret`                       | Org-level secret for Devin sessions                          |
-| `devin_schedule`                     | Recurring or one-time session schedule                       |
+| `devin_automation`                   | Event-driven or scheduled automation (supersedes schedules)  |
+| `devin_schedule`                     | Recurring or one-time session schedule (deprecated)          |
+| `devin_oncall_responder`             | Oncall auto-triage automation for an org                     |
 | `devin_ip_access_list`               | Enterprise IP access list (singleton)                        |
 | `devin_org_group_limits`             | Enterprise org-group ACU limits (singleton, feature-flagged) |
 | `devin_org_tags`                     | Org allowed session tags + default tag (singleton)           |
@@ -93,6 +95,7 @@ resource "devin_org_idp_group_role" "engineering_member" {
 | `devin_enterprise_idp_group_role`    | Maps an IdP group to an enterprise-wide role                 |
 | `devin_org_idp_group_role`           | Maps an IdP group to an org-scoped role                      |
 | `devin_enterprise_service_user_role` | Enterprise role for an existing service user                 |
+| `devin_enterprise_service_user_api_key` | API key for a service user (token stored in state)        |
 | `devin_org_service_user_role`        | Org role for an existing service user                        |
 | `devin_org_user_role`                | Org role for an existing enterprise user                     |
 | `devin_repository_indexing`          | Indexing (search and wiki) for a connected repo and branches |
@@ -110,6 +113,8 @@ resource "devin_org_idp_group_role" "engineering_member" {
 | `devin_users`           | Users in the enterprise                          |
 | `devin_service_users`   | Active service users in the enterprise           |
 | `devin_idp_groups`      | IdP groups registered with the enterprise        |
+| `devin_knowledge_folders` | Knowledge folders in an organization           |
+| `devin_oncall_schemas`  | Trigger types and fields for oncall responders   |
 | `devin_repositories`    | Repositories connected to an organization        |
 
 ## List resources (Terraform 1.14+)
