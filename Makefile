@@ -25,5 +25,14 @@ docs-check: docs
 		git diff docs; \
 		exit 1; \
 	fi
+	@missing=0; \
+	for f in docs/resources/*.md docs/data-sources/*.md; do \
+		name="devin_$$(basename "$$f" .md)"; \
+		if ! grep -q "| \`$$name\`" README.md; then \
+			echo "README.md: no table row for $$name ($$f)"; \
+			missing=1; \
+		fi; \
+	done; \
+	[ $$missing -eq 0 ] || exit 1
 
 .PHONY: build install test lint docs docs-check
