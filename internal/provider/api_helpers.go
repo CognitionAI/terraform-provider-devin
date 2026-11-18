@@ -80,6 +80,22 @@ func int64FromNullable(value nullable.Nullable[int]) types.Int64 {
 	return types.Int64Value(int64(value.MustGet()))
 }
 
+func float64FromNullable(value nullable.Nullable[float32]) types.Float64 {
+	if !value.IsSpecified() || value.IsNull() {
+		return types.Float64Null()
+	}
+	return types.Float64Value(float64(value.MustGet()))
+}
+
+// enumStringFromNullable converts a nullable generated enum (a named string
+// type) to a Terraform string.
+func enumStringFromNullable[T ~string](value nullable.Nullable[T]) types.String {
+	if !value.IsSpecified() || value.IsNull() {
+		return types.StringNull()
+	}
+	return types.StringValue(string(value.MustGet()))
+}
+
 // optionalJSONObjectFrom parses a JSON-encoded object string into the map type
 // the API expects, leaving the field unspecified (omitted) when the value is
 // null or unknown. Parse errors are reported through diags.

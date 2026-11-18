@@ -180,6 +180,10 @@ func orgRepositoriesPath(orgID string) string {
 	return organizationsPath + "/" + url.PathEscape(orgID) + "/repositories"
 }
 
+func orgSessionsPath(orgID string) string {
+	return organizationsPath + "/" + url.PathEscape(orgID) + "/sessions"
+}
+
 // blueprintFilesPath returns the files path of an org/repo blueprint, or of
 // the enterprise blueprint when orgID is empty.
 func blueprintFilesPath(orgID, blueprintID string) string {
